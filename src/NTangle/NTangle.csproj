@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>NTangle</RootNamespace>
+    <Version>1.0.1</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>NTangle Developers</Authors>
+    <Company>Avanade</Company>
+    <Description>NTangle Code Generator.</Description>
+    <LangVersion>preview</LangVersion>
+    <Copyright>Avanade (c)</Copyright>
+    <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Avanade/NTangle</RepositoryUrl>
+    <Product>NTangle</Product>
+    <SignAssembly>true</SignAssembly>
+    <DelaySign>false</DelaySign>
+    <AssemblyOriginatorKeyFile>strong-name-key.snk</AssemblyOriginatorKeyFile>
+    <PackageIconUrl>https://github.com/Avanade/NTangle/raw/master/docs/images/Logo256x256.png</PackageIconUrl>
+    <PackageIcon>Logo256x256.png</PackageIcon>
+    <RepositoryType>git</RepositoryType>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Title>NTangle Code Generator.</Title>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <PackageTags>NTangle on-ramp code-generation codegen code-gen handlebars handlebase.js</PackageTags>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <Nullable>enable</Nullable>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IncludeSymbols>true</IncludeSymbols>
+    <EmbedAllSources>true</EmbedAllSources>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Scripts\SqlServerDatabase.yaml" />
+    <None Remove="Templates\EntityOrchestrator_cs.hb" />
+    <None Remove="Templates\Entity_cs.hb" />
+    <None Remove="Templates\IdentifierMappingMapper_cs.hb" />
+    <None Remove="Templates\SchemaCdc_sql.hb" />
+    <None Remove="Templates\SpCompleteBatch_sql.hb" />
+    <None Remove="Templates\SpExecuteBatch_sql.hb" />
+    <None Remove="Templates\SpIdentifierMappingCreate_sql.hb" />
+    <None Remove="Templates\SqlServer\CdcEnable_sql.hb" />
+    <None Remove="Templates\TableBatchTracking_sql.hb" />
+    <None Remove="Templates\TableIdentifierMapping_sql.hb" />
+    <None Remove="Templates\TableVersionTracking_sql.hb" />
+    <None Remove="Templates\UdtIdentifierMapping_sql.hb" />
+    <None Remove="Templates\UdtVersionTracking_sql.hb" />
+    <None Remove="Templates\VersionTrackingMapper_cs.hb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\SqlServerDacpac.yaml" />
+    <EmbeddedResource Include="Scripts\SqlServerDatabase.yaml" />
+    <EmbeddedResource Include="Templates\EntityOrchestrator_cs.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\SchemaCdc_sql.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\CdcEnable_sql.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\TableBatchTracking_sql.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\TableIdentifierMapping_sql.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\TableVersionTracking_sql.hb" />
+    <EmbeddedResource Include="Templates\Entity_cs.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\SpIdentifierMappingCreate_sql.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\UdtIdentifierMapping_sql.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\SpCompleteBatch_sql.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\SpExecuteBatch_sql.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\UdtVersionTracking_sql.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\IdentifierMappingMapper_cs.hb" />
+    <EmbeddedResource Include="Templates\SqlServer\VersionTrackingMapper_cs.hb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CloudNative.CloudEvents" Version="2.1.1" />
+    <PackageReference Include="CloudNative.CloudEvents.NewtonsoftJson" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\images\Logo256x256.png" Link="Logo256x256.png">
+      <PackagePath>\</PackagePath>
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\OnRamp\src\OnRamp\OnRamp.csproj" />
+  </ItemGroup>
+
+</Project>

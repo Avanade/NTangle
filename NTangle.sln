@@ -1,0 +1,86 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31702.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NTangle", "src\NTangle\NTangle.csproj", "{3DE3E0B8-4078-422C-B331-F14BC779489F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnRamp", "..\OnRamp\src\OnRamp\OnRamp.csproj", "{F17F4E46-1785-4344-80BD-085DAA1653E9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{07E22463-39F6-4CBC-9790-CF858A88091F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8E857EA7-5ADC-4FD3-BAAE-EC8DC07AFCF1}"
+	ProjectSection(SolutionItems) = preProject
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
+		CONTRIBUTING.md = CONTRIBUTING.md
+		LICENCE = LICENCE
+		README.md = README.md
+		SECURITY.md = SECURITY.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTangle.Test", "tests\NTangle.Test\NTangle.Test.csproj", "{F2B7EC0C-9268-4E15-B014-6598682BFF4A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{3A0B49DA-7D84-4B96-A4F3-FAF77C3E2FB3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlServerDemo", "SqlServerDemo", "{54E2D3C7-1AC1-4EA6-A8CA-42EC12A6E299}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlServerDemo.CodeGen", "samples\SqlServerDemo\SqlServerDemo.CodeGen\SqlServerDemo.CodeGen.csproj", "{1335C8D9-27AF-4BA2-AAB3-620841FCAEE9}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SqlServerDemo.Database", "samples\SqlServerDemo\SqlServerDemo.Database\SqlServerDemo.Database.sqlproj", "{393D4F63-1F80-42A5-8ED7-E211698CCD94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlServerDemo.Publisher", "samples\SqlServerDemo\SqlServerDemo.Publisher\SqlServerDemo.Publisher.csproj", "{3BA33E87-F92A-444E-A67D-224A9BC605E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlServerDemo.Test", "samples\SqlServerDemo\SqlServerDemo.Test\SqlServerDemo.Test.csproj", "{A5F7177D-3747-45DF-BAF0-1E5F466A8C3C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3DE3E0B8-4078-422C-B331-F14BC779489F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DE3E0B8-4078-422C-B331-F14BC779489F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DE3E0B8-4078-422C-B331-F14BC779489F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DE3E0B8-4078-422C-B331-F14BC779489F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F17F4E46-1785-4344-80BD-085DAA1653E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F17F4E46-1785-4344-80BD-085DAA1653E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F17F4E46-1785-4344-80BD-085DAA1653E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F17F4E46-1785-4344-80BD-085DAA1653E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2B7EC0C-9268-4E15-B014-6598682BFF4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2B7EC0C-9268-4E15-B014-6598682BFF4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2B7EC0C-9268-4E15-B014-6598682BFF4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2B7EC0C-9268-4E15-B014-6598682BFF4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1335C8D9-27AF-4BA2-AAB3-620841FCAEE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1335C8D9-27AF-4BA2-AAB3-620841FCAEE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1335C8D9-27AF-4BA2-AAB3-620841FCAEE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1335C8D9-27AF-4BA2-AAB3-620841FCAEE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{393D4F63-1F80-42A5-8ED7-E211698CCD94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{393D4F63-1F80-42A5-8ED7-E211698CCD94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{393D4F63-1F80-42A5-8ED7-E211698CCD94}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{393D4F63-1F80-42A5-8ED7-E211698CCD94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{393D4F63-1F80-42A5-8ED7-E211698CCD94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{393D4F63-1F80-42A5-8ED7-E211698CCD94}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{3BA33E87-F92A-444E-A67D-224A9BC605E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BA33E87-F92A-444E-A67D-224A9BC605E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BA33E87-F92A-444E-A67D-224A9BC605E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BA33E87-F92A-444E-A67D-224A9BC605E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5F7177D-3747-45DF-BAF0-1E5F466A8C3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5F7177D-3747-45DF-BAF0-1E5F466A8C3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5F7177D-3747-45DF-BAF0-1E5F466A8C3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5F7177D-3747-45DF-BAF0-1E5F466A8C3C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F2B7EC0C-9268-4E15-B014-6598682BFF4A} = {07E22463-39F6-4CBC-9790-CF858A88091F}
+		{54E2D3C7-1AC1-4EA6-A8CA-42EC12A6E299} = {3A0B49DA-7D84-4B96-A4F3-FAF77C3E2FB3}
+		{1335C8D9-27AF-4BA2-AAB3-620841FCAEE9} = {54E2D3C7-1AC1-4EA6-A8CA-42EC12A6E299}
+		{393D4F63-1F80-42A5-8ED7-E211698CCD94} = {54E2D3C7-1AC1-4EA6-A8CA-42EC12A6E299}
+		{3BA33E87-F92A-444E-A67D-224A9BC605E3} = {54E2D3C7-1AC1-4EA6-A8CA-42EC12A6E299}
+		{A5F7177D-3747-45DF-BAF0-1E5F466A8C3C} = {54E2D3C7-1AC1-4EA6-A8CA-42EC12A6E299}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B97E5639-3430-4AD7-9942-D35EF26F263B}
+	EndGlobalSection
+EndGlobal
