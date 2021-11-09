@@ -4,9 +4,18 @@ using System.Threading.Tasks;
 
 namespace NTangle.Test
 {
-    public class TestEventPublisher : EventPublisherBase
+    /// <summary>
+    /// Simulates an event send by first serializing to a <i>CloudEvent</i> and then adding to the <see cref="Events"/> list.
+    /// </summary>
+    public class TestEventPublisher : IEventPublisher
     {
-        protected override async Task SendEventsAsync(EventData[] events)
+        /// <summary>
+        /// Gets the list of sent <i>CloudEvents</i>.
+        /// </summary>
+        public List<byte[]> Events { get; } = new List<byte[]>();
+
+        /// <inheritdoc/>
+        public async Task SendAsync(params EventData[] events)
         {
             var ces = new CloudEventSerializer();
             foreach (var ed in events)
@@ -14,7 +23,5 @@ namespace NTangle.Test
                 Events.Add(await ces.SerializeAsync(ed).ConfigureAwait(false));
             }
         }
-
-        public List<byte[]> Events { get; } = new List<byte[]>();
     }
 }

@@ -288,5 +288,60 @@ namespace SqlServerDemo.Test
             Assert.IsTrue(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
         }
+
+        [Test]
+        public async Task RetryWhenIncomplete()
+        {
+            using var db = SqlServerUnitTest.GetDatabase();
+            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+
+            var script = "UPDATE [Legacy].[Tags] SET [TEXT] = '#Other' WHERE [TagsId] = 3301";
+
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+            await UnitTest.Delay().ConfigureAwait(false);
+
+            // Execute picking up the changes.
+            var tep = new TestEventPublisher();
+            var cdc = new PostCdcOrchestrator(db, tep, logger);
+            var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, tep);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNotNull(cdcr.Batch);
+            Assert.IsTrue(cdcr.Batch.IsComplete);
+            Assert.IsNotNull(cdcr.Batch.CompletedDate);
+            Assert.IsNotNull(cdcr.Batch.CorrelationId);
+            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, tep.Events.Count);
+
+            // Set the last batch to incomplete and delete version tracking so i will publish event again - simulate batch failure.
+            script =
+                $"UPDATE [NTangle].[PostsBatchTracking] SET IsComplete = 0 WHERE CorrelationId = '{cdcr.Batch.CorrelationId}'" + Environment.NewLine +
+                "DELETE FROM [NTangle].[VersionTracking]";
+
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+
+            // Execute picking up the existing batch and re-completing.
+            tep.Events.Clear();
+            var cdcr2 = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr2, tep);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr2);
+            Assert.IsTrue(cdcr2.IsSuccessful);
+            Assert.IsNotNull(cdcr2.Batch);
+            Assert.IsTrue(cdcr2.Batch.IsComplete);
+            Assert.IsNotNull(cdcr2.Batch.CompletedDate);
+            Assert.IsNotNull(cdcr2.Batch.CorrelationId);
+            Assert.IsFalse(cdcr2.Batch.HasDataLoss);
+            Assert.IsNull(cdcr2.Exception);
+            Assert.AreEqual(cdcr.Batch.Id, cdcr2.Batch.Id);
+            Assert.AreEqual(cdcr.Batch.CorrelationId, cdcr2.Batch.CorrelationId);
+            Assert.AreNotEqual(cdcr.ExecutionId, cdcr2.ExecutionId);
+            Assert.AreEqual(1, tep.Events.Count);
+        }
     }
 }

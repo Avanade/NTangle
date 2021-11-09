@@ -7,9 +7,9 @@ namespace NTangle.Events
     /// <summary>
     /// Represents a <c>null</c> event publisher; whereby the events are simply swallowed/discarded on send.
     /// </summary>
-    public class NullEventPublisher : EventPublisherBase
+    public class NullEventPublisher : IEventPublisher
     {
         /// <inheritdoc/>
-        protected override Task SendEventsAsync(params EventData[] events) => Task.CompletedTask;
+        public Task SendAsync(params EventData[] events) => Task.CompletedTask;
     }
 }

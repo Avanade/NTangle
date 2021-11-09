@@ -330,8 +330,9 @@ namespace NTangle.Cdc
             {
                 var events = (await CreateEventsAsync(coll2, result.Batch.CorrelationId, cancellationToken.Value).ConfigureAwait(false)).ToArray();
                 sw = Stopwatch.StartNew();
-                await EventPublisher.Publish(events).SendAsync().ConfigureAwait(false);
+                await EventPublisher.SendAsync(events).ConfigureAwait(false);
                 sw.Stop();
+
                 Logger.LogInformation("{ServiceName}: Batch '{BatchId}': {EventCount} event(s) were published/sent successfully. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
                     ServiceName, result.Batch.Id, events.Length, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
             }
