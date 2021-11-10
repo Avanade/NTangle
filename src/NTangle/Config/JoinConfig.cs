@@ -191,14 +191,6 @@ namespace NTangle.Config
            Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).")]
         public bool? IdentifierMapping { get; set; }
 
-        ///// <summary>
-        ///// Gets or sets the list of `Column` with related `Schema`/`Table` values (all split by a `^` lookup character) to enable column one-to-one identifier mapping.
-        ///// </summary>
-        //[JsonProperty("identifierMappingColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        //[CodeGenPropertyCollection("IdentifierMapping", Title = "The list of `Column` with related `Schema`/`Table` values (all split by a `^` lookup character) to enable column one-to-one identifier mapping.", IsImportant = true,
-        //    Description = "Each value is formatted as `Column` + `^` + `Schema` + `^` + `Table` where the schema is optional; e.g. `ContactId^dbo^Contact` or `ContactId^Contact`.")]
-        //public List<string>? IdentifierMappingColumns { get; set; }
-
         #endregion
 
         #region Collections
@@ -209,6 +201,13 @@ namespace NTangle.Config
         [JsonProperty("on", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `JoinOn` collection.")]
         public List<JoinOnConfig>? On { get; set; }
+
+        /// <summary>
+        /// Gets or sets the corresponding <see cref="JoinIdentifierMappingColumnConfig"/> collection.
+        /// </summary>
+        [JsonProperty("mappings", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenPropertyCollection("Collections", Title = "The corresponding `JoinMapping` collection.")]
+        public List<JoinIdentifierMappingColumnConfig>? Mappings { get; set; }
 
         #endregion
 
@@ -312,10 +311,10 @@ namespace NTangle.Config
             Schema = DefaultWhereNull(Schema, () => Parent!.Schema);
             DbTable = Root!.DbTables.Where(x => x.Name == Table && x.Schema == Schema).SingleOrDefault();
             if (DbTable == null)
-                throw new CodeGenException(this, nameof(Table), $"Specified Schema.Table '{Schema}.{Table}' not found in database.");
+                throw new CodeGenException(this, nameof(Table), $"Specified table '[{Schema}].[{Table}]' not found in database.");
 
             if (DbTable.IsAView)
-                throw new CodeGenException(this, nameof(Table), $"Specified Schema.Table '{Schema}.{Table}' cannot be a view.");
+                throw new CodeGenException(this, nameof(Table), $"Specified table '[{Schema}].[{Table}]' cannot be a view.");
 
             Type = DefaultWhereNull(Type, () => "Cdc");
             Model = DefaultWhereNull(Model, () => StringConverter.ToPascalCase(Name));
@@ -336,15 +335,18 @@ namespace NTangle.Config
             {
                 var tables = Parent!.Joins!.Where(x => x.Table == JoinTo && x.Schema == JoinToSchema).ToList();
                 if (tables.Count == 0 || Parent!.Joins!.IndexOf(this) < Parent!.Joins!.IndexOf(tables[0]))
-                    throw new CodeGenException(this, nameof(JoinTo), $"Specified JoinTo Schema.Table '{JoinToSchema}.{JoinTo}' must be previously specified.");
+                    throw new CodeGenException(this, nameof(JoinTo), $"Specified JoinTo table '[{JoinToSchema}].[{JoinTo}]' must be previously specified.");
                 else if (tables.Count > 1)
-                    throw new CodeGenException(this, nameof(JoinTo), $"Specified JoinTo Schema.Table '{JoinToSchema}.{JoinTo}' is ambiguous (more than one found).");
+                    throw new CodeGenException(this, nameof(JoinTo), $"Specified JoinTo table '[{JoinToSchema}].[{JoinTo}]' is ambiguous (more than one found).");
 
                 jtc = tables[0];
                 JoinToAlias = tables[0].Alias;
             }
             else
                 JoinToAlias = Parent!.Alias;
+
+            // Prepare the identifier mappings.
+            Mappings = PrepareCollection(Mappings);
 
             // Deal with the columns.
             foreach (var c in DbTable.Columns)
@@ -371,7 +373,14 @@ namespace NTangle.Config
                         cc.NameAlias = parts[1];
                 }
 
-                //TableConfig.MapIdentifierMappingColumn(Root!, this, Schema!, IdentifierMappingColumns, cc);
+                var cm = Mappings.SingleOrDefault(x => x.Name == cc.Name);
+                if (cm != null)
+                {
+                    cc.IdentifierMappingAlias = $"_im{(Mappings.IndexOf(cm) + 1)}";
+                    cc.IdentifierMappingSchema = cm.Schema;
+                    cc.IdentifierMappingTable = cm.Table;
+                }
+
                 cc.Prepare(Root!, this);
                 Columns.Add(cc);
 
@@ -380,7 +389,7 @@ namespace NTangle.Config
                     var cc2 = new JoinColumnConfig
                     {
                         Name = "GlobalId",
-                        DbColumn = new DbColumn { Name = c.Name, Type = "NVARCHAR", DbTable = cc.DbColumn!.DbTable },
+                        DbColumn = new DbColumn { Name = c.Name, Type = Root!.IdentifierMappingSqlType, DbTable = cc.DbColumn!.DbTable },
                         NameAlias = "Global" + cc.NameAlias,
                         IdentifierMappingAlias = cc.IdentifierMappingAlias,
                         IdentifierMappingSchema = cc.IdentifierMappingSchema,
@@ -467,8 +476,8 @@ namespace NTangle.Config
                 DbTable = DbTable,
                 IndentIndex = indentIndex,
                 HierarchyParent = hierarchyParent,
-                //IdentifierMapping = IdentifierMapping,
-                //IdentifierMappingColumns = IdentifierMappingColumns
+                IdentifierMapping = IdentifierMapping,
+                Mappings = Mappings
             };
 
             j.OverrideRootAndParent(Root!, Parent!);

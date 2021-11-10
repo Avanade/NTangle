@@ -23,6 +23,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Expected\ContactTest-GenerateAllIdentifiers.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Expected\PostsTest-UpdateThenDelete.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

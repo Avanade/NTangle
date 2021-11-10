@@ -34,12 +34,6 @@ namespace NTangle.Data
                 return default!;
 
             return DataReader.GetFieldValue<T>(i);
-
-            //var nt = Nullable.GetUnderlyingType(typeof(T));
-            //if (nt == null)
-            //    return DataReader.GetFieldValue<T>(i);
-            //else
-            //    return (T)Convert.ChangeType(DataReader.GetValue(i), nt, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>

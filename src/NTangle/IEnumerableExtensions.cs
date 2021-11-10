@@ -2,12 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace NTangle
 {
     /// <summary>
     /// Adds <see cref="IEnumerable{T}"/> extension methods.
     /// </summary>
+    [DebuggerStepThrough]
     public static class IEnumerableExtensions
     {
         /// <summary>

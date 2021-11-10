@@ -5,7 +5,7 @@ using NTangle.Data;
 using NTangle.Events;
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NTangle.Cdc
@@ -92,34 +92,28 @@ namespace NTangle.Cdc
         /// <param name="coll">The entity envelope collection.</param>
         protected async Task AssignIdentityMappingAsync(TEntityEnvelopeColl coll)
         {
-            //// Find all the instances where there is currently no global identifier assigned.
-            //var vimc = new CdcValueIdentifierMappingCollection();
-            //foreach (var item in coll.OfType<ICdcLinkIdentifierMapping>())
-            //{
-            //    await item.LinkIdentifierMappingsAsync(vimc, IdentifierGenerator!).ConfigureAwait(false));
-            //}
+            // Find all the instances where there is currently no global identifier assigned.
+            var vimc = new ValueIdentifierMappingCollection<TGlobalIdentifer>();
+            coll.OfType<ILinkIdentifierMapping<TGlobalIdentifer>>().ForEach(async item => await item.LinkIdentifierMappingsAsync(vimc, IdentifierGenerator!).ConfigureAwait(false));
+            if (vimc.Count == 0)
+                return;
 
-            //if (vimc.Count == 0)
-            //    return;
+            // There could be multiple references to same Schema/Table/Key; these need to filtered out; i.e. send only a distinct list.
+            var imcd = new Dictionary<(string?, string?, string?), IdentifierMapping<TGlobalIdentifer>>();
+            vimc.ForEach(item => imcd.TryAdd((item.Schema, item.Table, item.Key), item));
+            var tvp = IdentifierMappingMapper!.CreateTableValuedParameter(imcd.Values);
 
-            //// There could be multiple references to same Schema/Table/Key; these need to filtered out; i.e. send only a distinct list.
-            //var imcd = new Dictionary<(string?, string?, string?), CdcIdentifierMapping>();
-            //vimc.ForEach(item => imcd.TryAdd((item.Schema, item.Table, item.Key), item));
-            //var tvp = IdentifierMappingTvp!.CreateTableValuedParameter(imcd.Values);
+            // Execute the stored procedure and get the updated list.
+            var imc = await Db.StoredProcedure(IdentifierMappingStoredProcedureName!, p => p.AddTableValuedParameter(IdentifierListParamName, tvp))
+                .SelectAsync(IdentifierMappingMapper)
+                .ConfigureAwait(false);
 
-            //// Execute the stored procedure and get the updated list.
-            //var imc = await Db.StoredProcedure(IdentifierMappingStoredProcedureName!)
-            //    .TableValuedParam(IdentifierListParamName, tvp)
-            //    .SelectQueryAsync(DatabaseMapper.CreateAuto<CdcIdentifierMapping>())
-            //    .ConfigureAwait(false);
+            if (imc.Count() != imcd.Count)
+                throw new InvalidOperationException($"Stored procedure '{IdentifierMappingStoredProcedureName}' returned an unexpected result.");
 
-            //if (imc.Count() != imcd.Count)
-            //    throw new InvalidOperationException($"Stored procedure '{IdentifierMappingStoredProcedureName}' returned an unexpected result.");
-
-            //// Re-link the identifier mappings with the final value.
-            //vimc.ForEach(item => item.GlobalId = imc.Single(x => x.Schema == item.Schema && x.Table == item.Table && x.Key == item.Key).GlobalId);
-            //coll.OfType<ICdcLinkIdentifierMapping>().ForEach(item => item.RelinkIdentifierMappings(vimc));
-            await Task.CompletedTask;
+            // Re-link the identifier mappings with the final value.
+            vimc.ForEach(item => item.GlobalId = imc.Single(x => x.Schema == item.Schema && x.Table == item.Table && x.Key == item.Key).GlobalId);
+            coll.OfType<ILinkIdentifierMapping<TGlobalIdentifer>>().ForEach(item => item.RelinkIdentifierMappings(vimc));
         }
     }
 }

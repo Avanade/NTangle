@@ -264,6 +264,13 @@ namespace NTangle.Config
             Markdown = "A `Join` object provides the configuration for a table join.")]
         public List<JoinConfig>? Joins { get; set; }
 
+        /// <summary>
+        /// Gets or sets the corresponding <see cref="TableIdentifierMappingColumnConfig"/> collection.
+        /// </summary>
+        [JsonProperty("mappings", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenPropertyCollection("Collections", Title = "The corresponding `TableMapping` collection.")]
+        public List<TableIdentifierMappingColumnConfig>? Mappings { get; set; }
+
         #endregion
 
         #region Non-Config
@@ -361,10 +368,10 @@ namespace NTangle.Config
             Schema = DefaultWhereNull(Schema, () => Root!.Schema);
             DbTable = Root!.DbTables!.Where(x => x.Name == Name && x.Schema == Schema).SingleOrDefault();
             if (DbTable == null)
-                throw new CodeGenException(this, nameof(Name), $"Specified Schema.Table '{Schema}.{Name}' not found in database.");
+                throw new CodeGenException(this, nameof(Name), $"Specified table '[{Schema}].[{Name}]' not found in database.");
 
             if (DbTable.IsAView)
-                throw new CodeGenException(this, nameof(Name), $"Specified Schema.Table '{Schema}.{Name}' cannot be a view.");
+                throw new CodeGenException(this, nameof(Name), $"Specified table '[{Schema}].[{Name}]' cannot be a view.");
 
             Alias = DefaultWhereNull(Alias, () => DbTable.Alias);
 
@@ -386,6 +393,8 @@ namespace NTangle.Config
 
             if (IsTrue(CdcEnable))
                 Root.AddCdcEnabled(Schema!, Table!);
+
+            Mappings = PrepareCollection(Mappings);
 
             foreach (var c in DbTable.Columns)
             {
@@ -412,7 +421,14 @@ namespace NTangle.Config
                 {
                     if (cc.Name != ColumnConfigIsDeleted?.Name)
                     {
-                        //MapIdentifierMappingColumn(Root!, this, Schema!, IdentifierMappingColumns, cc);
+                        var cm = Mappings.SingleOrDefault(x => x.Name == cc.Name);
+                        if (cm != null)
+                        {
+                            cc.IdentifierMappingAlias = $"_im{(Mappings.IndexOf(cm) + 1)}";
+                            cc.IdentifierMappingSchema = cm.Schema;
+                            cc.IdentifierMappingTable = cm.Table;
+                        }
+
                         cc.Prepare(Root!, this);
                         Columns.Add(cc);
                     }
@@ -446,7 +462,7 @@ namespace NTangle.Config
                     cc = new ColumnConfig
                     {
                         Name = "GlobalId",
-                        DbColumn = new DbColumn { Name = c.Name, Type = "NVARCHAR", DbTable = c.DbColumn!.DbTable },
+                        DbColumn = new DbColumn { Name = c.Name, Type = Root!.IdentifierMappingSqlType, DbTable = c.DbColumn!.DbTable },
                         NameAlias = "Global" + c.NameAlias,
                         IdentifierMappingAlias = c.IdentifierMappingAlias,
                         IdentifierMappingSchema = c.IdentifierMappingSchema,
@@ -462,7 +478,7 @@ namespace NTangle.Config
             PrepareCtorParams();
             PrepareJoins();
 
-            UsesGlobalIdentifier = IdentifierMapping == true; // || (IdentifierMappingColumns != null && IdentifierMappingColumns.Count > 1) || Joins.Any(x => x.IdentifierMapping == true || (x.IdentifierMappingColumns != null && x.IdentifierMappingColumns.Count > 1));
+            UsesGlobalIdentifier = IdentifierMapping == true || Mappings!.Count > 0 || Joins.Any(x => x.IdentifierMapping == true || (x.Mappings!.Count > 0));
             SetUpExcludePropertiesFromETag();
         }
 
@@ -533,37 +549,6 @@ namespace NTangle.Config
         }
 
         /// <summary>
-        /// Check whether column is selected for identity mapping and map accordingly.
-        /// </summary>
-        internal static void MapIdentifierMappingColumn<TParent>(RootConfig root, ConfigBase config, string schema, List<string>? identifierMappingColumns, ColumnConfigBase<TParent> cc) where TParent : ConfigBase, ITableReference
-        {
-            if (identifierMappingColumns == null)
-                return;
-
-            var imc = identifierMappingColumns.FirstOrDefault(x => x.StartsWith(cc.Name + "^", StringComparison.Ordinal));
-            if (imc == null)
-                return;
-
-            //if (cc.DbColumn!.IsPrimaryKey)
-            //    throw new CodeGenException(config, nameof(identifierMappingColumns), $"Column '{cc.Name}' cannot be configured using {nameof(IdentifierMappingColumns)} as it is part of the primary key; use the {nameof(IdentifierMapping)} feature instead.");
-
-            var parts = imc.Split("^");
-            if (parts.Length < 2 || parts.Length > 3)
-                throw new CodeGenException(config, nameof(identifierMappingColumns), $"Column '{cc.Name}' configuration '{imc}' that is not correctly formatted.");
-
-            cc.IdentifierMappingSchema = parts.Length == 3 ? parts[1] : schema;
-            cc.IdentifierMappingTable = parts.Length == 2 ? parts[1] : parts[2];
-            cc.IdentifierMappingAlias = $"_im{identifierMappingColumns.IndexOf(imc) + 1}";
-
-            var t = root!.DbTables.FirstOrDefault(x => x.Schema == cc.IdentifierMappingSchema && x.Name == cc.IdentifierMappingTable);
-            if (t == null)
-                throw new CodeGenException(config, nameof(identifierMappingColumns), $"Column '{cc.Name}' references table '{cc.IdentifierMappingSchema}.{cc.IdentifierMappingTable}' that does not exist.");
-
-            if (t.Columns.Count(x => x.IsPrimaryKey) != 1)
-                throw new CodeGenException(config, nameof(identifierMappingColumns), $"Column '{cc.Name}' references table '{cc.IdentifierMappingSchema}.{cc.IdentifierMappingTable}' which must only have a single column representing the primary key.");
-        }
-
-        /// <summary>
         /// Sets up the <see cref="ExcludePropertiesFromETag"/> list.
         /// </summary>
         private void SetUpExcludePropertiesFromETag()
@@ -614,10 +599,6 @@ namespace NTangle.Config
             var cc = new ColumnConfig { Name = c.Name, DbColumn = c };
             cc.Prepare(Root!, this);
             return cc;
-        }
-
-        private void DetermineHierarchy()
-        {
         }
     }
 }

@@ -190,6 +190,8 @@ BEGIN
         [c].[Active] AS [Active],
         [c].[DontCallList] AS [DontCallList],
         [c].[AddressId] AS [AddressId],
+        [c].[AlternateContactId] AS [AlternateContactId],
+        [_im1].[GlobalId] AS [GlobalAlternateContactId],
         [cm].[ContactMappingId] AS [ContactMappingId],
         [cm].[ContactId] AS [ContactId],
         [cm].[UniqueId] AS [UniqueId]
@@ -197,6 +199,7 @@ BEGIN
       LEFT OUTER JOIN [Legacy].[Contact] AS [c] ON ([c].[ContactId] = [_chg].[ContactId])
       LEFT OUTER JOIN [Legacy].[ContactMapping] AS [cm] ON ([cm].[ContactId] = [c].[ContactId])
       LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im] ON ([_im].[Schema] = 'Legacy' AND [_im].[Table] = 'Contact' AND [_im].[Key] = CAST([_chg].[ContactId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im1] ON ([_im1].[Schema] = 'Legacy' AND [_im1].[Table] = 'Contact' AND [_im1].[Key] = CAST([c].[AlternateContactId] AS NVARCHAR(128))) 
       LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_ct] ON ([_ct].[Schema] = 'Legacy' AND [_ct].[Table] = 'Contact' AND [_ct].[Key] = _im.GlobalId)
       ORDER BY [_Lsn] ASC
 
@@ -206,11 +209,13 @@ BEGIN
         [a].[AddressId] AS [AddressId],
         [a].[Street1] AS [Street1],
         [a].[Street2] AS [Street2],
-        [a].[AlternateAddressId] AS [AlternateAddressId]
+        [a].[AlternateAddressId] AS [AlternateAddressId],
+        [_im1].[GlobalId] AS [GlobalAlternateAddressId]
       FROM #_changes AS [_chg]
       INNER JOIN [Legacy].[Contact] AS [c] ON ([c].[ContactId] = [_chg].[ContactId])
       INNER JOIN [Legacy].[Address] AS [a] ON ([a].[AddressId] = [c].[AddressId])
       LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im] ON ([_im].[Schema] = 'Legacy' AND [_im].[Table] = 'Address' AND [_im].[Key] = CAST([a].[AddressId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im1] ON ([_im1].[Schema] = 'Legacy' AND [_im1].[Table] = 'Address' AND [_im1].[Key] = CAST([a].[AlternateAddressId] AS NVARCHAR(128))) 
       WHERE [_chg].[_Op] <> 1
 
     -- Commit the transaction.

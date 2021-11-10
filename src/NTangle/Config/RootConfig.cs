@@ -338,8 +338,8 @@ namespace NTangle.Config
             AutoDotNetRename = DefaultWhereNull(AutoDotNetRename, () => "SnakeKebabToPascalCase");
             JsonSerializer = DefaultWhereNull(JsonSerializer, () => "Newtonsoft");
             EventSourceKind = DefaultWhereNull(EventSubjectFormat, () => "Relative");
-            EventSourceFormat = DefaultWhereNull(EventSubjectFormat, () => "NameOnly");
-            EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => "NameAndTableKey");
+            EventSourceFormat = DefaultWhereNull(EventSubjectFormat, () => "NameAndTableKey");
+            EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => "NameOnly");
             EventActionFormat = DefaultWhereNull(EventActionFormat, () => "PastTense");
             PathBase = DefaultWhereNull(PathBase, () => AppName);
             PathDatabase = DefaultWhereNull(PathDatabase, () => $"{PathBase}.Database");

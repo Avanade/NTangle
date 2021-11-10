@@ -24,10 +24,15 @@ namespace NTangle.Events
             return format switch
             {
                 EventSourceFormat.NameOnly => source,
-                EventSourceFormat.NameAndKey => new Uri(source, value.ToString()),
-                EventSourceFormat.NameAndTableKey => new Uri(source, value is IGlobalIdentifier gi ? gi.TableKey.ToString() : value.ToString()),
+                EventSourceFormat.NameAndKey => CreateUri(source, value.PrimaryKey.ToString()),
+                EventSourceFormat.NameAndTableKey => CreateUri(source, value is IGlobalIdentifier gi ? gi.TableKey.ToString() : value.PrimaryKey.ToString()),
                 _ => null
             };
         }
+
+        /// <summary>
+        /// Create new extended URI.
+        /// </summary>
+        private static Uri CreateUri(Uri source, string path) => new Uri($"{source.OriginalString}/{path}", source.IsAbsoluteUri ? UriKind.Absolute : UriKind.Relative);
     }
 }

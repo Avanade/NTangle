@@ -90,6 +90,7 @@ BEGIN
       [Active] BIT NULL,
       [DontCallList] BIT NULL,
       [AddressId] INT NULL,
+      [AlternateContactId] INT NULL
       CONSTRAINT [PK_Contact] PRIMARY KEY CLUSTERED ([ContactId] ASC),
       CONSTRAINT [FK_Contact_Address] FOREIGN KEY ([AddressId]) REFERENCES [Legacy].[Address] ([AddressId])
     );

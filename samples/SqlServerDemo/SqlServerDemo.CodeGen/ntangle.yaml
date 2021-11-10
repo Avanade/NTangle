@@ -12,7 +12,7 @@ tables:
   # - Legacy.Comments (1:n)
   # - Legacy.Tags (1:n)
   # - Legacy.Tags (1:n).
-- { name: Posts, model: Post,
+- { name: Posts, model: Post, eventSourceFormat: NameOnly, eventSubjectFormat: NameAndKey,
     joins: [
       # Set up secondary One-To-Many relationship from Legacy.Posts to Legacy.Comments (1:n).
       # Join on Comments.PostsId = Posts.PostsId.
@@ -48,13 +48,16 @@ tables:
   }
 
   # Set up CDC for primary table Legacy.Contact.
-- { name: Contact, eventSubject: Legacy.Contact, identifierMapping: true, identifierMappingColumns: [ AlternateContactId^Contact ], aliasColumns: [ ContactId^CID ], excludeColumnsFromETag: [ legacy_system_code ],
+- { name: Contact, eventSubject: Contact, identifierMapping: true, identifierMappingColumns: [ AlternateContactId^Contact ], aliasColumns: [ ContactId^CID ], excludeColumnsFromETag: [ legacy_system_code ],
     joins: [
       # Set up secondary One-To-One relationship from Legacy.Contact to Legacy.Address (1:1).
       # Join on Address.AddressId = Contact.AddressId.
       { name: Address, joinCardinality: OneToOne, identifierMapping: true, identifierMappingColumns: [ AlternateAddressId^Address ], aliasColumns: [ Id^AID ],
         on: [
           { name: AddressId }
+        ],
+        mappings: [
+          { name: AlternateAddressId, table: Address }
         ]
       },
       # Set up inner join relationship from Legacy.Contact to Legacy.ContactMapping.
@@ -65,5 +68,8 @@ tables:
           { name: ContactId }
         ]
       }
+    ],
+    mappings: [
+      { name: AlternateContactId, table: Contact }
     ]
   }

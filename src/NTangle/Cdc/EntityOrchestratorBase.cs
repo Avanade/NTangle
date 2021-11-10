@@ -243,7 +243,7 @@ namespace NTangle.Cdc
                 return result;
             }
 
-            Logger.LogInformation("{ServiceName}: Batch '{BatchId}': {EntityCount} entity(s) were found. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
+            Logger.LogInformation("{ServiceName}: Batch '{BatchId}': {OperationsCount} entity operations(s) were found. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
                 ServiceName, result.Batch.Id, result.Result.Count, MaxQuerySize, ContinueWithDataLoss, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
 
             if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)

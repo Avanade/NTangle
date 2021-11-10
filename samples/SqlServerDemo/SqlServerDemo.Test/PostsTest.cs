@@ -166,6 +166,43 @@ namespace SqlServerDemo.Test
         }
 
         [Test]
+        public async Task CreateUpdateThenDelete()
+        {
+            using var db = SqlServerUnitTest.GetDatabase();
+            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+
+            // Create rows, update and then delete - should result in nothing (quick create/delete within same batch are ignored)!
+            var script =
+                "INSERT INTO [Legacy].[Posts] ([PostsId], [Text], [Date]) VALUES (404, 'Blah 404', '2020-01-01T15:30:42')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Comments] ([CommentsId], [PostsId], [Text], [Date]) VALUES (4041, 404, 'Blah blah 4041', '2020-01-01T18:30:42')" + Environment.NewLine +
+                "UPDATE [Legacy].[Comments] SET [Text] = 'Bananas' WHERE [CommentsId] = 4041" + Environment.NewLine +
+                "DELETE FROM [Legacy].[Posts] WHERE [PostsId] = 404";
+
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+            await UnitTest.Delay().ConfigureAwait(false);
+
+            // Execute picking up nothing.
+            var tep = new TestEventPublisher();
+            var cdc = new PostCdcOrchestrator(db, tep, logger);
+            var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, tep);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNotNull(cdcr.Batch);
+            Assert.IsTrue(cdcr.Batch.IsComplete);
+            Assert.IsNotNull(cdcr.Batch.CompletedDate);
+            Assert.IsNotNull(cdcr.Batch.CorrelationId);
+            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(0, tep.Events.Count);
+
+            // Ensure procesed correctly, execute again with no changes.
+            await UnitTest.AssertNoFurtherChanges(cdc, tep).ConfigureAwait(false);
+        }
+
+        [Test]
         public async Task UpdateSameVersion()
         {
             using var db = SqlServerUnitTest.GetDatabase();

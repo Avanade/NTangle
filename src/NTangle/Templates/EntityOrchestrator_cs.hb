@@ -47,7 +47,7 @@ namespace {{Root.NamespacePublisher}}.Data
         /// <param name="evtPub">The <see cref="IEventPublisher"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
 {{#if UsesGlobalIdentifier}}
-        /// <param name="idGen">The <see cref="IStringIdentifierGenerator"/>.</param>
+        /// <param name="idGen">The <see cref="IIdentifierGenerator{T}"/>.</param>
 {{/if}}
 {{#each OrchestratorCtorParameters}}
         /// <param name="{{ArgumentName}}">{{{Text}}}</param>

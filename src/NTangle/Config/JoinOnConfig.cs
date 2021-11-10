@@ -78,7 +78,7 @@ namespace NTangle.Config
 
             var c = Parent!.DbTable!.Columns.Where(x => x.Name == Name).SingleOrDefault();
             if (c == null)
-                throw new CodeGenException(this, nameof(Name), $"Column '{Name}' (Schema.Table '{Parent!.Schema}.{Parent!.Name}') not found in database.");
+                throw new CodeGenException(this, nameof(Name), $"Column '{Name}' (table '[{Parent!.Schema}].[{Parent!.Name}]') not found in database.");
 
             var cc = Parent!.Columns.Where(x => x.Name == Name).Single();
             cc.IsUsedInJoinOn = true;
@@ -89,12 +89,12 @@ namespace NTangle.Config
                 ToColumn = DefaultWhereNull(ToColumn, () => Name);
                 ToDbColumn = Root!.DbTables.Where(x => x.Schema == Parent.JoinToSchema && x.Name == Parent.JoinTo).SingleOrDefault()?.Columns.Where(x => x.Name == ToColumn).SingleOrDefault();
                 if (ToDbColumn == null)
-                    throw new CodeGenException(this, nameof(ToColumn), $"ToColumn '{ToColumn}' (Schema.Table '{Parent.JoinToSchema}.{Parent.JoinTo}') not found in database.");
+                    throw new CodeGenException(this, nameof(ToColumn), $"ToColumn '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in database.");
 
                 if (Parent.JoinToSchema == Parent!.Parent!.Schema && Parent.JoinTo == Parent!.Parent!.Name)
                 {
                     if (Parent!.Parent!.DbTable!.Columns.Where(x => x.Name == ToColumn).SingleOrDefault() == null)
-                        throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (Schema.Table '{Parent.JoinToSchema}.{Parent.JoinTo}') not found in Table/Join configuration.");
+                        throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in Table/Join configuration.");
 
                     ToColumnAlias = Parent!.Parent!.Columns.SingleOrDefault(x => x.Name == ToColumn)?.NameAlias ?? Name;
                 }
@@ -102,7 +102,7 @@ namespace NTangle.Config
                 {
                     var t = Parent!.Parent!.Joins!.Where(x => Parent.JoinToSchema == x.Schema && Parent.JoinTo == x.Name).SingleOrDefault();
                     if (t == null || t.DbTable!.Columns.Where(x => x.Name == ToColumn).SingleOrDefault() == null)
-                        throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (Schema.Table '{Parent.JoinToSchema}.{Parent.JoinTo}') not found in Table/Join configuration.");
+                        throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in Table/Join configuration.");
 
                     ToColumnAlias = t.Columns.SingleOrDefault(x => x.Name == ToColumn)?.NameAlias ?? Name;
                 }

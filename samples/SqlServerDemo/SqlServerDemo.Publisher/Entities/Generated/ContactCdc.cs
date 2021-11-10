@@ -66,6 +66,17 @@ namespace SqlServerDemo.Publisher.Entities
         public int? AddressId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Alternate Contact Id '[Legacy].[Contact].[AlternateContactId]' column value.
+        /// </summary>
+        public int? AlternateContactId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Global Alternate Contact Id '[Legacy].[Contact].[AlternateContactId]' mapped identifier value.
+        /// </summary>
+        [JsonProperty("globalAlternateContactId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string? GlobalAlternateContactId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Contact Mapping Id column value (left join table '[Legacy].[ContactMapping].[ContactMappingId]').
         /// </summary>
         [JsonProperty("contactMappingId", DefaultValueHandling = DefaultValueHandling.Ignore)]
@@ -102,7 +113,8 @@ namespace SqlServerDemo.Publisher.Entities
         /// <inheritdoc/>
         public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<string> coll, IIdentifierGenerator<string> idGen)
         {
-            coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalId), Schema = "Legacy", Table = "Contact", Key = PrimaryKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<ContactCdc>().ConfigureAwait(false) });
+            coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalId), Schema = "Legacy", Table = "Contact", Key = TableKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<ContactCdc>().ConfigureAwait(false) });
+            coll.AddAsync(GlobalAlternateContactId == default && AlternateContactId != default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalAlternateContactId), Schema = "Legacy", Table = "Contact", Key = AlternateContactId.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<ContactCdc>().ConfigureAwait(false) });
             await (Address?.LinkIdentifierMappingsAsync(coll, idGen) ?? Task.CompletedTask).ConfigureAwait(false);
         }
 
@@ -110,6 +122,7 @@ namespace SqlServerDemo.Publisher.Entities
         public void RelinkIdentifierMappings(ValueIdentifierMappingCollection<string> coll)
         {
             coll.Invoke(GlobalId == default, () => GlobalId = coll.GetGlobalId(this, nameof(GlobalId)));
+            coll.Invoke(GlobalAlternateContactId == default && AlternateContactId != default, () => GlobalAlternateContactId = coll.GetGlobalId(this, nameof(GlobalAlternateContactId)));
             Address?.RelinkIdentifierMappings(coll);
         }
 
@@ -145,8 +158,13 @@ namespace SqlServerDemo.Publisher.Entities
             /// <summary>
             /// Gets or sets the Alternate Address Id '[Legacy].[Address].[AlternateAddressId]' column value.
             /// </summary>
-            [JsonProperty("alternateAddressId", DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int? AlternateAddressId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Global Alternate Address Id '[Legacy].[Address].[AlternateAddressId]' mapped identifier value.
+            /// </summary>
+            [JsonProperty("globalAlternateAddressId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public string? GlobalAlternateAddressId { get; set; }
 
             /// <inheritdoc/>
             public CompositeKey PrimaryKey => new CompositeKey(AddressId);
@@ -157,13 +175,15 @@ namespace SqlServerDemo.Publisher.Entities
             /// <inheritdoc/>
             public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<string> coll, IIdentifierGenerator<string> idGen)
             {
-                coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalId), Schema = "Legacy", Table = "Address", Key = PrimaryKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<AddressCdc>().ConfigureAwait(false) });
+                coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalId), Schema = "Legacy", Table = "Address", Key = TableKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<AddressCdc>().ConfigureAwait(false) });
+                coll.AddAsync(GlobalAlternateAddressId == default && AlternateAddressId != default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalAlternateAddressId), Schema = "Legacy", Table = "Address", Key = AlternateAddressId.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<AddressCdc>().ConfigureAwait(false) });
             }
 
             /// <inheritdoc/>
             public void RelinkIdentifierMappings(ValueIdentifierMappingCollection<string> coll)
             {
                 coll.Invoke(GlobalId == default, () => GlobalId = coll.GetGlobalId(this, nameof(GlobalId)));
+                coll.Invoke(GlobalAlternateAddressId == default && AlternateAddressId != default, () => GlobalAlternateAddressId = coll.GetGlobalId(this, nameof(GlobalAlternateAddressId)));
             }
         }
 

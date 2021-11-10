@@ -37,7 +37,7 @@ namespace SqlServerDemo.Publisher.Data
         /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="evtPub">The <see cref="IEventPublisher"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="idGen">The <see cref="IStringIdentifierGenerator"/>.</param>
+        /// <param name="idGen">The <see cref="IIdentifierGenerator{T}"/>.</param>
         public ContactCdcOrchestrator(IDatabase db, IEventPublisher evtPub, ILogger<ContactCdcOrchestrator> logger, IIdentifierGenerator<string> idGen) :
             base(db, "[NTangle].[spContactBatchExecute]", "[NTangle].[spContactBatchComplete]", evtPub, logger, "[NTangle].[spIdentifierMappingCreate]", idGen, new IdentifierMappingMapper<string>()) => ContactCdcOrchestratorCtor();
 
@@ -66,10 +66,10 @@ namespace SqlServerDemo.Publisher.Data
         }
 
         /// <inheritdoc/>
-        protected override string EventSubject => "Legacy.Legacy.Contact";
+        protected override string EventSubject => "Legacy.Contact";
 
         /// <inheritdoc/>
-        protected override EventSubjectFormat EventSubjectFormat => EventSubjectFormat.NameAndTableKey;
+        protected override EventSubjectFormat EventSubjectFormat => EventSubjectFormat.NameOnly;
 
         /// <inheritdoc/>
         protected override EventActionFormat EventActionFormat => EventActionFormat.PastTense;
@@ -78,7 +78,7 @@ namespace SqlServerDemo.Publisher.Data
         protected override Uri? EventSource => new Uri("/database/cdc/legacy/contact", UriKind.Relative);
 
         /// <inheritdoc/>
-        protected override EventSourceFormat EventSourceFormat { get; } = EventSourceFormat.NameOnly;
+        protected override EventSourceFormat EventSourceFormat { get; } = EventSourceFormat.NameAndTableKey;
 
         /// <summary>
         /// Represents a <see cref="ContactCdc"/> envelope to append the required (additional) database properties.
@@ -116,6 +116,8 @@ namespace SqlServerDemo.Publisher.Data
                 Active = record.GetValue<bool?>("Active"),
                 DontCallList = record.GetValue<bool?>("DontCallList"),
                 AddressId = record.GetValue<int?>("AddressId"),
+                AlternateContactId = record.GetValue<int?>("AlternateContactId"),
+                GlobalAlternateContactId = record.GetValue<string?>("GlobalAlternateContactId"),
                 DatabaseOperationType = record.GetValue<OperationType>("_OperationType"),
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
@@ -133,7 +135,8 @@ namespace SqlServerDemo.Publisher.Data
                 AddressId = record.GetValue<int>("AddressId"),
                 Street1 = record.GetValue<string?>("Street1"),
                 Street2 = record.GetValue<string?>("Street2"),
-                AlternateAddressId = record.GetValue<int?>("AlternateAddressId")
+                AlternateAddressId = record.GetValue<int?>("AlternateAddressId"),
+                GlobalAlternateAddressId = record.GetValue<string?>("GlobalAlternateAddressId")
             };
         }
     }

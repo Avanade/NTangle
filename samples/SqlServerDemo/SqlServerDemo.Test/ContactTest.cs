@@ -1,0 +1,111 @@
+﻿using NTangle;
+using NTangle.Test;
+using NUnit.Framework;
+using SqlServerDemo.Publisher.Data;
+using SqlServerDemo.Publisher.Entities;
+using System;
+using System.Threading.Tasks;
+
+namespace SqlServerDemo.Test
+{
+    [TestFixture]
+    [NonParallelizable]
+    public class ContactTest
+    {
+        [SetUp]
+        public async Task InitTest()
+        {
+            using var db = SqlServerUnitTest.GetDatabase();
+
+            // Create some data.
+            var script =
+                "DELETE FROM [Legacy].[Contact]" + Environment.NewLine +
+                "DELETE FROM [Legacy].[Address]" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Address] ([AddressId], [Street1], [AlternateAddressId]) VALUES (11, 'Side', 88)" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Address] ([AddressId], [Street1]) VALUES (88, 'Main')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Contact] ([ContactId], [Name], [Phone], [Active], [AddressId], [AlternateContactId]) VALUES (1, 'Name1', '123', 1, 11, 2)" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Contact] ([ContactId], [Name], [Phone], [Active]) VALUES (2, 'Name2', '456', 1)" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Contact] ([ContactId], [Name], [Phone], [Active]) VALUES (3, 'Name3', '789', 1)";
+
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+            await UnitTest.Delay().ConfigureAwait(false);
+
+            // Reset our view of CDC as we do not want to include in the next data capture.
+            script =
+                "DELETE FROM [NTangle].[IdentifierMapping]" + Environment.NewLine +
+                "DELETE FROM [NTangle].[VersionTracking]" + Environment.NewLine +
+                "DELETE FROM [NTangle].[ContactBatchTracking]" + Environment.NewLine +
+                "DECLARE @Lsn BINARY(10)" + Environment.NewLine +
+                "SET @Lsn = sys.fn_cdc_get_max_lsn()" + Environment.NewLine +
+                "INSERT INTO [NTangle].[ContactBatchTracking] ([CreatedDate], [ContactMinLsn], [ContactMaxLsn], [AddressMinLsn], [AddressMaxLsn], [IsComplete], [CompletedDate], [HasDataLoss]) VALUES('2021-01-01T00:00:00', @Lsn, @Lsn, @Lsn, @Lsn, 1, '2021-01-01T00:00:00', 0)";
+
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+        }
+
+        [Test]
+        public async Task GenerateAllIdentifiers()
+        {
+            using var db = SqlServerUnitTest.GetDatabase();
+            var logger = UnitTest.GetLogger<ContactCdcOrchestrator>();
+
+            // Update contact 1.
+            var script = "UPDATE [Legacy].[Contact] SET [Phone] = '000' WHERE [ContactId] = 1" + Environment.NewLine;
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+            await UnitTest.Delay().ConfigureAwait(false);
+
+            // Execute should pick up and allocate all new global identifiers.
+            var tep = new TestEventPublisher();
+            var cdc = new ContactCdcOrchestrator(db, tep, logger, new IdentifierGenerator());
+            var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, tep);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNotNull(cdcr.Batch);
+            Assert.IsTrue(cdcr.Batch.IsComplete);
+            Assert.IsNotNull(cdcr.Batch.CompletedDate);
+            Assert.IsNotNull(cdcr.Batch.CorrelationId);
+            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, tep.Events.Count);
+
+            UnitTest.AssertEvent("ContactTest-GenerateAllIdentifiers.txt", tep.Events[0], "data.globalId", "data.globalAlternateContactId", "data.address.globalId", "data.address.globalAlternateAddressId");
+
+            // Check the event identifiers.
+            var c = UnitTest.GetEventData<ContactCdc>(tep.Events[0]);
+            Assert.NotNull(c.GlobalId);
+            Assert.NotNull(c.GlobalAlternateContactId);
+            Assert.NotNull(c.Address?.GlobalId);
+            Assert.NotNull(c.Address?.GlobalAlternateAddressId);
+
+            // Update contact 1 again.
+            script = "UPDATE [Legacy].[Address] SET [Street1] = '1st' WHERE [AddressId] = 11" + Environment.NewLine;
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+            await UnitTest.Delay().ConfigureAwait(false);
+
+            // Execute should pick up and reuse all the previous global identifiers.
+            tep.Events.Clear();
+            cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, tep);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNotNull(cdcr.Batch);
+            Assert.IsTrue(cdcr.Batch.IsComplete);
+            Assert.IsNotNull(cdcr.Batch.CompletedDate);
+            Assert.IsNotNull(cdcr.Batch.CorrelationId);
+            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, tep.Events.Count);
+
+            // Check the event identifiers.
+            var c2 = UnitTest.GetEventData<ContactCdc>(tep.Events[0]);
+            Assert.AreEqual(c.GlobalId, c2.GlobalId);
+            Assert.AreEqual(c.GlobalAlternateContactId, c2.GlobalAlternateContactId);
+            Assert.AreEqual(c.Address?.GlobalId, c2.Address?.GlobalId);
+            Assert.AreEqual(c.Address?.GlobalAlternateAddressId, c2.Address?.GlobalAlternateAddressId);
+        }
+    }
+}

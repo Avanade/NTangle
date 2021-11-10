@@ -129,11 +129,11 @@ namespace {{Root.NamespacePublisher}}.Entities
         public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<{{Root.IdentifierMappingDotNetType}}> coll, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen)
         {
   {{#if IdentifierMapping}}
-            coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof(GlobalId), Schema = "{{Schema}}", Table = "{{Name}}", Key = PrimaryKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Model}}Cdc>().ConfigureAwait(false) });
+            coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof(GlobalId), Schema = "{{Schema}}", Table = "{{Name}}", Key = TableKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Model}}Cdc>().ConfigureAwait(false) });
   {{/if}}
   {{#each SelectedEntityColumns}}
     {{#ifval IdentifierMappingParent}}
-            coll.AddAsync({{NameAlias}} == default && {{IdentifierMappingParent.NameAlias}} != default, async () => new ValueIdentifierMapping { Value = this, Property = nameof({{NameAlias}}), Schema = "{{IdentifierMappingSchema}}", Table = "{{IdentifierMappingTable}}", Key = {{IdentifierMappingParent.NameAlias}}.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Parent.Model}}Cdc>().ConfigureAwait(false) });
+            coll.AddAsync({{NameAlias}} == default && {{IdentifierMappingParent.NameAlias}} != default, async () => new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof({{NameAlias}}), Schema = "{{IdentifierMappingSchema}}", Table = "{{IdentifierMappingTable}}", Key = {{IdentifierMappingParent.NameAlias}}.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Parent.Model}}Cdc>().ConfigureAwait(false) });
     {{/ifval}}
   {{/each}}
   {{#each JoinCdcChildren}}
@@ -258,7 +258,7 @@ namespace {{Root.NamespacePublisher}}.Entities
             public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<{{Root.IdentifierMappingDotNetType}}> coll, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen)
             {
     {{#if IdentifierMapping}}
-                coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof(GlobalId), Schema = "{{Schema}}", Table = "{{Table}}", Key = PrimaryKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Model}}Cdc>().ConfigureAwait(false) });
+                coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof(GlobalId), Schema = "{{Schema}}", Table = "{{Table}}", Key = TableKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Model}}Cdc>().ConfigureAwait(false) });
     {{/if}}
     {{#each Columns}}
       {{#ifval IdentifierMappingParent}}

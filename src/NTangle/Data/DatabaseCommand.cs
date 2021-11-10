@@ -178,6 +178,14 @@ namespace NTangle.Data
         }
 
         /// <summary>
+        /// Selects none or more items (from the first result set).
+        /// </summary>
+        /// <typeparam name="T">The item <see cref="Type"/>.</typeparam>
+        /// <param name="mapper">The <see cref="IDatabaseMapper{T}"/>.</param>
+        /// <returns>The item sequence.</returns>
+        public async Task<IEnumerable<T>> SelectAsync<T>(IDatabaseMapper<T> mapper) => (await SelectInternal(mapper, false, false).ConfigureAwait(false)) ?? new List<T>();
+
+        /// <summary>
         /// Selects a single item.
         /// </summary>
         /// <typeparam name="T">The resultant <see cref="Type"/>.</typeparam>
@@ -223,14 +231,26 @@ namespace NTangle.Data
         /// <returns>The single item or default.</returns>
         public async Task<T> SelectFirstOrDefaultAsync<T>(IDatabaseMapper<T> mapper) => await SelectSingleFirstAsync(mapper, false).ConfigureAwait(false);
 
+        /// <summary>
+        /// Select first row result only (where exists).
+        /// </summary>
         private async Task<T> SelectSingleFirstAsync<T>(IDatabaseMapper<T> mapper, bool throwWhereMulti)
+        {
+            var list = await SelectInternal<T>(mapper, throwWhereMulti, true).ConfigureAwait(false);
+            return list == null ? default! : list[0];
+        }
+
+        /// <summary>
+        /// Select the rows from the query.
+        /// </summary>
+        private async Task<List<T>?> SelectInternal<T>(IDatabaseMapper<T> mapper, bool throwWhereMulti, bool stopAfterOneRow)
         {
             if (mapper == null)
                 throw new ArgumentNullException(nameof(mapper));
 
             return await ExecuteWrapper(async () =>
             {
-                T item = default!;
+                List<T>? list = default;
                 int i = 0;
 
                 using var cmd = await CreateDbCommandAsync().ConfigureAwait(false);
@@ -243,13 +263,19 @@ namespace NTangle.Data
                         if (throwWhereMulti)
                             throw new InvalidOperationException("SelectSingle request has returned more than one row.");
 
-                        return item;
+                        if (stopAfterOneRow)
+                            return list;
                     }
 
-                    item = mapper.MapFromDb(new DatabaseRecord(dr));
+                    if (list == null)
+                        list = new List<T>();
+
+                    list.Add(mapper.MapFromDb(new DatabaseRecord(dr)));
+                    if (!throwWhereMulti && stopAfterOneRow)
+                        return list;
                 }
 
-                return item;
+                return list;
 
             }).ConfigureAwait(false);
         }

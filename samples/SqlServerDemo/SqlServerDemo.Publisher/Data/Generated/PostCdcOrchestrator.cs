@@ -92,7 +92,7 @@ namespace SqlServerDemo.Publisher.Data
         protected override string EventSubject => "Legacy.Post";
 
         /// <inheritdoc/>
-        protected override EventSubjectFormat EventSubjectFormat => EventSubjectFormat.NameAndTableKey;
+        protected override EventSubjectFormat EventSubjectFormat => EventSubjectFormat.NameAndKey;
 
         /// <inheritdoc/>
         protected override EventActionFormat EventActionFormat => EventActionFormat.PastTense;
