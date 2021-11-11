@@ -73,6 +73,7 @@ namespace SqlServerDemo.Test
             Assert.NotNull(cdcr.Exception);
             Assert.IsInstanceOf<DatabaseErrorException>(cdcr.Exception);
             Assert.AreEqual("There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.", cdcr.Exception.Message);
+            Assert.IsNull(cdcr.ExecuteStatus);
         }
 
         [Test]
@@ -83,7 +84,11 @@ namespace SqlServerDemo.Test
 
             var tep = new TestEventPublisher();
             var cdc = new PostCdcOrchestrator(db, tep, logger);
-            await UnitTest.AssertNoFurtherChanges(cdc, tep).ConfigureAwait(false);
+            var cdcr = await UnitTest.AssertNoFurtherChanges(cdc, tep).ConfigureAwait(false);
+
+            Assert.AreEqual(0, cdcr.ExecuteStatus?.InitialCount);
+            Assert.IsNull(cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.IsNull(cdcr.ExecuteStatus?.PublishCount);
         }
 
         [Test]
@@ -118,6 +123,9 @@ namespace SqlServerDemo.Test
             Assert.IsNotNull(cdcr.Batch.CorrelationId);
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(3, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(3, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(3, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(3, tep.Events.Count);
 
             UnitTest.AssertEvent("PostsTest-MultipleChanges-1.txt", tep.Events[0]);
@@ -157,6 +165,9 @@ namespace SqlServerDemo.Test
             Assert.IsNotNull(cdcr.Batch.CorrelationId);
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(1, tep.Events.Count);
 
             UnitTest.AssertEvent("PostsTest-UpdateThenDelete.txt", tep.Events[0]);
@@ -196,6 +207,9 @@ namespace SqlServerDemo.Test
             Assert.IsNotNull(cdcr.Batch.CorrelationId);
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(0, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(0, tep.Events.Count);
 
             // Ensure procesed correctly, execute again with no changes.
@@ -230,6 +244,9 @@ namespace SqlServerDemo.Test
             Assert.IsNotNull(cdcr.Batch.CorrelationId);
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(1, tep.Events.Count);
 
             // Replay the database changes; i.e. change and then change back to original.
@@ -254,6 +271,9 @@ namespace SqlServerDemo.Test
             Assert.IsNotNull(cdcr.Batch.CorrelationId);
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(0, tep.Events.Count);
 
             // Ensure procesed correctly, execute again with no changes.
@@ -290,6 +310,7 @@ namespace SqlServerDemo.Test
             Assert.NotNull(cdcr.Exception);
             Assert.IsInstanceOf<DatabaseErrorException>(cdcr.Exception);
             Assert.AreEqual("Unexpected data loss error for 'Legacy.Posts'; this indicates that the CDC data has probably been cleaned up before being successfully processed.", cdcr.Exception.Message);
+            Assert.IsNull(cdcr.ExecuteStatus);
         }
 
         [Test]
@@ -352,6 +373,9 @@ namespace SqlServerDemo.Test
             Assert.IsNotNull(cdcr.Batch.CorrelationId);
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(1, tep.Events.Count);
 
             // Set the last batch to incomplete and delete version tracking so i will publish event again - simulate batch failure.
@@ -378,6 +402,9 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(cdcr.Batch.Id, cdcr2.Batch.Id);
             Assert.AreEqual(cdcr.Batch.CorrelationId, cdcr2.Batch.CorrelationId);
             Assert.AreNotEqual(cdcr.ExecutionId, cdcr2.ExecutionId);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(1, tep.Events.Count);
         }
     }

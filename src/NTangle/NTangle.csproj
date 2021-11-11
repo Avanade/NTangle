@@ -36,10 +36,12 @@
 
   <ItemGroup>
     <None Remove="Scripts\SqlServerDatabase.yaml" />
+    <None Remove="Templates\EntityHostedService_cs.hb" />
     <None Remove="Templates\EntityOrchestrator_cs.hb" />
     <None Remove="Templates\Entity_cs.hb" />
     <None Remove="Templates\IdentifierMappingMapper_cs.hb" />
     <None Remove="Templates\SchemaCdc_sql.hb" />
+    <None Remove="Templates\ServiceCollectionExtensions_cs.hb" />
     <None Remove="Templates\SpCompleteBatch_sql.hb" />
     <None Remove="Templates\SpExecuteBatch_sql.hb" />
     <None Remove="Templates\SpIdentifierMappingCreate_sql.hb" />
@@ -55,7 +57,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Scripts\SqlServerDacpac.yaml" />
     <EmbeddedResource Include="Scripts\SqlServerDatabase.yaml" />
+    <EmbeddedResource Include="Templates\EntityHostedService_cs.hb" />
     <EmbeddedResource Include="Templates\EntityOrchestrator_cs.hb" />
+    <EmbeddedResource Include="Templates\ServiceCollectionExtensions_cs.hb" />
     <EmbeddedResource Include="Templates\SqlServer\SchemaCdc_sql.hb" />
     <EmbeddedResource Include="Templates\SqlServer\CdcEnable_sql.hb" />
     <EmbeddedResource Include="Templates\SqlServer\TableBatchTracking_sql.hb" />
@@ -75,6 +79,9 @@
     <PackageReference Include="CloudNative.CloudEvents" Version="2.1.1" />
     <PackageReference Include="CloudNative.CloudEvents.NewtonsoftJson" Version="2.1.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.21" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.21" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.21" />
   </ItemGroup>
 
   <ItemGroup>

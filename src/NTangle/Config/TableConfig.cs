@@ -169,11 +169,12 @@ namespace NTangle.Config
         public List<string>? IncludeColumnsOnDelete { get; set; }
 
         /// <summary>
-        /// The option to exclude the generation of the <c>CdcHostedService</c> (background) class (<c>XxxHostedService.cs</c>).
+        /// Gets or sets the type of service that manages the underlying orchestrator.
         /// </summary>
-        [JsonProperty("excludeHostedService", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty(".NET", Title = "The option to exclude the generation of the `CdcHostedService` (background) class (`XxxHostedService.cs`).", IsImportant = true)]
-        public bool? ExcludeHostedService { get; set; }
+        [JsonProperty("service", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = new string[] { "None", "HostedService" },
+            Description = "Defaults to `Root.Service`.")]
+        public string? Service { get; set; }
 
         /// <summary>
         /// Gets or sets the list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).
@@ -386,7 +387,7 @@ namespace NTangle.Config
             EventSubject = DefaultWhereNull(EventSubject, () => Model);
             EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => Root!.EventSubjectFormat);
             Database = DefaultWhereNull(Database, () => "IDatabase");
-            ExcludeHostedService = DefaultWhereNull(ExcludeHostedService, () => false);
+            Service = DefaultWhereNull(Service, () => Root.Service);
             ColumnIsDeleted = DefaultWhereNull(ColumnIsDeleted, () => Root!.ColumnIsDeleted);
             if (ExcludeColumnsFromETag == null && Root!.ExcludeColumnsFromETag != null)
                 ExcludeColumnsFromETag = new List<string>(Root!.ExcludeColumnsFromETag!);

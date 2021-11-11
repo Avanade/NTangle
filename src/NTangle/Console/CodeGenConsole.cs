@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using Microsoft.Data.SqlClient;
 using OnRamp;
 using System;
+using System.Data.Common;
 using System.IO;
 using System.Reflection;
 
@@ -10,11 +12,19 @@ namespace NTangle.Console
     /// <summary>
     /// <b>NTangle</b>-specific code-generation console that inherits from <see cref="OnRamp.Console.CodeGenConsoleBase"/>.
     /// </summary>
-    /// <remarks>Command line parsing: https://natemcmaster.github.io/CommandLineUtils/ </remarks>
+    /// <remarks>The <b>NTangle</b> capabilities are designed to be database provider agnostic, as such the underlying database access is managed via the common data capabilities such as <see cref="DbConnection"/>. Where no database provider
+    /// is specified then SQL Server (via <see cref="UseSqlServer(Func{string, SqlConnection}?)"/>) is used as the default.</remarks>
     public class CodeGenConsole : OnRamp.Console.CodeGenConsoleBase
     {
-        private string _script = "SqlServerDacpac.yaml";
-        private string _config = "ntangle.yaml";
+        /// <summary>
+        /// Gets the default configuration file name (see <see cref="ICodeGeneratorArgs.ConfigFileName"/>).
+        /// </summary>
+        public const string DefaultConfigFileName = "ntangle.yaml";
+
+        /// <summary>
+        /// Gets the default script file name (see <see cref="ICodeGeneratorArgs.ScriptFileName"/>) where <see cref="UseSqlServer(Func{string, SqlConnection}?)"/> is used.
+        /// </summary>
+        public const string DefaultSqlServerScriptFileName = "SqlServerDacpac.yaml";
 
         /// <summary>
         /// Gets the default masthead text.
@@ -60,29 +70,43 @@ namespace NTangle.Console
         {
             MastheadText = DefaultMastheadText;
             Args.CreateConnectionStringEnvironmentVariableName ??= csargs => $"{csargs.GetAppName()?.Replace(".", "_", StringComparison.InvariantCulture)}_ConnectionString";
-            Args.ScriptFileName ??= _script;
-            Args.ConfigFileName ??= _config;
+            Args.ConfigFileName ??= DefaultConfigFileName;
+            UseSqlServer();
         }
 
         /// <summary>
-        /// Sets (overrides) the execution script file or embedded resource name (defaults to <c>DatabaseCdc.yaml</c>).
+        /// Uses (overrides) the execution script file or embedded resource name.
         /// </summary>
-        /// <param name="script">The execution script file or embedded resource name.</param>
+        /// <param name="scriptFileName">The execution script file or embedded resource name.</param>
         /// <returns>The current instance to support fluent-style method-chaining.</returns>
-        public CodeGenConsole Script(string script)
+        public CodeGenConsole UseScript(string scriptFileName)
         {
-            _script = script ?? throw new ArgumentNullException(script);
+            Args.ScriptFileName = scriptFileName ?? throw new ArgumentNullException(scriptFileName);
             return this;
         }
 
         /// <summary>
-        /// Sets (overrides) the configuration file name (defaults to <c>ntangle.yaml</c>).
+        /// Uses (overrides) the configuration file name (defaults to <see cref="DefaultConfigFileName"/>).
         /// </summary>
-        /// <param name="config">The configuration file name.</param>
+        /// <param name="configFileName">The configuration file name.</param>
         /// <returns>The current instance to support fluent-style method-chaining.</returns>
-        public CodeGenConsole Config(string config)
+        public CodeGenConsole UseConfig(string configFileName)
         {
-            _config = config ?? throw new ArgumentNullException(config);
+            Args.ConfigFileName = configFileName ?? throw new ArgumentNullException(configFileName);
+            return this;
+        }
+
+        /// <summary>
+        /// Uses (overrides) the database connection creation to leverage the SQL Server <see cref="SqlConnection"/> and sets the <see cref="UseScript(string)">script</see> to <see cref="DefaultSqlServerScriptFileName"/>.
+        /// </summary>
+        /// <param name="sqlConnectionCreator">The optional <paramref name="sqlConnectionCreator"/> to enable advanced <see cref="SqlConnection"/> creation; defaults to using <see cref="SqlConnection(string)"/> where not specified.</param>
+        /// <returns>The current instance to support fluent-style method-chaining.</returns>
+        /// <remarks>Also invokes <see cref="CodeGeneratorArgsExtensions.SetDbProvider(ICodeGeneratorArgs, string?)"/> passing '<c>SqlServer</c>'.</remarks>
+        public CodeGenConsole UseSqlServer(Func<string, SqlConnection>? sqlConnectionCreator = null)
+        {
+            UseScript(DefaultSqlServerScriptFileName);
+            Args.DbConnectionCreator = sqlConnectionCreator ?? (cs => new SqlConnection(cs));
+            Args.SetDbProvider("SqlServer");
             return this;
         }
     }

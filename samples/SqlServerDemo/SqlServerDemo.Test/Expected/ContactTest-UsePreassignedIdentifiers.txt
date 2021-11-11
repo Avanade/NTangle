@@ -1,0 +1,17 @@
+﻿{
+  "specversion": "1.0",
+  "type": "legacy.contact.updated",
+  "source": "/database/cdc/legacy/contact/1",
+  "subject": "legacy.contact",
+  "action": "updated",
+  "datacontenttype": "application/json",
+  "data": {
+    "name": "Name1",
+    "phone": "123",
+    "active": true,
+    "addressId": 11,
+    "address": {
+      "street1": "1st"
+    }
+  }
+}

@@ -49,7 +49,7 @@ namespace SqlServerDemo.Test
             var logger = UnitTest.GetLogger<ContactCdcOrchestrator>();
 
             // Update contact 1.
-            var script = "UPDATE [Legacy].[Contact] SET [Phone] = '000' WHERE [ContactId] = 1" + Environment.NewLine;
+            var script = "UPDATE [Legacy].[Contact] SET [Phone] = '000' WHERE [ContactId] = 1";
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
             await UnitTest.Delay().ConfigureAwait(false);
 
@@ -98,6 +98,9 @@ namespace SqlServerDemo.Test
             Assert.IsNotNull(cdcr.Batch.CorrelationId);
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(1, tep.Events.Count);
 
             // Check the event identifiers.
@@ -106,6 +109,52 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(c.GlobalAlternateContactId, c2.GlobalAlternateContactId);
             Assert.AreEqual(c.Address?.GlobalId, c2.Address?.GlobalId);
             Assert.AreEqual(c.Address?.GlobalAlternateAddressId, c2.Address?.GlobalAlternateAddressId);
+        }
+
+        [Test]
+        public async Task UsePreassignedIdentifiers()
+        {
+            using var db = SqlServerUnitTest.GetDatabase();
+            var logger = UnitTest.GetLogger<ContactCdcOrchestrator>();
+
+            // Update contact 1 and pre-assign some global identifiers.
+            var script =
+                "UPDATE [Legacy].[Address] SET [Street1] = '1st' WHERE [AddressId] = 11" + Environment.NewLine +
+                "INSERT INTO [NTangle].[IdentifierMapping] ([Schema], [Table], [Key], [GlobalId]) VALUES ('Legacy', 'Contact', '1', 'C1')" + Environment.NewLine +
+                "INSERT INTO [NTangle].[IdentifierMapping] ([Schema], [Table], [Key], [GlobalId]) VALUES ('Legacy', 'Contact', '2', 'C2')" + Environment.NewLine +
+                "INSERT INTO [NTangle].[IdentifierMapping] ([Schema], [Table], [Key], [GlobalId]) VALUES ('Legacy', 'Address', '88', 'C88')";
+
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+            await UnitTest.Delay().ConfigureAwait(false);
+
+            // Execute should pick up and reuse all the previous global identifiers.
+            var tep = new TestEventPublisher();
+            var cdc = new ContactCdcOrchestrator(db, tep, logger, new IdentifierGenerator());
+            var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, tep);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNotNull(cdcr.Batch);
+            Assert.IsTrue(cdcr.Batch.IsComplete);
+            Assert.IsNotNull(cdcr.Batch.CompletedDate);
+            Assert.IsNotNull(cdcr.Batch.CorrelationId);
+            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(1, tep.Events.Count);
+
+            UnitTest.AssertEvent("ContactTest-UsePreassignedIdentifiers.txt", tep.Events[0], "data.globalId", "data.globalAlternateContactId", "data.address.globalId", "data.address.globalAlternateAddressId");
+
+            // Check the event identifiers.
+            var c = UnitTest.GetEventData<ContactCdc>(tep.Events[0]);
+            Assert.AreEqual("C1", c.GlobalId);
+            Assert.NotNull(c.GlobalAlternateContactId);
+            Assert.NotNull(c.Address?.GlobalId);
+            Assert.AreEqual("C88", c.Address?.GlobalAlternateAddressId);
         }
     }
 }

@@ -6,6 +6,7 @@ eventSourceRoot: /database/cdc                       # Event source URI root pre
 eventSubjectRoot: Legacy                             # Event subject root prepended to all published events.
 identifierMapping: true                              # Indicates to include the generation of the global identifier mapping artefacts.
 excludeColumnsFromETag: [ rowversion ]               # Default list of columns to exclude from the generated ETag (exclude from version tracking).
+service: HostedService                               # Create the entity-based hosted services to be executed by the likes of a console application.
 tables:
  # Set up CDC for primary table Legacy.Posts.
   # Relational hierarchy: Legacy.Posts

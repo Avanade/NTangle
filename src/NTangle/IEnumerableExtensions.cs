@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace NTangle
 {
@@ -13,7 +14,7 @@ namespace NTangle
     public static class IEnumerableExtensions
     {
         /// <summary>
-        /// Performs the specified <paramref name="action"/> or each element in the sequence.
+        /// Performs the specified <paramref name="action"/> on each element in the sequence.
         /// </summary>
         /// <typeparam name="TItem">The item <see cref="Type"/>.</typeparam>
         /// <param name="sequence">The sequence to iterate.</param>
@@ -21,12 +22,38 @@ namespace NTangle
         /// <returns>The sequence.</returns>
         public static IEnumerable<TItem> ForEach<TItem>(this IEnumerable<TItem> sequence, Action<TItem> action)
         {
+            if (sequence == null)
+                return sequence!;
+
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
             foreach (TItem element in sequence ?? throw new ArgumentNullException(nameof(sequence)))
             {
                 action(element);
+            }
+
+            return sequence;
+        }
+
+        /// <summary>
+        /// Performs the specified <paramref name="action"/> on each element in the sequence asynchronously.
+        /// </summary>
+        /// <typeparam name="TItem">The item <see cref="Type"/>.</typeparam>
+        /// <param name="sequence">The sequence to iterate.</param>
+        /// <param name="action">The action to perform on each element.</param>
+        /// <returns>The sequence.</returns>
+        public static async Task<IEnumerable<TItem>> ForEachAsync<TItem>(this IEnumerable<TItem> sequence, Func<TItem, Task> action)
+        {
+            if (sequence == null)
+                return sequence!;
+
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            foreach (TItem element in sequence ?? throw new ArgumentNullException(nameof(sequence)))
+            {
+                await action(element).ConfigureAwait(false);
             }
 
             return sequence;

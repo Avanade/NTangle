@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NTangle.Console;
@@ -151,6 +150,14 @@ namespace NTangle.Config
         [CodeGenProperty("CDC", Title = "The JSON Serializer to use for JSON property attribution.", Options = new string[] { "Newtonsoft" },
             Description = "Defaults to `Newtonsoft`.")]
         public string? JsonSerializer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of service that manages the underlying orchestrator.
+        /// </summary>
+        [JsonProperty("service", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = new string[] { "None", "HostedService" },
+            Description = "Defaults to `None`.")]
+        public string? Service { get; set; }
 
         #endregion
 
@@ -319,7 +326,12 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the list of tables that are to be CDC-enabled.
         /// </summary>
-        public List<CdcEnableConfig> CdcEnabledTables = new List<CdcEnableConfig>();
+        public List<CdcEnableConfig> CdcEnabledTables { get; } = new List<CdcEnableConfig>();
+
+        /// <summary>
+        /// Gets the list of hosted services.
+        /// </summary>
+        public List<TableConfig> HostedServices => Tables!.Where(x => x.Service == "HostedService").ToList();
 
         #endregion
 
@@ -337,6 +349,7 @@ namespace NTangle.Config
             IdentifierMappingStoredProcedure = DefaultWhereNull(IdentifierMappingStoredProcedure, () => "spIdentifierMappingCreate");
             AutoDotNetRename = DefaultWhereNull(AutoDotNetRename, () => "SnakeKebabToPascalCase");
             JsonSerializer = DefaultWhereNull(JsonSerializer, () => "Newtonsoft");
+            Service = DefaultWhereNull(Service, () => "None");
             EventSourceKind = DefaultWhereNull(EventSubjectFormat, () => "Relative");
             EventSourceFormat = DefaultWhereNull(EventSubjectFormat, () => "NameAndTableKey");
             EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => "NameOnly");
@@ -357,17 +370,17 @@ namespace NTangle.Config
         /// </summary>
         private void LoadDbTablesConfig()
         {
-            CodeGenArgs?.Logger?.Log(LogLevel.Information, $"  Querying database to infer table(s)/column(s) schema...");
+            CodeGenArgs!.Logger?.Log(LogLevel.Information, $"  Querying database to infer table(s)/column(s) schema...");
 
-            var cs = CodeGenArgs?.ConnectionString ?? throw new CodeGenException("Connection string must be specified via an environment variable or as a command-line option.");
+            var cs = CodeGenArgs.ConnectionString ?? throw new CodeGenException("Connection string must be specified via an environment variable or as a command-line option.");
 
             var sw = Stopwatch.StartNew();
-            using var db = new SqlConnection(cs);
+            using var db = CodeGenArgs.CreateConnection();
             DbTables = OnRamp.Database.Database.GetSchemaAsync(db, false).GetAwaiter().GetResult();
 
             sw.Stop();
-            CodeGenArgs?.Logger?.Log(LogLevel.Information, $"    Database query complete [{sw.ElapsedMilliseconds}ms]");
-            CodeGenArgs?.Logger?.Log(LogLevel.Information, string.Empty);
+            CodeGenArgs.Logger?.Log(LogLevel.Information, $"    Database query complete [{sw.ElapsedMilliseconds}ms]");
+            CodeGenArgs.Logger?.Log(LogLevel.Information, string.Empty);
         }
 
         /// <summary>

@@ -217,6 +217,7 @@ namespace NTangle.Cdc
             {
                 result = await GetBatchEntityDataAsync().ConfigureAwait(false);
                 result.ExecutionId = ExecutionId;
+                result.ExecuteStatus = new EntityOrchestratorExecuteStatus { InitialCount = result.Result.Count };
                 sw.Stop();
             }
             catch (Exception ex)
@@ -281,6 +282,8 @@ namespace NTangle.Cdc
                 coll.Add(item);
             }
 
+            result.ExecuteStatus.ConsolidatedCount = coll.Count;
+
             // Check cancellation.
             if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)
             {
@@ -292,7 +295,7 @@ namespace NTangle.Cdc
             if (AdditionalEnvelopeProcessing != null)
                 await AdditionalEnvelopeProcessing(coll).ConfigureAwait(false);
 
-            // Determine whether anything may have been sent before and exclude (i.e. do not send again).
+            // Determine whether anything may have been sent before (version tracking) and exclude (i.e. do not send again).
             var coll2 = new TEntityEnvelopeColl();
             var tracking = new List<VersionTracker>();
             foreach (var item in coll)
@@ -316,6 +319,9 @@ namespace NTangle.Cdc
                 }
             }
 
+            result.ExecuteStatus.PublishCount = coll2.Count;
+
+            // Check cancellation.
             if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)
             {
                 Logger.LogWarning("{ServiceName}: Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", ServiceName, result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
@@ -340,6 +346,7 @@ namespace NTangle.Cdc
             // Complete the batch (ignore any further 'cancel' as event(s) have been published and we *must* complete to minimise chance of sending more than once).
             sw = Stopwatch.StartNew();
             var cresult = await CompleteAsync(result.Batch.Id, tracking).ConfigureAwait(false);
+            cresult.ExecuteStatus = result.ExecuteStatus;
             sw.Stop();
 
             if (cresult.IsSuccessful)
