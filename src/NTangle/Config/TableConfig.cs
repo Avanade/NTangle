@@ -248,10 +248,10 @@ namespace NTangle.Config
         /// <summary>
         /// Gets or sets the column name for the `IsDeleted` capability.
         /// </summary>
-        [JsonProperty("columnNameIsDeleted", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("isDeletedColumn", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Infer", Title = "The column name for the `IsDeleted` (logical delete) capability (if any).",
             Description = "Defaults to `Root.ColumnIsDeleted`.")]
-        public string? ColumnIsDeleted { get; set; }
+        public string? IsDeletedColumn { get; set; }
 
         #endregion
 
@@ -337,9 +337,9 @@ namespace NTangle.Config
         public DbTable? DbTable { get; private set; }
 
         /// <summary>
-        /// Gets the related <see cref="ColumnIsDeleted"/> column.
+        /// Gets the related <see cref="IsDeletedColumn"/> column.
         /// </summary>
-        public ColumnConfig? ColumnConfigIsDeleted => GetSpecialColumn(ColumnIsDeleted);
+        public ColumnConfig? ColumnConfigIsDeleted => GetSpecialColumn(IsDeletedColumn);
 
         /// <summary>
         /// Gets the fully qualified name schema.table name.
@@ -388,7 +388,7 @@ namespace NTangle.Config
             EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => Root!.EventSubjectFormat);
             Database = DefaultWhereNull(Database, () => "IDatabase");
             Service = DefaultWhereNull(Service, () => Root.Service);
-            ColumnIsDeleted = DefaultWhereNull(ColumnIsDeleted, () => Root!.ColumnIsDeleted);
+            IsDeletedColumn = DefaultWhereNull(IsDeletedColumn, () => Root!.IsDeletedColumn);
             if (ExcludeColumnsFromETag == null && Root!.ExcludeColumnsFromETag != null)
                 ExcludeColumnsFromETag = new List<string>(Root!.ExcludeColumnsFromETag!);
 
@@ -438,6 +438,7 @@ namespace NTangle.Config
                 // Always include IsDeleted!
                 if (cc.Name == ColumnConfigIsDeleted?.Name)
                 {
+                    cc.NameAlias = "IsDeleted";
                     cc.Prepare(Root!, this);
                     Columns.Add(cc);
                 }

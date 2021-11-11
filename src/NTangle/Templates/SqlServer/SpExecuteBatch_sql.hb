@@ -88,8 +88,7 @@ BEGIN
     END
 
     -- The minimum should _not_ be less than the base otherwise we have lost data; either continue with this data loss, or error and stop.
-    DECLARE @hasDataLoss BIT
-    SET @hasDataLoss = 0
+    DECLARE @hasDataLoss BIT = 0
 
     IF (@{{pascal Name}}MinLsn < @{{pascal Name}}BaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @{{pascal Name}}MinLsn = @{{pascal Name}}BaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''{{Schema}}.{{Table}}''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
 {{#each CdcJoins}}
@@ -98,8 +97,7 @@ BEGIN
 
     -- Find changes on the root table: '[{{Schema}}].[{{Table}}]' - this determines overall operation type: 'create', 'update' or 'delete'.
     CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, {{#each PrimaryKeyColumns}}[{{Name}}] {{upper DbColumn.Type}}{{#unless @last}}, {{/unless}}{{/each}})
-    DECLARE @hasChanges BIT
-    SET @hasChanges = 0
+    DECLARE @hasChanges BIT = 0
 
     IF (@{{pascal Name}}MinLsn <= @{{pascal Name}}MaxLsn)
     BEGIN
@@ -124,7 +122,10 @@ BEGIN
     -- Find changes on related table: '[{{Schema}}].[{{Table}}]' - unique name '{{Name}}' - assume all are 'update' operation (i.e. it doesn't matter).
     IF (@{{pascal Name}}MinLsn <= @{{pascal Name}}MaxLsn)
     BEGIN
-      SELECT TOP (@MaxQuerySize)
+{{#ifne QuerySizeMultiplier 1}}
+      DECLARE @{{Alias}}MaxQuerySize INT = CEILING(@MaxQuerySize * {{QuerySizeMultiplier}})
+{{/ifne}}
+      SELECT TOP ({{#ifeq QuerySizeMultiplier 1}}@MaxQuerySize{{else}}@{{Alias}}MaxQuerySize{{/ifeq}})
           [_cdc].[__$start_lsn] AS [_Lsn],
           4 AS [_Op],
   {{#each Parent.PrimaryKeyColumns}}

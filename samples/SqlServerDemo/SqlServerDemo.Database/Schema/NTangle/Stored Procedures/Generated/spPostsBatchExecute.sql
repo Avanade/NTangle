@@ -89,8 +89,7 @@ BEGIN
     END
 
     -- The minimum should _not_ be less than the base otherwise we have lost data; either continue with this data loss, or error and stop.
-    DECLARE @hasDataLoss BIT
-    SET @hasDataLoss = 0
+    DECLARE @hasDataLoss BIT = 0
 
     IF (@PostsMinLsn < @PostsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @PostsMinLsn = @PostsBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Posts''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
     IF (@CommentsMinLsn < @CommentsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @CommentsMinLsn = @CommentsBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Comments''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
@@ -99,8 +98,7 @@ BEGIN
 
     -- Find changes on the root table: '[Legacy].[Posts]' - this determines overall operation type: 'create', 'update' or 'delete'.
     CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, [PostsId] INT)
-    DECLARE @hasChanges BIT
-    SET @hasChanges = 0
+    DECLARE @hasChanges BIT = 0
 
     IF (@PostsMinLsn <= @PostsMaxLsn)
     BEGIN

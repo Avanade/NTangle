@@ -77,18 +77,6 @@ namespace SqlServerDemo.Publisher.Entities
         public string? GlobalAlternateContactId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Contact Mapping Id column value (left join table '[Legacy].[ContactMapping].[ContactMappingId]').
-        /// </summary>
-        [JsonProperty("contactMappingId", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public int ContactMappingId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Contact Id column value (left join table '[Legacy].[ContactMapping].[ContactId]').
-        /// </summary>
-        [JsonProperty("contactId", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public int ContactId { get; set; }
-
-        /// <summary>
         /// Gets or sets the Unique Id column value (left join table '[Legacy].[ContactMapping].[UniqueId]').
         /// </summary>
         [JsonProperty("uniqueId", DefaultValueHandling = DefaultValueHandling.Ignore)]

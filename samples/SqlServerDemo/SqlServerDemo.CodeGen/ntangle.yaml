@@ -5,10 +5,10 @@ cdcEnable: true                                      # Indicates whether to enab
 eventSourceRoot: /database/cdc                       # Event source URI root prepended to all published events.
 eventSubjectRoot: Legacy                             # Event subject root prepended to all published events.
 identifierMapping: true                              # Indicates to include the generation of the global identifier mapping artefacts.
-excludeColumnsFromETag: [ rowversion ]               # Default list of columns to exclude from the generated ETag (exclude from version tracking).
+excludeColumnsFromETag: [ RowVersion ]               # Default list of columns to exclude from the generated ETag (exclude from version tracking).
 service: HostedService                               # Create the entity-based hosted services to be executed by the likes of a console application.
 tables:
- # Set up CDC for primary table Legacy.Posts.
+  # Set up CDC for primary table Legacy.Posts.
   # Relational hierarchy: Legacy.Posts
   # - Legacy.Comments (1:n)
   # - Legacy.Tags (1:n)
@@ -53,7 +53,10 @@ tables:
     joins: [
       # Set up secondary One-To-One relationship from Legacy.Contact to Legacy.Address (1:1).
       # Join on Address.AddressId = Contact.AddressId.
-      { name: Address, joinCardinality: OneToOne, identifierMapping: true, identifierMappingColumns: [ AlternateAddressId^Address ], aliasColumns: [ Id^AID ],
+      # Dynamically adjust the query size using the specified multiplier.
+      # Add global identifier mapping.
+      # Alias, change name of, Id column to AID.
+      { name: Address, joinCardinality: OneToOne, querySizeMultiplier: 1.5, identifierMapping: true, identifierMappingColumns: [ AlternateAddressId^Address ], aliasColumns: [ Id^AID ],
         on: [
           { name: AddressId }
         ],
@@ -74,3 +77,7 @@ tables:
       { name: AlternateContactId, table: Contact }
     ]
   }
+
+  # Set up CDC for primary table Legacy.Customer - this contains: RowVersion and IsDeleted (logical delete).
+  # Override the default column name to light-up the IsDeleted capability.
+- { name: Customer, isDeletedColumn: is-deleted, excludeColumns: [ internal-secret ] }

@@ -40,16 +40,16 @@ namespace NTangle.Services
             if (cwdl.HasValue)
                 eo.ContinueWithDataLoss = cwdl.Value;
 
-            // Keep executing until unsuccessful or reached end of CDC data.
+            // Keep executing until unsuccessful or reached end of current CDC data stream.
             while (true)
             {
                 var result = await eo.ExecuteAsync(cancellationToken).ConfigureAwait(false);
                 if (cancellationToken.IsCancellationRequested)
                     return;
 
-                // Where successful and a batch was processed, then the next batch should be attempted immediately.
+                // Where successful and a batch was processed, then the next batch should be attempted immediately; otherwise, retry later.
                 if (!result.IsSuccessful || result.Batch == null)
-                    return; // Retry later.
+                    return;
             }
         }
     }

@@ -1,0 +1,13 @@
+﻿{
+  "specversion": "1.0",
+  "type": "legacy.customer.updated",
+  "source": "/database/cdc/legacy/customer/1",
+  "subject": "legacy.customer",
+  "action": "updated",
+  "datacontenttype": "application/json",
+  "data": {
+    "customerId": 1,
+    "name": "Bob",
+    "email": "bob@domain.com"
+  }
+}

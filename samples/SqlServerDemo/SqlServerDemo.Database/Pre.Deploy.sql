@@ -108,3 +108,18 @@ BEGIN
       CONSTRAINT [IX_Legacy_ContactMapping_UniqueId] UNIQUE ([UniqueId])
     );
 END
+
+-- Customer (w/ logical delete and row version)
+
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE [OBJECT_ID] = OBJECT_ID(N'Legacy.Customer'))
+BEGIN
+    CREATE TABLE [Legacy].[Customer] (
+      [CustomerId] INT NOT NULL,
+      [Name] NVARCHAR (200) NULL,
+      [Email] VARCHAR (200) NULL,
+      [is-deleted] BIT NULL,
+      [internal-secret] NVARCHAR(100) NULL,
+      [RowVersion] ROWVERSION
+      CONSTRAINT [PK_Customer] PRIMARY KEY CLUSTERED ([CustomerId] ASC)
+    );
+END

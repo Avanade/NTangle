@@ -119,10 +119,10 @@ namespace NTangle.Config
         /// <summary>
         /// Gets or sets the column name for the `IsDeleted` capability.
         /// </summary>
-        [JsonProperty("columnIsDeleted", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("isDeletedColumn", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Infer", Title = "The column name for the `IsDeleted` (logical delete) capability (if any).",
             Description = "Defaults to `IsDeleted`.")]
-        public string? ColumnIsDeleted { get; set; }
+        public string? IsDeletedColumn { get; set; }
 
         #endregion
 
@@ -347,6 +347,7 @@ namespace NTangle.Config
             IdentifierMappingType = DefaultWhereNull(IdentifierMappingType, () => "String");
             IdentifierMappingTable = DefaultWhereNull(IdentifierMappingTable, () => "IdentifierMapping");
             IdentifierMappingStoredProcedure = DefaultWhereNull(IdentifierMappingStoredProcedure, () => "spIdentifierMappingCreate");
+            IsDeletedColumn = DefaultWhereNull(IsDeletedColumn, () => "IsDeleted");
             AutoDotNetRename = DefaultWhereNull(AutoDotNetRename, () => "SnakeKebabToPascalCase");
             JsonSerializer = DefaultWhereNull(JsonSerializer, () => "Newtonsoft");
             Service = DefaultWhereNull(Service, () => "None");

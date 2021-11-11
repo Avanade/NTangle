@@ -116,12 +116,7 @@ namespace {{Root.NamespacePublisher}}.Data
 {{/ifne}}
 {{#ifne ExcludePropertiesFromETag.Count 0}}
         /// <inheritdoc/>
-        protected override string[]? ExcludePropertiesFromETag => new string[] 
-            { 
-  {{#each ExcludePropertiesFromETag}}
-                "{{.}}"{{#unless @last}}, {{/unless}}
-  {{/each}} 
-            };
+        protected override string[]? ExcludePropertiesFromETag => new string[] { {{#each ExcludePropertiesFromETag}}"{{.}}"{{#unless @last}}, {{/unless}}{{/each}} };
 
 {{/ifne}}
         /// <summary>
@@ -158,6 +153,11 @@ namespace {{Root.NamespacePublisher}}.Data
 {{#each SelectedEntityColumns}}
                 {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"),
 {{/each}}
+{{#each JoinNonCdcChildren}}
+  {{#each Columns}}
+                {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"),
+  {{/each}}
+{{/each}}
                 DatabaseOperationType = record.GetValue<OperationType>("_OperationType"),
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
@@ -182,6 +182,11 @@ namespace {{Root.NamespacePublisher}}.Data
   {{/each}}
   {{#each Columns}}
                 {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"){{#unless @last}},{{/unless}}
+  {{/each}}
+  {{#each JoinNonCdcChildren}}
+      {{#each Columns}}
+                {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"),
+      {{/each}}
   {{/each}}
             };
         }

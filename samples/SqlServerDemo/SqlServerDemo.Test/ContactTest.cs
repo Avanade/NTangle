@@ -21,11 +21,13 @@ namespace SqlServerDemo.Test
             var script =
                 "DELETE FROM [Legacy].[Contact]" + Environment.NewLine +
                 "DELETE FROM [Legacy].[Address]" + Environment.NewLine +
+                "DELETE FROM [Legacy].[ContactMapping]" + Environment.NewLine +
                 "INSERT INTO [Legacy].[Address] ([AddressId], [Street1], [AlternateAddressId]) VALUES (11, 'Side', 88)" + Environment.NewLine +
                 "INSERT INTO [Legacy].[Address] ([AddressId], [Street1]) VALUES (88, 'Main')" + Environment.NewLine +
                 "INSERT INTO [Legacy].[Contact] ([ContactId], [Name], [Phone], [Active], [AddressId], [AlternateContactId]) VALUES (1, 'Name1', '123', 1, 11, 2)" + Environment.NewLine +
                 "INSERT INTO [Legacy].[Contact] ([ContactId], [Name], [Phone], [Active]) VALUES (2, 'Name2', '456', 1)" + Environment.NewLine +
-                "INSERT INTO [Legacy].[Contact] ([ContactId], [Name], [Phone], [Active]) VALUES (3, 'Name3', '789', 1)";
+                "INSERT INTO [Legacy].[Contact] ([ContactId], [Name], [Phone], [Active]) VALUES (3, 'Name3', '789', 1)" + Environment.NewLine +
+                "INSERT INTO [Legacy].[ContactMapping] ([ContactMappingId], [ContactId], [UniqueId]) VALUES (1, 1, CONVERT(uniqueidentifier, '1afc7f5c-ffa0-4741-81cf-f12eAAb822bf'))";
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
             await UnitTest.Delay().ConfigureAwait(false);

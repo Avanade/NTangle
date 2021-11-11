@@ -25,7 +25,7 @@ namespace {{Root.NamespacePublisher}}.Entities
 {{#ifeq Root.JsonSerializer 'Newtonsoft'}}
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
 {{/ifeq}}
-    public partial class {{Model}}Cdc : IEntity{{#ifval ColumnIsDeleted}}, ILogicallyDeleted{{/ifval}}{{#if IdentifierMapping}}, IGlobalIdentifier<{{Root.IdentifierMappingDotNetType}}>{{/if}}{{#if UsesGlobalIdentifier}}, ILinkIdentifierMapping<{{Root.IdentifierMappingDotNetType}}>{{/if}}
+    public partial class {{Model}}Cdc : IEntity{{#ifval ColumnConfigIsDeleted}}, ILogicallyDeleted{{/ifval}}{{#if IdentifierMapping}}, IGlobalIdentifier<{{Root.IdentifierMappingDotNetType}}>{{/if}}{{#if UsesGlobalIdentifier}}, ILinkIdentifierMapping<{{Root.IdentifierMappingDotNetType}}>{{/if}}
     {
 {{#if IdentifierMapping}}
         /// <inheritdoc/>
@@ -90,10 +90,7 @@ namespace {{Root.NamespacePublisher}}.Entities
         [JsonProperty("etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string? ETag { get; set; }
 
-  {{#ifval ColumnIsDeleted}}
-        /// <inheritdoc/>
-        public bool? IsDeleted { get; set; }
-
+  {{#ifval ColumnConfigIsDeleted}}
         /// <inheritdoc/>
         public void ClearWhereDeleted()
         {

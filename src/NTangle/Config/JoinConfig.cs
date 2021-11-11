@@ -115,6 +115,14 @@ namespace NTangle.Config
             Description = "Defaults to `false`. This option can be overridden for each underlying table referenced.")]
         public bool? CdcEnable { get; set; }
 
+        /// <summary>
+        /// Gets or sets the query size multiplier for the CDC-Join.
+        /// </summary>
+        [JsonProperty("querySizeMultiplier", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Database", Title = "The query size multiplier for the CDC-Join.",
+            Description = "Defaults to `1.0`. This is applied to the execute stored procedure `@MaxQuerySize` parameter to allow tailoring on the join query (`TOP`) sizes to optimize selection. Must be greater than zero and less than or equal to 100.")]
+        public decimal? QuerySizeMultiplier { get; set; }
+
         #endregion
 
         #region Columns
@@ -329,6 +337,10 @@ namespace NTangle.Config
             if (IsTrue(CdcEnable) && Type! == "Cdc")
                 Root.AddCdcEnabled(Schema!, Table!);
 
+            QuerySizeMultiplier = DefaultWhereNull(QuerySizeMultiplier, () => 1.0m);
+            if (QuerySizeMultiplier <= 0 || QuerySizeMultiplier > 100)
+                QuerySizeMultiplier = 1;
+
             // Get the JoinTo CdcJoinConfig.
             JoinConfig? jtc = null;
             if (JoinTo != Parent!.Name || JoinToSchema != Parent!.Schema)
@@ -420,13 +432,21 @@ namespace NTangle.Config
             // Manage the Include/Exclude columns.
             if (IncludeColumns != null && IncludeColumns.Count > 0)
             {
-                Columns.RemoveAll(x => !x.DbColumn!.IsPrimaryKey && !x.IsUsedInJoinOn && !IncludeColumns.Contains(x.Name!));
+                if (Type == "Cdc")
+                    Columns.RemoveAll(x => !x.DbColumn!.IsPrimaryKey && !x.IsUsedInJoinOn && !IncludeColumns.Contains(x.Name!));
+                else
+                    Columns.RemoveAll(x => !IncludeColumns.Contains(x.Name!));
+
                 Columns.Where(x => !IncludeColumns.Contains(x.Name!)).ForEach(x => x.IgnoreSerialization = true);
             }
 
             if (ExcludeColumns != null && ExcludeColumns.Count > 0)
             {
-                Columns.RemoveAll(x => !x.DbColumn!.IsPrimaryKey && !x.IsUsedInJoinOn && ExcludeColumns.Contains(x.Name!));
+                if (Type == "Cdc")
+                    Columns.RemoveAll(x => !x.DbColumn!.IsPrimaryKey && !x.IsUsedInJoinOn && ExcludeColumns.Contains(x.Name!));
+                else
+                    Columns.RemoveAll(x => ExcludeColumns.Contains(x.Name!));
+
                 Columns.Where(x => ExcludeColumns.Contains(x.Name!)).ForEach(x => x.IgnoreSerialization = true);
             }
 

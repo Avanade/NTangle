@@ -118,6 +118,7 @@ namespace SqlServerDemo.Publisher.Data
                 AddressId = record.GetValue<int?>("AddressId"),
                 AlternateContactId = record.GetValue<int?>("AlternateContactId"),
                 GlobalAlternateContactId = record.GetValue<string?>("GlobalAlternateContactId"),
+                UniqueId = record.GetValue<Guid>("UniqueId"),
                 DatabaseOperationType = record.GetValue<OperationType>("_OperationType"),
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")

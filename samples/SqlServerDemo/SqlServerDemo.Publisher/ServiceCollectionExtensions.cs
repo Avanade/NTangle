@@ -25,7 +25,8 @@ namespace SqlServerDemo.Publisher
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddGeneratedOrchestratorServices(this IServiceCollection services)
             => services.AddScoped<IPostCdcOrchestrator, PostCdcOrchestrator>()
-                       .AddScoped<IContactCdcOrchestrator, ContactCdcOrchestrator>();
+                       .AddScoped<IContactCdcOrchestrator, ContactCdcOrchestrator>()
+                       .AddScoped<ICustomerCdcOrchestrator, CustomerCdcOrchestrator>();
 
         /// <summary>
         /// Adds the generated <see cref="NTangle.Services.HostedService"/> services.
@@ -34,7 +35,8 @@ namespace SqlServerDemo.Publisher
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddGeneratedHostedServiceServices(this IServiceCollection services, IConfiguration config)
             => services.AddNTangleHostedService<PostHostedService>(config)
-                       .AddNTangleHostedService<ContactHostedService>(config);
+                       .AddNTangleHostedService<ContactHostedService>(config)
+                       .AddNTangleHostedService<CustomerHostedService>(config);
     }
 }
 

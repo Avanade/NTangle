@@ -10,6 +10,7 @@
     "phone": "000",
     "active": true,
     "addressId": 11,
+    "uniqueId": "1afc7f5c-ffa0-4741-81cf-f12eaab822bf",
     "address": {
       "street1": "Side"
     }

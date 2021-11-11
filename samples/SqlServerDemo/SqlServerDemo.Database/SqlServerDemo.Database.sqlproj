@@ -89,4 +89,9 @@
   <ItemGroup>
     <PostDeploy Include="Post.Deploy.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <Build Include="Schema\NTangle\Stored Procedures\Generated\spCustomerBatchComplete.sql" />
+    <Build Include="Schema\NTangle\Stored Procedures\Generated\spCustomerBatchExecute.sql" />
+    <Build Include="Schema\NTangle\Tables\Generated\CustomerBatchTracking.sql" />
+  </ItemGroup>
 </Project>

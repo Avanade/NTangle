@@ -73,16 +73,14 @@ BEGIN
     END
 
     -- The minimum should _not_ be less than the base otherwise we have lost data; either continue with this data loss, or error and stop.
-    DECLARE @hasDataLoss BIT
-    SET @hasDataLoss = 0
+    DECLARE @hasDataLoss BIT = 0
 
     IF (@ContactMinLsn < @ContactBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @ContactMinLsn = @ContactBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Contact''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
     IF (@AddressMinLsn < @AddressBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @AddressMinLsn = @AddressBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Address''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
 
     -- Find changes on the root table: '[Legacy].[Contact]' - this determines overall operation type: 'create', 'update' or 'delete'.
     CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, [ContactId] INT)
-    DECLARE @hasChanges BIT
-    SET @hasChanges = 0
+    DECLARE @hasChanges BIT = 0
 
     IF (@ContactMinLsn <= @ContactMaxLsn)
     BEGIN
@@ -104,7 +102,8 @@ BEGIN
     -- Find changes on related table: '[Legacy].[Address]' - unique name 'Address' - assume all are 'update' operation (i.e. it doesn't matter).
     IF (@AddressMinLsn <= @AddressMaxLsn)
     BEGIN
-      SELECT TOP (@MaxQuerySize)
+      DECLARE @aMaxQuerySize INT = CEILING(@MaxQuerySize * 1.5)
+      SELECT TOP (@aMaxQuerySize)
           [_cdc].[__$start_lsn] AS [_Lsn],
           4 AS [_Op],
           [c].[ContactId] AS [ContactId]
@@ -192,8 +191,6 @@ BEGIN
         [c].[AddressId] AS [AddressId],
         [c].[AlternateContactId] AS [AlternateContactId],
         [_im1].[GlobalId] AS [GlobalAlternateContactId],
-        [cm].[ContactMappingId] AS [ContactMappingId],
-        [cm].[ContactId] AS [ContactId],
         [cm].[UniqueId] AS [UniqueId]
       FROM #_changes AS [_chg]
       LEFT OUTER JOIN [Legacy].[Contact] AS [c] ON ([c].[ContactId] = [_chg].[ContactId])

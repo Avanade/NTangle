@@ -23,6 +23,12 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Expected\CustomerTest-LogicalDelete-2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Expected\CustomerTest-LogicalDelete-1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Expected\ContactTest-UsePreassignedIdentifiers.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
