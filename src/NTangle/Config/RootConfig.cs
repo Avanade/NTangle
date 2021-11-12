@@ -284,7 +284,7 @@ namespace NTangle.Config
         /// </summary>
         [JsonProperty("tables", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `Table` collection.", IsImportant = true,
-            Markdown = "A `Table` object provides the primary database table configuration for Change Data Capture (CDC), including multiple child table joins to form a composite entity.")]
+            Description = "A `Table` object provides the primary database table configuration for Change Data Capture (CDC), including multiple child table joins to form a composite entity.")]
         public List<TableConfig>? Tables { get; set; }
 
         #endregion

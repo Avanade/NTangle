@@ -185,6 +185,7 @@
         "tables": {
           "type": "array",
           "title": "The corresponding 'Table' collection.",
+          "description": "A 'Table' object provides the primary database table configuration for Change Data Capture (CDC), including multiple child table joins to form a composite entity.",
           "items": {
             "$ref": "#/definitions/Table"
           }
@@ -345,6 +346,7 @@
         "joins": {
           "type": "array",
           "title": "The corresponding 'Join' collection.",
+          "description": "A 'Join' object provides the configuration for a table join.",
           "items": {
             "$ref": "#/definitions/Join"
           }

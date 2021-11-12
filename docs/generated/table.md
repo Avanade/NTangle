@@ -105,6 +105,6 @@ Provides related child (hierarchical) configuration.
 
 Property | Description
 -|-
-**`joins`** | The corresponding [`Join`](join.md) collection.<br/><br/>A `Join` object provides the configuration for a table join.
+**`joins`** | The corresponding [`Join`](join.md) collection.<br/>&dagger; A `Join` object provides the configuration for a table join.
 `mappings` | The corresponding [`TableMapping`](tablemapping.md) collection.
 

@@ -108,5 +108,5 @@ Provides related child (hierarchical) configuration.
 
 Property | Description
 -|-
-**`tables`** | The corresponding [`Table`](table.md) collection.<br/><br/>A `Table` object provides the primary database table configuration for Change Data Capture (CDC), including multiple child table joins to form a composite entity.
+**`tables`** | The corresponding [`Table`](table.md) collection.<br/>&dagger; A `Table` object provides the primary database table configuration for Change Data Capture (CDC), including multiple child table joins to form a composite entity.
 

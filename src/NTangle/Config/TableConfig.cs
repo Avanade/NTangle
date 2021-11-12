@@ -262,7 +262,7 @@ namespace NTangle.Config
         /// </summary>
         [JsonProperty("joins", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `Join` collection.", IsImportant = true,
-            Markdown = "A `Join` object provides the configuration for a table join.")]
+            Description = "A `Join` object provides the configuration for a table join.")]
         public List<JoinConfig>? Joins { get; set; }
 
         /// <summary>
