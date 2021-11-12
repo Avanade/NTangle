@@ -167,7 +167,7 @@
           "title": "The path (directory) for the Schema Database-related artefacts.",
           "description": "Defaults to 'PathDatabase' + '/Migrations' (literal). For example 'Avanade.Application.Database/Migrations'."
         },
-        "PathDotNetPublisher": {
+        "pathDotNetPublisher": {
           "type": "string",
           "title": "The path (directory) for the CDC-related (.NET) artefacts.",
           "description": "Defaults to 'PathBase' + '.Publisher' (literal). For example 'Avanade.Application.Publisher'."
@@ -177,7 +177,7 @@
           "title": "The base Namespace (root) for the .NET artefacts.",
           "description": "Defaults to 'AppName' (runtime parameter). For example 'Avanade.Application'."
         },
-        "NamespaceCdcPublisher": {
+        "namespacePublisher": {
           "type": "string",
           "title": "The Namespace (root) for the CDC-related publisher .NET artefacts.",
           "description": "Defaults to 'NamespaceBase' + '.CdcPublisher' (literal). For example 'Avanade.Application.CdcPublisher'."

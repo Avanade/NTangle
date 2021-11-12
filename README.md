@@ -128,6 +128,16 @@ Sample | Description
 
 <br/>
 
+## Tooling
+
+The following tools are provided to support development:
+
+Sample | Description
+-|-
+[`NTangle.ArtefactGenerate.Tool`](./tools/NTangle.ArtefactGenerate.Tool) | This provides a means to auto-generate the corresponding JSON Schema and markdown documentation from the related .NET configuration entities.
+
+<br/>
+
 ## License
 
 _OnRamp_ is open source under the [MIT license](./LICENSE) and is free for commercial use.

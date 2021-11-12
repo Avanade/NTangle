@@ -97,7 +97,7 @@ Property | Description
 `pathDatabase` | The path (directory) for the Schema Database-related artefacts.<br/><br/>Defaults to `PathBase` + `.Database` (literal). For example `Avanade.Application.Database`.
 `pathDatabaseSchema` | The path (directory) for the Schema Database-related artefacts.<br/><br/>Defaults to `PathDatabase` + `/Schema` (literal). For example `Avanade.Application.Database/Schema`.
 `pathDatabaseMigrations` | The path (directory) for the Schema Database-related artefacts.<br/><br/>Defaults to `PathDatabase` + `/Migrations` (literal). For example `Avanade.Application.Database/Migrations`.
-`PathDotNetPublisher` | The path (directory) for the CDC-related (.NET) artefacts.<br/><br/>Defaults to `PathBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.
+`pathDotNetPublisher` | The path (directory) for the CDC-related (.NET) artefacts.<br/><br/>Defaults to `PathBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.
 
 <br/>
 
@@ -107,7 +107,7 @@ Provides the _.NET Namespace_ configuration for the generated artefacts.
 Property | Description
 -|-
 `namespaceBase` | The base Namespace (root) for the .NET artefacts.<br/><br/>Defaults to `AppName` (runtime parameter). For example `Avanade.Application`.
-`NamespaceCdcPublisher` | The Namespace (root) for the CDC-related publisher .NET artefacts.<br/><br/>Defaults to `NamespaceBase` + `.CdcPublisher` (literal). For example `Avanade.Application.CdcPublisher`.
+`namespacePublisher` | The Namespace (root) for the CDC-related publisher .NET artefacts.<br/><br/>Defaults to `NamespaceBase` + `.CdcPublisher` (literal). For example `Avanade.Application.CdcPublisher`.
 
 <br/>
 

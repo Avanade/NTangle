@@ -250,7 +250,7 @@ namespace NTangle.Config
         /// <summary>
         /// Gets or sets the path (directory) for the CDC-related (.NET) publisher artefacts.
         /// </summary>
-        [JsonProperty("PathDotNetPublisher", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("pathDotNetPublisher", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Path", Title = "The path (directory) for the CDC-related (.NET) artefacts.",
             Description = "Defaults to `PathBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.")]
         public string? PathDotNetPublisher { get; set; }
@@ -270,7 +270,7 @@ namespace NTangle.Config
         /// <summary>
         /// Gets or sets the Namespace (root) for the CDC-related publisher .NET artefacts.
         /// </summary>
-        [JsonProperty("NamespaceCdcPublisher", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("namespacePublisher", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Namespace", Title = "The Namespace (root) for the CDC-related publisher .NET artefacts.",
             Description = "Defaults to `NamespaceBase` + `.CdcPublisher` (literal). For example `Avanade.Application.CdcPublisher`.")]
         public string? NamespacePublisher { get; set; }
