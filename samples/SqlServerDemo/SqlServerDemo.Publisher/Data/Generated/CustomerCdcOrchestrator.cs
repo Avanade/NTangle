@@ -21,7 +21,7 @@ namespace SqlServerDemo.Publisher.Data
     /// <summary>
     /// Enables the Change Data Capture (CDC) <see cref="CustomerCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Customer]').
     /// </summary>
-    public partial interface ICustomerCdcOrchestrator : IEntityOrchestrator { }
+    public partial interface ICustomerCdcOrchestrator : IEntityOrchestrator<CustomerCdc> { }
 
     /// <summary>
     /// Manages the Change Data Capture (CDC) <see cref="CustomerCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Customer]').

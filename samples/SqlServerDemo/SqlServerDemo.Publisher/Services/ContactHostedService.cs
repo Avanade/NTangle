@@ -10,13 +10,14 @@ using Microsoft.Extensions.Logging;
 using NTangle.Services;
 using System;
 using SqlServerDemo.Publisher.Data;
+using SqlServerDemo.Publisher.Entities;
 
 namespace SqlServerDemo.Publisher.Services
 {
     /// <summary>
     /// Provides the Change Data Capture (CDC) <see cref="ContactCdc"/> entity (aggregate root) <see cref="HostedService{T}"/> capabilities (database table '[Legacy].[Contact]').
     /// </summary>
-    public partial class ContactHostedService : HostedService<IContactCdcOrchestrator>
+    public partial class ContactHostedService : HostedService<IContactCdcOrchestrator, ContactCdc>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ContactHostedService"/> class.
@@ -24,7 +25,8 @@ namespace SqlServerDemo.Publisher.Services
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         /// <param name="config">The <see cref="IConfiguration"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        public ContactHostedService(IServiceProvider serviceProvider, ILogger<ContactHostedService> logger, IConfiguration? config = null) : base(serviceProvider, logger, config) { }
+        /// <param name="synchronizer"> The <see cref="IHostedServiceSynchronizer"/>.</param>
+        public ContactHostedService(IServiceProvider serviceProvider, ILogger<ContactHostedService> logger, IConfiguration config, IHostedServiceSynchronizer synchronizer) : base(serviceProvider, logger, config, synchronizer) { }
     }
 }
 

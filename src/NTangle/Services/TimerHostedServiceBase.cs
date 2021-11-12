@@ -13,7 +13,7 @@ namespace NTangle.Services
     /// <summary>
     /// Represents a base class for an <see cref="IHostedService"/> based on a <see cref="Interval"/> to <see cref="Execute(object?)"/> work.
     /// </summary>
-    /// <remarks>Each timer-based invocation of the <see cref="ExecuteAsync(CancellationToken)"/> will be managed witin the context of a new Dependency Injection (DI)
+    /// <remarks>Each timer-based invocation of the <see cref="ExecuteAsync(IServiceProvider, CancellationToken)"/> will be managed witin the context of a new Dependency Injection (DI)
     /// <see cref="ServiceProviderServiceExtensions.CreateScope">scope</see>.
     /// <para>A <see cref="OneOffIntervalAdjust(TimeSpan, bool)"/> is provided to enable a one-off change to the timer where required.</para></remarks>
     public abstract class TimerHostedServiceBase : IHostedService, IDisposable
@@ -65,7 +65,7 @@ namespace NTangle.Services
         /// <summary>
         /// Gets or sets the <i>first</i> timer start interval. 
         /// </summary>
-        /// <remarks>Defaults to <see cref="Interval"/>.</remarks>
+        /// <remarks>Defaults to <see cref="Interval"/>. This is used as a maximum, in that the actual start is determined using a random value up to this value to ensure staggering of execution where multiple hosts are triggered at the same time.</remarks>
         public virtual TimeSpan? FirstInterval { get; set; }
 
         /// <summary>
@@ -106,13 +106,12 @@ namespace NTangle.Services
         /// Triggered when the application host is ready to start the service.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        /// <remarks>The underlying timer start is the <see cref="FirstInterval"/> plus a randomized value between zero and one thousand milliseconds; this will minimize multiple services within the host potentially all starting at once.</remarks>
         async Task IHostedService.StartAsync(CancellationToken cancellationToken)
         {
             Logger.LogInformation($"{ServiceName} service started. Timer first/interval {FirstInterval ?? Interval}/{Interval}.");
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             await StartingAsync(_cts.Token).ConfigureAwait(false);
-            _timer = new Timer(Execute, null, (FirstInterval ?? Interval).Add(TimeSpan.FromMilliseconds(_random.Next(0, 1000))), Interval);
+            _timer = new Timer(Execute, null, TimeSpan.FromMilliseconds(_random.Next(1, (int)(FirstInterval ?? Interval).TotalMilliseconds)), Interval);
         }
 
         /// <summary>
