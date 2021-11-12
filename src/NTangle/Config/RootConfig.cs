@@ -272,7 +272,7 @@ namespace NTangle.Config
         /// </summary>
         [JsonProperty("namespacePublisher", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Namespace", Title = "The Namespace (root) for the CDC-related publisher .NET artefacts.",
-            Description = "Defaults to `NamespaceBase` + `.CdcPublisher` (literal). For example `Avanade.Application.CdcPublisher`.")]
+            Description = "Defaults to `NamespaceBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.")]
         public string? NamespacePublisher { get; set; }
 
         #endregion

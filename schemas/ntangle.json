@@ -180,7 +180,7 @@
         "namespacePublisher": {
           "type": "string",
           "title": "The Namespace (root) for the CDC-related publisher .NET artefacts.",
-          "description": "Defaults to 'NamespaceBase' + '.CdcPublisher' (literal). For example 'Avanade.Application.CdcPublisher'."
+          "description": "Defaults to 'NamespaceBase' + '.Publisher' (literal). For example 'Avanade.Application.Publisher'."
         },
         "tables": {
           "type": "array",
@@ -207,8 +207,8 @@
         },
         "alias": {
           "type": "string",
-          "title": "The 'Schema.Table' alias name.",
-          "description": "Will automatically default where not specified."
+          "title": "The table alias name (must be unique).",
+          "description": "Will automatically default where not specified; for example a table named 'Person' will default to 'p'."
         },
         "includeColumns": {
           "type": "array",

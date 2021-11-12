@@ -53,11 +53,11 @@ namespace NTangle.Config
         public string? Schema { get; set; }
 
         /// <summary>
-        /// Gets or sets the `Schema.Table` alias name.
+        /// Gets or sets the table alias name.
         /// </summary>
         [JsonProperty("alias", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Key", Title = "The `Schema.Table` alias name.",
-            Description = "Will automatically default where not specified.")]
+        [CodeGenProperty("Key", Title = "The table alias name (must be unique).",
+            Description = "Will automatically default where not specified; for example a table named `Person` will default to `p`.")]
         public string? Alias { get; set; }
 
         #endregion

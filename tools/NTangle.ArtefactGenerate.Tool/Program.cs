@@ -39,12 +39,7 @@ namespace NTangle.ArtefactGenerate.Tool
             Con.WriteLine("Markdown Documentation Generation");
             Con.WriteLine($" Directory: {dn}");
 
-            MarkdownDocumentationGenerator.Generate<RootConfig>((type, csa) =>
-            {
-                fn = $"{csa.Name.ToLowerInvariant()}.md";
-                Con.WriteLine($"  Generating: {fn}");
-                return fn;
-            }, directory: dn, includeExample: true, addBreaksBetweenSections: true);
+            MarkdownDocumentationGenerator.Generate<RootConfig>((type, csa) => $"{csa.Name.ToLowerInvariant()}.md", directory: dn, includeExample: false, addBreaksBetweenSections: true, fileCreation: fn => Con.WriteLine($"  Generating: {fn}"));
 
             Con.WriteLine(" Complete.");
             Con.WriteLine("");
