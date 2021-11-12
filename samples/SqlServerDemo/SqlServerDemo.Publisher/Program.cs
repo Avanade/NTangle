@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NTangle;
 using NTangle.Data;
 using NTangle.Events;
+using NTangle.Services;
 
 namespace SqlServerDemo.Publisher
 {
@@ -29,6 +30,7 @@ namespace SqlServerDemo.Publisher
                             .AddSingleton<IIdentifierGenerator<string>, IdentifierGenerator>()
                             .AddScoped<IEventSerializer, CloudEventSerializer>()
                             .AddScoped<IEventPublisher, LoggerEventPublisher>()
+                            .AddScoped<IHostedServiceSynchronizer, FileLockSynchronizer>()
                             .AddGeneratedOrchestratorServices()
                             .AddGeneratedHostedServiceServices(hostContext.Configuration);
                 });

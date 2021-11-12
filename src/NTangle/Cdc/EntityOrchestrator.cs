@@ -17,7 +17,7 @@ namespace NTangle.Cdc
     /// <typeparam name="TEntityEnvelopeColl">The <typeparamref name="TEntityEnvelope"/> collection <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelope">The <typeparamref name="TEntity"/> envelope <see cref="Type"/>.</typeparam>
     /// <typeparam name="TVersionTrackerMapper">The <see cref="VersionTracker"/> database and table-valued parameter mapper <see cref="Type"/>.</typeparam>
-    public abstract class EntityOrchestrator<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper> : EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper>
+    public abstract class EntityOrchestrator<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper> : EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper>, IEntityOrchestrator<TEntity>
         where TEntity : class, IEntity, new()
         where TEntityEnvelopeColl : List<TEntityEnvelope>, new()
         where TEntityEnvelope : class, TEntity, IEntityEnvelope, new()
@@ -43,7 +43,7 @@ namespace NTangle.Cdc
     /// <typeparam name="TEntityEnvelope">The <typeparamref name="TEntity"/> envelope <see cref="Type"/>.</typeparam>
     /// <typeparam name="TVersionTrackerMapper">The <see cref="VersionTracker"/> database and table-valued parameter mapper <see cref="Type"/>.</typeparam>
     /// <typeparam name="TGlobalIdentifer">The global identifier <see cref="Type"/>.</typeparam>
-    public abstract class EntityOrchestrator<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper, TGlobalIdentifer> : EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper>
+    public abstract class EntityOrchestrator<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper, TGlobalIdentifer> : EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper>, IEntityOrchestrator<TEntity>
         where TEntity : class, IEntity, new()
         where TEntityEnvelopeColl : List<TEntityEnvelope>, new()
         where TEntityEnvelope : class, TEntity, IEntityEnvelope, new()

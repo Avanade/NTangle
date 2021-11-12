@@ -42,7 +42,7 @@ namespace NTangle.Services
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="config">The <see cref="IConfiguration"/>.</param>
-        internal HostedService(IServiceProvider serviceProvider, ILogger logger, IConfiguration? config = null) : base(serviceProvider, logger, config) { }
+        internal HostedService(IServiceProvider serviceProvider, ILogger logger, IConfiguration config) : base(serviceProvider, logger, config) { }
 
         /// <summary>
         /// Gets or sets the interval between each execution.

@@ -21,7 +21,7 @@ namespace SqlServerDemo.Publisher.Data
     /// <summary>
     /// Enables the Change Data Capture (CDC) <see cref="PostCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Posts]').
     /// </summary>
-    public partial interface IPostCdcOrchestrator : IEntityOrchestrator { }
+    public partial interface IPostCdcOrchestrator : IEntityOrchestrator<PostCdc> { }
 
     /// <summary>
     /// Manages the Change Data Capture (CDC) <see cref="PostCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Posts]').
