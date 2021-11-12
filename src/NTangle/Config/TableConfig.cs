@@ -16,7 +16,7 @@ namespace NTangle.Config
     /// Represents a database query configuration.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    [CodeGenClass("Cdc", Title = "'Table' object (database-driven)",
+    [CodeGenClass("Table", Title = "'Table' object (database-driven)",
         Description = "The `Table` object enables the definition of the primary table, one-or-more child tables and their respective join relationships, to enable Change Data Capture (CDC) event publishing."
             + " The `IncludeColumns` and `ExcludeColumns` provide a shorthand to include or exclude selected columns; with the `AliasColumns` providing a means to rename where required.",
         ExampleMarkdown = @"A YAML configuration example is as follows:
