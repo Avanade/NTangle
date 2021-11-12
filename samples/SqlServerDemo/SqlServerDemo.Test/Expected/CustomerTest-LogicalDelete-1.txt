@@ -1,0 +1,11 @@
+﻿{
+  "specversion": "1.0",
+  "type": "legacy.customer.deleted",
+  "source": "/database/cdc/legacy/customer/2",
+  "subject": "legacy.customer",
+  "action": "deleted",
+  "datacontenttype": "application/json",
+  "data": {
+    "customerId": 2
+  }
+}

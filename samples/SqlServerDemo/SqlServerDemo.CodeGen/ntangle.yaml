@@ -1,0 +1,83 @@
+﻿schema: Legacy                                       # Defaults the schema for the non-CDC related tables.
+cdcSchema: NTangle                                   # Defines the name of the schema to be used for CDC-related artefacts.
+cdcSchemaCreate: true                                # Indicates whether to create the database schema via code-generation.
+cdcEnable: true                                      # Indicates whether to enable CDC for the referenced table(s) in the database.
+eventSourceRoot: /database/cdc                       # Event source URI root prepended to all published events.
+eventSubjectRoot: Legacy                             # Event subject root prepended to all published events.
+identifierMapping: true                              # Indicates to include the generation of the global identifier mapping artefacts.
+excludeColumnsFromETag: [ RowVersion ]               # Default list of columns to exclude from the generated ETag (exclude from version tracking).
+service: HostedService                               # Create the entity-based hosted services to be executed by the likes of a console application.
+tables:
+  # Set up CDC for primary table Legacy.Posts.
+  # Relational hierarchy: Legacy.Posts
+  # - Legacy.Comments (1:n)
+  # - Legacy.Tags (1:n)
+  # - Legacy.Tags (1:n).
+- { name: Posts, model: Post, eventSourceFormat: NameOnly, eventSubjectFormat: NameAndKey,
+    joins: [
+      # Set up secondary One-To-Many relationship from Legacy.Posts to Legacy.Comments (1:n).
+      # Join on Comments.PostsId = Posts.PostsId.
+      # The .NET model should be singular in name.
+      { name: Comments, model: Comment, joinTo: Posts, excludeColumns: [ PostsId ],
+        on: [
+          { name: PostsId, toColumn: PostsId }
+        ]
+      },
+      # Set up secondary One-To-Many relationship from Legacy.Comments to Legacy.Tags (1:n).
+      # Name as 'CommentTag' for uniqueness for join referencing.
+      # Exclude the 'ParentType' column as not necessary for publishing (i.e. internal to database).
+      # Rename 'ParentId' column to `CommentsId`.
+      # Join on Tags.ParentType = 'C' AND Tags.ParentId = Comments.CommentsId.
+      { name: CommentsTags, table: Tags, Property: Tags, joinTo: Comments, excludeColumns: [ ParentType, ParentId ],
+        on: [
+          { name: ParentType, toStatement: '''C''' },
+          { name: ParentId, toColumn: CommentsId }
+        ]
+      },
+      # Set up secondary One-To-Many relationship from Legacy.Posts to Legacy.Tags (1:n).
+      # Name as 'PostTag' for uniqueness for join referencing.
+      # Exclude the 'ParentType' column as not necessary for publishing (i.e. internal to database).
+      # Rename 'ParentId' column to `PostsId`.
+      # Join on Tags.ParentType = 'P' AND Tags.ParentId = Posts.PostsId.
+      { name: PostsTags, table: Tags, Property: Tags, joinTo: Posts, excludeColumns: [ ParentType, ParentId ], aliasColumns: [ ParentId^PostsId ],
+        on: [
+          { name: ParentType, toStatement: '''P''' },
+          { name: ParentId, toColumn: PostsId }
+        ]
+      }
+    ]
+  }
+
+  # Set up CDC for primary table Legacy.Contact.
+- { name: Contact, eventSubject: Contact, identifierMapping: true, identifierMappingColumns: [ AlternateContactId^Contact ], aliasColumns: [ ContactId^CID ], excludeColumnsFromETag: [ legacy_system_code ],
+    joins: [
+      # Set up secondary One-To-One relationship from Legacy.Contact to Legacy.Address (1:1).
+      # Join on Address.AddressId = Contact.AddressId.
+      # Dynamically adjust the query size using the specified multiplier.
+      # Add global identifier mapping.
+      # Alias, change name of, Id column to AID.
+      { name: Address, joinCardinality: OneToOne, querySizeMultiplier: 1.5, identifierMapping: true, identifierMappingColumns: [ AlternateAddressId^Address ], aliasColumns: [ Id^AID ],
+        on: [
+          { name: AddressId }
+        ],
+        mappings: [
+          { name: AlternateAddressId, table: Address }
+        ]
+      },
+      # Set up inner join relationship from Legacy.Contact to Legacy.ContactMapping.
+      # Left Outer Join (does not have to exist) on ContactMapping.ContactId = Contact.ContactId.
+      # Only include the joined 'UniqueId' column.
+      { name: ContactMapping, type: Left, includeColumns: [ UniqueId ],
+        on: [
+          { name: ContactId }
+        ]
+      }
+    ],
+    mappings: [
+      { name: AlternateContactId, table: Contact }
+    ]
+  }
+
+  # Set up CDC for primary table Legacy.Customer - this contains: RowVersion and IsDeleted (logical delete).
+  # Override the default column name to light-up the IsDeleted capability.
+- { name: Customer, isDeletedColumn: is-deleted, excludeColumns: [ internal-secret ] }

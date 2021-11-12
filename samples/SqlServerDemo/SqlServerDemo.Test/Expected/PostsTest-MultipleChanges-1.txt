@@ -1,0 +1,37 @@
+﻿{
+  "specversion": "1.0",
+  "type": "legacy.post.updated",
+  "source": "/database/cdc/legacy/posts",
+  "subject": "legacy.post.1",
+  "action": "updated",
+  "datacontenttype": "application/json",
+  "data": {
+    "postsId": 1,
+    "text": "Blah 1",
+    "date": "2020-01-01T00:00:00",
+    "comments": [
+      {
+        "commentsId": 101,
+        "text": "Blah blah 101 some more",
+        "date": "2020-01-01T00:00:00",
+        "tags": [
+          {
+            "tagsId": 1002,
+            "text": "#groovy"
+          }
+        ]
+      },
+      {
+        "commentsId": 102,
+        "text": "Blah blah 102",
+        "date": "2020-01-01T00:00:00"
+      }
+    ],
+    "tags": [
+      {
+        "tagsId": 1001,
+        "text": "#Blah1"
+      }
+    ]
+  }
+}
