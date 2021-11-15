@@ -15,7 +15,7 @@ namespace NTangle.Events
     public class CloudEventSerializer : IEventSerializer
     {
         /// <inheritdoc/>
-        public Task<byte[]> SerializeAsync(EventData @event)
+        public Task<BinaryData> SerializeAsync(EventData @event)
         {
             if (@event == null)
                 throw new ArgumentNullException(nameof(@event));
@@ -37,7 +37,7 @@ namespace NTangle.Events
             ce.DataContentType = MediaTypeNames.Application.Json;
             ce.Data = @event.Data;
 
-            return Task.FromResult(new JsonEventFormatter().EncodeStructuredModeMessage(ce, out var _).ToArray());
+            return Task.FromResult(new BinaryData(new JsonEventFormatter().EncodeStructuredModeMessage(ce, out var _)));
         }
 
         /// <summary>

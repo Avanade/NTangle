@@ -8,11 +8,11 @@ using System.IO;
 namespace NTangle.Services
 {
     /// <summary>
-    /// An <see cref="IHostedServiceSynchronizer"/> that performs synchronization by taking an exclusive lock on a file.
+    /// An <see cref="IServiceSynchronizer"/> that performs synchronization by taking an exclusive lock on a file.
     /// </summary>
-    /// <remarks>A lock file is created per <typeparamref name="T"/> with a name of <see cref="Type.FullName"/> and extension of '.lock'; e.g. '<c>Namespace.Class.lock</c>'. For this to function corrently all running
+    /// <remarks>A lock file is created per <see cref="Type"/> with a name of <see cref="Type.FullName"/> and extension of '.lock'; e.g. '<c>Namespace.Class.lock</c>'. For this to function corrently all running
     /// instances must be referencing the same shared directory as specified by the <see cref="ConfigKey"/> (<see cref="IConfiguration"/>).</remarks>
-    public sealed class FileLockSynchronizer : IHostedServiceSynchronizer
+    public sealed class FileLockSynchronizer : IServiceSynchronizer
     {
         /// <summary>
         /// Gets the configuration key that defines the directory path for the exclusive lock files.
@@ -37,7 +37,7 @@ namespace NTangle.Services
         }
 
         /// <inheritdoc/>
-        public bool Enter<T>() where T : IEntity
+        public bool Enter<T>()
         {
             var fn = Path.Combine(_path, $"{typeof(T).FullName}.lock");
 
@@ -56,7 +56,7 @@ namespace NTangle.Services
         }
 
         /// <inheritdoc/>
-        public void Exit<T>() where T : IEntity
+        public void Exit<T>()
         {
             if (_dict.TryRemove(typeof(T), out var fs))
                 fs.Dispose();

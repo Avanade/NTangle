@@ -2,6 +2,9 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NTangle.Data;
+using NTangle.Events;
 using NTangle.Services;
 using System;
 using System.Diagnostics;
@@ -24,6 +27,16 @@ namespace NTangle
         /// Gets the <see cref="TimerHostedServiceBase.ServiceName"/> suffix as per the standard (code-generation) naming convention.
         /// </summary>
         public const string HostedServiceSuffix = "HostedService";
+
+        /// <summary>
+        /// Gets the outbox service <see cref="IConfiguration"/> key.
+        /// </summary>
+        public const string OutboxServiceKey = "OutboxService";
+
+        /// <summary>
+        /// Checks that the <see cref="IServiceCollection"/> is not null.
+        /// </summary>
+        private static IServiceCollection CheckServices(IServiceCollection services) => services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
         /// Adds the <typeparamref name="T"/> <see cref="HostedService"/> using the <see cref="ServiceCollectionHostedServiceExtensions.AddHostedService{THostedService}(IServiceCollection)"/>. 
@@ -52,5 +65,48 @@ namespace NTangle
 
             return services;
         }
+
+        /// <summary>
+        /// Adds the <see cref="IDatabase"/> scoped service.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="create">The function to create the <see cref="IDatabase"/> instance.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddDatabase(this IServiceCollection services, Func<IServiceProvider, IDatabase> create) => CheckServices(services).AddScoped(create ?? throw new ArgumentNullException(nameof(create)));
+
+        /// <summary>
+        /// Adds the <see cref="IdentifierGenerator"/> as the <see cref="string"/> <see cref="IIdentifierGenerator{T}"/> singleton service.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddStringIdentifierGenerator(this IServiceCollection services) => CheckServices(services).AddSingleton<IIdentifierGenerator<string>, IdentifierGenerator>();
+
+        /// <summary>
+        /// Adds the <see cref="IdentifierGenerator"/> as the <see cref="Guid"/> <see cref="IIdentifierGenerator{T}"/> singleton service.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddGuidIdentifierGenerator(this IServiceCollection services) => CheckServices(services).AddSingleton<IIdentifierGenerator<Guid>, IdentifierGenerator>();
+
+        /// <summary>
+        /// Adds the <see cref="CloudEventSerializer"/> as the <see cref="IEventSerializer"/> scoped service.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddCloudEventSerializer(this IServiceCollection services) => CheckServices(services).AddScoped<IEventSerializer, CloudEventSerializer>();
+
+        /// <summary>
+        /// Adds the <see cref="LoggerEventPublisher"/> as the <see cref="IEventPublisher"/> scoped service.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddLoggerEventPublisher(this IServiceCollection services) => CheckServices(services).AddScoped<IEventPublisher, LoggerEventPublisher>();
+
+        /// <summary>
+        /// Adds the <see cref="FileLockSynchronizer"/> as the <see cref="IServiceSynchronizer"/> scoped service.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddFileLockSynchronizer(this IServiceCollection services) => CheckServices(services).AddScoped<IServiceSynchronizer, FileLockSynchronizer>();
     }
 }

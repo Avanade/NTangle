@@ -4,6 +4,7 @@ cdcSchemaCreate: true                                # Indicates whether to crea
 cdcEnable: true                                      # Indicates whether to enable CDC for the referenced table(s) in the database.
 eventSourceRoot: /database/cdc                       # Event source URI root prepended to all published events.
 eventSubjectRoot: Legacy                             # Event subject root prepended to all published events.
+outbox: true                                         # Indicates to include the generation of the event outbox artefacts.
 identifierMapping: true                              # Indicates to include the generation of the global identifier mapping artefacts.
 excludeColumnsFromETag: [ RowVersion ]               # Default list of columns to exclude from the generated ETag (exclude from version tracking).
 service: HostedService                               # Create the entity-based hosted services to be executed by the likes of a console application.
@@ -78,6 +79,8 @@ tables:
     ]
   }
 
-  # Set up CDC for primary table Legacy.Customer - this contains: RowVersion and IsDeleted (logical delete).
+  # Set up CDC for primary table Legacy.Customer.
   # Override the default column name to light-up the IsDeleted capability.
+  # Exclude the secret column to ensure not sent.
+  # RowVersion column will be excluded as per root config.
 - { name: Customer, isDeletedColumn: is-deleted, excludeColumns: [ internal-secret ] }

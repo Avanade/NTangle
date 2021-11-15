@@ -25,8 +25,8 @@ namespace SqlServerDemo.Publisher.Services
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         /// <param name="config">The <see cref="IConfiguration"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="synchronizer"> The <see cref="IHostedServiceSynchronizer"/>.</param>
-        public PostHostedService(IServiceProvider serviceProvider, ILogger<PostHostedService> logger, IConfiguration config, IHostedServiceSynchronizer synchronizer) : base(serviceProvider, logger, config, synchronizer) { }
+        /// <param name="synchronizer"> The <see cref="IServiceSynchronizer"/>.</param>
+        public PostHostedService(IServiceProvider serviceProvider, ILogger<PostHostedService> logger, IConfiguration config, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, config, synchronizer) { }
     }
 }
 

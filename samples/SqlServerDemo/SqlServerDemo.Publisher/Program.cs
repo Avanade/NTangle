@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using NTangle;
 using NTangle.Data;
 using NTangle.Events;
-using NTangle.Services;
 
 namespace SqlServerDemo.Publisher
 {
@@ -26,13 +25,14 @@ namespace SqlServerDemo.Publisher
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddLogging(configure => configure.AddConsole())
-                            .AddScoped<IDatabase>(sp => new Database(() => new SqlConnection(hostContext.Configuration.GetConnectionString("SqlDb"))))
-                            .AddSingleton<IIdentifierGenerator<string>, IdentifierGenerator>()
-                            .AddScoped<IEventSerializer, CloudEventSerializer>()
-                            .AddScoped<IEventPublisher, LoggerEventPublisher>()
-                            .AddScoped<IHostedServiceSynchronizer, FileLockSynchronizer>()
+                            .AddDatabase(sp => new Database(() => new SqlConnection(hostContext.Configuration.GetConnectionString("SqlDb"))))
+                            .AddStringIdentifierGenerator()
+                            .AddCloudEventSerializer()
+                            .AddFileLockSynchronizer()
+                            .AddGeneratedOutboxEventPublisher()
                             .AddGeneratedOrchestratorServices()
-                            .AddGeneratedHostedServiceServices(hostContext.Configuration);
+                            .AddGeneratedHostedServices(hostContext.Configuration)
+                            .AddGeneratedOutboxDequeueHostedService<LoggerEventPublisher>(hostContext.Configuration);
                 });
     }
 }

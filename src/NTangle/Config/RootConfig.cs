@@ -29,6 +29,7 @@ namespace NTangle.Config
     [CodeGenCategory("Infer", Title = "Provides the _special Column Name inference_ configuration.")]
     [CodeGenCategory(".NET", Title = "Provides the _.NET_ configuration.")]
     [CodeGenCategory("Event", Title = "Provides the _event_ configuration.")]
+    [CodeGenCategory("Outbox", Title = "Provides the _outbox_ configuration.")]
     [CodeGenCategory("Path", Title = "Provides the _Path (Directory)_ configuration for the generated artefacts.")]
     [CodeGenCategory("Namespace", Title = "Provides the _.NET Namespace_ configuration for the generated artefacts.")]
     [CodeGenCategory("Collections", Title = "Provides related child (hierarchical) configuration.")]
@@ -213,6 +214,50 @@ namespace NTangle.Config
 
         #endregion
 
+        #region Outbox
+
+        /// <summary>
+        /// Indicates whether to generate the event outbox SQL and .NET artefacts.
+        /// </summary>
+        [JsonProperty("outbox", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Outbox", Title = "Indicates whether to generate the event outbox SQL and .NET artefacts.",
+            Description = "Defaults to `false`.")]
+        public bool? Outbox { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schema name of the event outbox table.
+        /// </summary>
+        [JsonProperty("outboxSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Outbox", Title = "The schema name of the event outbox table.",
+            Description = "Defaults to `CdcSchema`.")]
+        public string? OutboxSchema { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the event outbox table.
+        /// </summary>
+        [JsonProperty("outboxTable", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Outbox", Title = "The name of the event outbox table.",
+            Description = "Defaults to `EventOutbox` (literal).")]
+        public string? OutboxTable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the stored procedure name for the event outbox enqueue.
+        /// </summary>
+        [JsonProperty("outboxEnqueueStoredProcedure", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Outbox", Title = "The stored procedure name for the event outbox enqueue.",
+            Description = "Defaults to `spEventOutboxEnqueue` (literal).")]
+        public string? OutboxEnqueueStoredProcedure { get; set; }
+
+        /// <summary>
+        /// Gets or sets the stored procedure name for the event outbox dequeue.
+        /// </summary>
+        [JsonProperty("outboxDequeueStoredProcedure", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Outbox", Title = "The stored procedure name for the event outbox dequeue.",
+            Description = "Defaults to `spEventOutboxDequeue` (literal).")]
+        public string? OutboxDequeueStoredProcedure { get; set; }
+
+        #endregion
+
         #region Path
 
         /// <summary>
@@ -355,6 +400,10 @@ namespace NTangle.Config
             EventSourceFormat = DefaultWhereNull(EventSubjectFormat, () => "NameAndTableKey");
             EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => "NameOnly");
             EventActionFormat = DefaultWhereNull(EventActionFormat, () => "PastTense");
+            OutboxSchema = DefaultWhereNull(OutboxSchema, () => CdcSchema);
+            OutboxTable = DefaultWhereNull(OutboxTable, () => "EventOutbox");
+            OutboxEnqueueStoredProcedure = DefaultWhereNull(OutboxEnqueueStoredProcedure, () => $"sp{OutboxTable}Enqueue");
+            OutboxDequeueStoredProcedure = DefaultWhereNull(OutboxDequeueStoredProcedure, () => $"sp{OutboxTable}Dequeue");
             PathBase = DefaultWhereNull(PathBase, () => AppName);
             PathDatabase = DefaultWhereNull(PathDatabase, () => $"{PathBase}.Database");
             PathDatabaseSchema = DefaultWhereNull(PathDatabaseSchema, () => $"{PathDatabase}/Schema");

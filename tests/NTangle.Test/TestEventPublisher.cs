@@ -1,4 +1,5 @@
 ﻿using NTangle.Events;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -12,7 +13,7 @@ namespace NTangle.Test
         /// <summary>
         /// Gets the list of sent <i>CloudEvents</i>.
         /// </summary>
-        public List<byte[]> Events { get; } = new List<byte[]>();
+        public List<BinaryData> Events { get; } = new List<BinaryData>();
 
         /// <inheritdoc/>
         public async Task SendAsync(params EventData[] events)
