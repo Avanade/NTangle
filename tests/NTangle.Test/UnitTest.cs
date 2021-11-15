@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using NTangle.Cdc;
 using NTangle.Utility;
 using NUnit.Framework;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -83,11 +84,11 @@ namespace NTangle.Test
         /// Assert the event by comparing the JSON content against a text file.
         /// </summary>
         /// <param name="expected">The name of the file in the <c>Expected</c> folder.</param>
-        /// <param name="bytes">The event <see cref="byte"/> array.</param>
+        /// <param name="binaryData">The event <see cref="BinaryData"/>.</param>
         /// <param name="exclude">The properties to exclude from the comparison.</param>
-        public static void AssertEvent(string expected, byte[] bytes, params string[] exclude)
+        public static void AssertEvent(string expected, BinaryData binaryData, params string[] exclude)
         {
-            var jt = JToken.Parse(Encoding.UTF8.GetString(bytes));
+            var jt = JToken.Parse(binaryData.ToString());
             JsonPropertyFilter.JsonApply(jt, null, new string[] { "id", "time", "correlationid", "data.etag" }.Concat(exclude));
             var txt = jt.ToString(Formatting.Indented);
 
@@ -99,11 +100,11 @@ namespace NTangle.Test
         /// Gets the event data deserialized to the requested type.
         /// </summary>
         /// <typeparam name="T">The data <see cref="Type"/>.</typeparam>
-        /// <param name="bytes">The event <see cref="byte"/> array.</param>
+        /// <param name="binaryData">The event <see cref="BinaryData"/>.</param>
         /// <returns>The data value.</returns>
-        public static T GetEventData<T>(byte[] bytes)
+        public static T GetEventData<T>(BinaryData binaryData)
         {
-            var jt = JToken.Parse(Encoding.UTF8.GetString(bytes));
+            var jt = JToken.Parse(binaryData.ToString());
             var jd = jt["data"];
             return jd.ToObject<T>();
         }

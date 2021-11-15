@@ -16,18 +16,18 @@ using {{Root.NamespacePublisher}}.Entities;
 namespace {{Root.NamespacePublisher}}.Services
 {
     /// <summary>
-    /// Provides the Change Data Capture (CDC) <see cref="{{Model}}Cdc"/> entity (aggregate root) <see cref="HostedService{T}"/> capabilities (database table '[{{Schema}}].[{{Name}}]').
+    /// Provides the event outbox dequeue and publishing hosted service capabilities (see <see cref="OutboxService{T}"/>).
     /// </summary>
-    public partial class {{Model}}HostedService : HostedService<I{{Model}}CdcOrchestrator, {{Model}}Cdc>
+    public partial class OutboxDequeueHostedService : OutboxService<EventOutboxMapper>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="{{Model}}HostedService"/> class.
+        /// Initializes a new instance of the <see cref="OutboxDequeueHostedService"/> class.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         /// <param name="config">The <see cref="IConfiguration"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="synchronizer"> The <see cref="IServiceSynchronizer"/>.</param>
-        public {{Model}}HostedService(IServiceProvider serviceProvider, ILogger<{{Model}}HostedService> logger, IConfiguration config, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, config, synchronizer) { }
+        public OutboxDequeueHostedService(IServiceProvider serviceProvider, ILogger<OutboxDequeueHostedService> logger, IConfiguration config, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, config, synchronizer) { }
     }
 }
 

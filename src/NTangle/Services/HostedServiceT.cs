@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 namespace NTangle.Services
 {
     /// <summary>
-    /// Provides the base Change Data Capture (CDC) <see cref="TimerHostedServiceBase"/> capabilities for a specified <see cref="IEntityOrchestrator"/>.
+    /// Provides the Change Data Capture (CDC) <see cref="TimerHostedServiceBase"/> capabilities for a specified <see cref="IEntityOrchestrator"/>.
     /// </summary>
     /// <typeparam name="TOrchestrator">The <see cref="IEntityOrchestrator"/> <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntity">The underlying <see cref="IEntity"/> <see cref="Type"/>.</typeparam>
-    public abstract class HostedService<TOrchestrator, TEntity> : HostedService where TOrchestrator : IEntityOrchestrator<TEntity> where TEntity : IEntity
+    public class HostedService<TOrchestrator, TEntity> : HostedService where TOrchestrator : IEntityOrchestrator<TEntity> where TEntity : IEntity
     {
-        private readonly IHostedServiceSynchronizer _synchronizer;
+        private readonly IServiceSynchronizer _synchronizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HostedService{T, TEntity}"/> class.
@@ -24,8 +24,8 @@ namespace NTangle.Services
         /// <param name="serviceProvider">The owning <see cref="IServiceProvider"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="config">The <see cref="IConfiguration"/>.</param>
-        /// <param name="synchronizer"> The <see cref="IHostedServiceSynchronizer"/>.</param>
-        public HostedService(IServiceProvider serviceProvider, ILogger logger, IConfiguration config, IHostedServiceSynchronizer synchronizer) : base(serviceProvider, logger, config) 
+        /// <param name="synchronizer"> The <see cref="IServiceSynchronizer"/>.</param>
+        public HostedService(IServiceProvider serviceProvider, ILogger logger, IConfiguration config, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, config) 
             => _synchronizer = synchronizer ?? throw new ArgumentNullException(nameof(synchronizer));
 
         /// <summary>

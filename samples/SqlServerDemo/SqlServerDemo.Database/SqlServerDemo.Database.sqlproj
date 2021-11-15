@@ -93,5 +93,10 @@
     <Build Include="Schema\NTangle\Stored Procedures\Generated\spCustomerBatchComplete.sql" />
     <Build Include="Schema\NTangle\Stored Procedures\Generated\spCustomerBatchExecute.sql" />
     <Build Include="Schema\NTangle\Tables\Generated\CustomerBatchTracking.sql" />
+    <Build Include="Schema\NTangle\Tables\Generated\EventOutbox.sql" />
+    <Build Include="Schema\NTangle\Tables\Generated\EventOutboxData.sql" />
+    <Build Include="Schema\NTangle\Stored Procedures\Generated\spEventOutboxDequeue.sql" />
+    <Build Include="Schema\NTangle\Stored Procedures\Generated\spEventOutboxEnqueue.sql" />
+    <Build Include="Schema\NTangle\Types\User-Defined Table Types\Generated\udtEventOutboxList.sql" />
   </ItemGroup>
 </Project>

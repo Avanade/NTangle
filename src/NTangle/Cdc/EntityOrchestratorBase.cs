@@ -172,16 +172,16 @@ namespace NTangle.Cdc
             {
                 if (ex is TaskCanceledException || (ex is AggregateException aex && aex.InnerException is TaskCanceledException))
                 {
-                    Logger.LogWarning($"{ServiceName}: Task canceled.");
+                    Logger.LogWarning("Task canceled.");
                     throw;
                 }
 
                 result.Exception = ex;
 
                 if (ex is DatabaseErrorException)
-                    Logger.LogError($"{ServiceName}: {result.Exception.Message}");
+                    Logger.LogError(result.Exception.Message);
                 else
-                    Logger.LogCritical($"{ServiceName}: Unexpected Exception encountered: {result.Exception.Message}");
+                    Logger.LogCritical($"Unexpected Exception encountered: {result.Exception.Message}");
             }
 
             await Task.CompletedTask;
@@ -209,7 +209,7 @@ namespace NTangle.Cdc
         { 
             // Get the requested batch data.
             EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result;
-            Logger.LogTrace("{ServiceName}: Query for next (new) Change Data Capture batch. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, ExecutionId={ExecutionId}]", ServiceName, MaxQuerySize, ContinueWithDataLoss, ExecutionId);
+            Logger.LogTrace("Query for next (new) Change Data Capture batch. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, ExecutionId={ExecutionId}]", MaxQuerySize, ContinueWithDataLoss, ExecutionId);
 
             var sw = Stopwatch.StartNew();
 
@@ -224,32 +224,32 @@ namespace NTangle.Cdc
             {
                 if (ex is TaskCanceledException || (ex is AggregateException aex && aex.InnerException is TaskCanceledException))
                 {
-                    Logger.LogWarning("{ServiceName}: Task canceled. [ExecutionId={ExecutionId}]", ServiceName, ExecutionId);
+                    Logger.LogWarning("Task canceled. [ExecutionId={ExecutionId}]", ExecutionId);
                     throw;
                 }
 
                 result = new EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> { Exception = ex, ExecutionId = ExecutionId };
 
                 if (ex is DatabaseErrorException)
-                    Logger.LogError("{ServiceName}: {DatabaseErrorMessage} [ExecutionId={ExecutionId}]", ServiceName, result.Exception.Message, ExecutionId);
+                    Logger.LogError("{DatabaseErrorMessage} [ExecutionId={ExecutionId}]", result.Exception.Message, ExecutionId);
                 else
-                    Logger.LogCritical(ex, "{ServiceName}: Unexpected Exception encountered: {ExceptionMessage} [ExecutionId={ExecutionId}]", ServiceName, result.Exception.Message, ExecutionId);
+                    Logger.LogCritical(ex, "Unexpected Exception encountered: {ExceptionMessage} [ExecutionId={ExecutionId}]", result.Exception.Message, ExecutionId);
 
                 return result;
             }
 
             if (result.Batch == null)
             {
-                Logger.LogTrace("{ServiceName}: Batch 'none': No new Change Data Capture data was found. [ExecutionId={ExecutionId}]", ServiceName, ExecutionId);
+                Logger.LogTrace("Batch 'none': No new Change Data Capture data was found. [ExecutionId={ExecutionId}]", ExecutionId);
                 return result;
             }
 
-            Logger.LogInformation("{ServiceName}: Batch '{BatchId}': {OperationsCount} entity operations(s) were found. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                ServiceName, result.Batch.Id, result.Result.Count, MaxQuerySize, ContinueWithDataLoss, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
+            Logger.LogInformation("Batch '{BatchId}': {OperationsCount} entity operations(s) were found. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
+                result.Batch.Id, result.Result.Count, MaxQuerySize, ContinueWithDataLoss, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
 
             if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)
             {
-                Logger.LogWarning("{ServiceName}: Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", ServiceName, result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
+                Logger.LogWarning("Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
                 return await Task.FromCanceled<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>>(cancellationToken.Value).ConfigureAwait(false);
             }
 
@@ -287,7 +287,7 @@ namespace NTangle.Cdc
             // Check cancellation.
             if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)
             {
-                Logger.LogWarning("{ServiceName}: Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", ServiceName, result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
+                Logger.LogWarning("Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
                 return await Task.FromCanceled<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>>(cancellationToken.Value).ConfigureAwait(false);
             }
 
@@ -324,14 +324,14 @@ namespace NTangle.Cdc
             // Check cancellation.
             if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)
             {
-                Logger.LogWarning("{ServiceName}: Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", ServiceName, result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
+                Logger.LogWarning("Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
                 return await Task.FromCanceled<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>>(cancellationToken.Value).ConfigureAwait(false);
             }
 
             // Publish & send the events.
             if (coll2.Count == 0)
-                Logger.LogInformation("{ServiceName}: Batch '{BatchId}': No event(s) were published; no unique version tracking hash found. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                    ServiceName, result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
+                Logger.LogInformation("Batch '{BatchId}': No event(s) were published; no unique version tracking hash found. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
+                    result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
             else
             {
                 var events = (await CreateEventsAsync(coll2, result.Batch.CorrelationId, cancellationToken.Value).ConfigureAwait(false)).ToArray();
@@ -339,8 +339,8 @@ namespace NTangle.Cdc
                 await EventPublisher.SendAsync(events).ConfigureAwait(false);
                 sw.Stop();
 
-                Logger.LogInformation("{ServiceName}: Batch '{BatchId}': {EventCount} event(s) were published/sent successfully. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                    ServiceName, result.Batch.Id, events.Length, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
+                Logger.LogInformation("Batch '{BatchId}': {EventCount} event(s) were published/sent successfully. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
+                    result.Batch.Id, events.Length, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
             }
 
             // Complete the batch (ignore any further 'cancel' as event(s) have been published and we *must* complete to minimise chance of sending more than once).
@@ -350,8 +350,8 @@ namespace NTangle.Cdc
             sw.Stop();
 
             if (cresult.IsSuccessful)
-                Logger.LogInformation("{ServiceName}: Batch '{BatchId}': Marked as Completed. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                    ServiceName, result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
+                Logger.LogInformation("Batch '{BatchId}': Marked as Completed. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
+                    result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
 
             return cresult;
         }

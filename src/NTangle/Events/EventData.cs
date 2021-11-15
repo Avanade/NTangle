@@ -43,7 +43,7 @@ namespace NTangle.Events
         /// Gets or sets the event timestamp.
         /// </summary>
         /// <remarks>Defaults to <see cref="DateTimeOffset.UtcNow"/>.</remarks>
-        public DateTimeOffset? Timestamp { get; set; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
 
         /// <summary>
         /// Gets or sets the event data.

@@ -15,18 +15,18 @@ using SqlServerDemo.Publisher.Entities;
 namespace SqlServerDemo.Publisher.Services
 {
     /// <summary>
-    /// Provides the Change Data Capture (CDC) <see cref="CustomerCdc"/> entity (aggregate root) <see cref="HostedService{T}"/> capabilities (database table '[Legacy].[Customer]').
+    /// Provides the event outbox dequeue and publishing hosted service capabilities (see <see cref="OutboxService{T}"/>).
     /// </summary>
-    public partial class CustomerHostedService : HostedService<ICustomerCdcOrchestrator, CustomerCdc>
+    public partial class OutboxDequeueHostedService : OutboxService<EventOutboxMapper>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CustomerHostedService"/> class.
+        /// Initializes a new instance of the <see cref="OutboxDequeueHostedService"/> class.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         /// <param name="config">The <see cref="IConfiguration"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="synchronizer"> The <see cref="IHostedServiceSynchronizer"/>.</param>
-        public CustomerHostedService(IServiceProvider serviceProvider, ILogger<CustomerHostedService> logger, IConfiguration config, IHostedServiceSynchronizer synchronizer) : base(serviceProvider, logger, config, synchronizer) { }
+        /// <param name="synchronizer"> The <see cref="IServiceSynchronizer"/>.</param>
+        public OutboxDequeueHostedService(IServiceProvider serviceProvider, ILogger<OutboxDequeueHostedService> logger, IConfiguration config, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, config, synchronizer) { }
     }
 }
 

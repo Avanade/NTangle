@@ -3,7 +3,6 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NTangle.Events
@@ -11,7 +10,7 @@ namespace NTangle.Events
     /// <summary>
     /// Represents as <see cref="ILogger"/> event publisher; whereby the events are output using <see cref="LoggerExtensions.LogInformation(ILogger, string, object[])"/>.
     /// </summary>
-    public class LoggerEventPublisher : IEventPublisher
+    public class LoggerEventPublisher : IOutboxEventPublisher
     {
         private readonly ILogger _logger;
         private readonly IEventSerializer _serializer;
@@ -29,6 +28,6 @@ namespace NTangle.Events
 
         /// <inheritdoc/>
         public async Task SendAsync(params EventData[] events) 
-            => await events.ForEachAsync(async @event => _logger.LogInformation(JToken.Parse(Encoding.UTF8.GetString(await _serializer.SerializeAsync(@event).ConfigureAwait(false))).ToString(Newtonsoft.Json.Formatting.Indented))).ConfigureAwait(false);
+            => await events.ForEachAsync(async @event => _logger.LogInformation(JToken.Parse((await _serializer.SerializeAsync(@event).ConfigureAwait(false)).ToString()).ToString(Newtonsoft.Json.Formatting.Indented))).ConfigureAwait(false);
     }
 }
