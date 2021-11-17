@@ -339,8 +339,8 @@ namespace NTangle.Cdc
                 await EventPublisher.SendAsync(events).ConfigureAwait(false);
                 sw.Stop();
 
-                Logger.LogInformation("Batch '{BatchId}': {EventCount} event(s) were published/sent successfully. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                    result.Batch.Id, events.Length, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
+                Logger.LogInformation("Batch '{BatchId}': {EventCount} event(s) were published successfully. [Publisher={Publisher}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
+                    result.Batch.Id, events.Length, EventPublisher.GetType().Name, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
             }
 
             // Complete the batch (ignore any further 'cancel' as event(s) have been published and we *must* complete to minimise chance of sending more than once).

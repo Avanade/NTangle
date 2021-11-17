@@ -13,7 +13,7 @@ Before the `NTangle.Template` template can be used it must be installed from [Nu
 dotnet new -i ntangle.template --nuget-source https://api.nuget.org/v3/index.json
 
 -- Or alternatively, point to a local folder...
-dotnet new -i ntangle.template --nuget-source C:\Users\Name\nuget-publish\NTangle.Template.1.0.1.nupkg
+dotnet new -i ntangle.template --nuget-source C:\Users\Name\nuget-publish
 ```
 
 <br/>
@@ -44,7 +44,7 @@ The following solution and projects will be created within the root `AppName` fo
 
 The solution and projects created contain all the requisite .NET Classes and NuGet references to build an _NTangle_ solution.
 
-**Note:** the solution will **not** initially compile. There are references with the [`AppName.Publisher/Program.cs`](./content/AppName.CodeGen/Program.cs) that do not exist; these need to be created/generated.
+**Note:** the solution will **not** initially compile. There are references within the [`AppName.Publisher/Program.cs`](./content/AppName.CodeGen/Program.cs) that do not exist; these need to be created/generated.
 
 The templated structure represents the bare minimum needed to start. Generally, the following projects are maintained in the sequence as follows.
 
@@ -56,7 +56,7 @@ The templated structure represents the bare minimum needed to start. Generally, 
 
 ### AppName.CodeGen
 
-The connection string defaulted within the [`Program.cs`](./content/AppName.CodeGen/Program.cs) needs to be validated and adjusted to that will be required for development purposes. The connection string can be overridden either by using the default environment variable (e.g. `AppName_ConnectionString` where any `.` characters in the `AppName` will be replaced with a corresponding `_`), or as a command line argument.
+The connection string defaulted within the [`Program.cs`](./content/AppName.CodeGen/Program.cs) needs to be validated and adjusted to that required for development purposes. The connection string can be overridden either by using the default environment variable (e.g. `AppName_ConnectionString` where any `.` characters in the `AppName` will be replaced with a corresponding `_`), or as a command line argument.
 
 The command line arguments are as follows:
 
@@ -80,17 +80,17 @@ Options:
 
 Otherwise, the **key** artefact that is maintained is [`ntangle.yaml`](./content/AppName.CodeGen/ntangle.yaml) that contains the CDC-related table configuration used to drive the code-generation. The contents are provided as an example only, and generally would be removed and replaced with the _actual_ configuration.
 
-To execute the code-generation use: `dotnet run` or execute the `AppName.CodeGen.exe` directly.
+To execute the code-generation use `dotnet run` or execute the `AppName.CodeGen.exe` directly.
 
 <br/>
 
 ### AppName.Database
 
-A Microsoft SQL Server data-tier application ([DAC](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications)) will have been generated. This will be empty, except for [`Post.Deploy.sql`](./content/AppName.Database/Post.Deploy.sql), which executes `:r .\Generated\CdcEnable.sql` which will be created once code-generation has been executed (where configured to do so, which is the default).
+A Microsoft SQL Server data-tier application ([DAC](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications)) will have been generated. This project will be empty except for [`Post.Deploy.sql`](./content/AppName.Database/Post.Deploy.sql), this executes `:r .\Generated\CdcEnable.sql` which will be created once code-generation has been executed (where configured to do so, which is the default).
 
 _Tip:_ If after genneration, any of the generated files are not automatically added to the Visual Studio Project structure, the _Show All Files_ in the _Solution Explorer_ can be used to view, and then added en masse by selecting and using the _Include In Project_ function.
 
-_Tip:_ An error `SQL70001: This statement is not recognized in this context.` may appear for file `Generated\CdcEnable.sql`. This error is because the _Build Action_ within _Properties_ for the file defaults to _Build_, change this value to _None_. See this [article](https://arcanecode.com/2013/03/28/ssdt-error-sql70001-this-statement-is-not-recognized-in-this-context/) for more information.
+_Tip:_ An error `SQL70001: This statement is not recognized in this context` may appear for file `Generated\CdcEnable.sql`. This error is because the _Build Action_ within the _Properties_ for the file defaults to _Build_, change this value to _None_. See this [article](https://arcanecode.com/2013/03/28/ssdt-error-sql70001-this-statement-is-not-recognized-in-this-context/) for more information.
 
 Once ready, the Microsoft SQL Server data-tier application should be used to [_deploy_](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/deploy-a-data-tier-application) the latest changes.
 
@@ -100,7 +100,7 @@ Once ready, the Microsoft SQL Server data-tier application should be used to [_d
 
 This default publisher is a console application whose purpose is to orchestrate the CDC processing and corresponding event processing leveraging all of the generated artefacts, both in the database, and within the publisher itself.
 
-The connection string defaulted within the [`appsettings.json`](./content/AppName.Publisher/appsettings.json) needs to be validated and adjusted to that will be required for development purposes. The connection string can be overridden either by using the default environment variable (e.g. `AppName_ConnectionStrings__SqlDb` where any `.` characters in the `AppName` will be replaced with a corresponding `_`), or as a command line argument (e.g. ConnectionStrings:SqlDb="value").
+The connection string defaulted within the [`appsettings.json`](./content/AppName.Publisher/appsettings.json) needs to be validated and adjusted to that required for development purposes. The connection string can be overridden either by using the default environment variable (e.g. `AppName_ConnectionStrings__SqlDb` where any `.` characters in the `AppName` will be replaced with a corresponding `_`), or as a command line argument (e.g. `ConnectionStrings:SqlDb="value"`).
 
 Additionally, the following configuration settings can be used to control execution.
 
@@ -129,13 +129,21 @@ The following walks through the process of demonstrating how to execute the end-
 
 ### Create database
 
-An existing database is required that contains existing tables and data. Copy the contents of [`create-database.sql`](./create-database.sql) and execute using your favorite database tool.
+An existing database is required that contains tables and data. To create the database and set up, copy the contents of [`create-database.sql`](./create-database.sql) and execute using your favorite database tool.
+
+_Tip:_ Where attempting for a subsequent time and the database already exists use the following to drop prior to recreating a fresh version.
+
+```
+USE master
+ALTER DATABASE [FooBar] SET SINGLE_USER WITH ROLLBACK IMMEDIATE
+DROP DATABASE [FooBar]
+```
 
 <br/>
 
 ### Create solution
 
-To start, create a new `FooBar` directory, change to that directory, and then create the solution. Once created then open the solution in Visual Studio.
+To start, create a new `FooBar` directory, change to that directory, and then create the solution using the _NTangle_ template. Once created, open the solution in Visual Studio.
 
 ```
 mkdir FooBar
@@ -147,7 +155,7 @@ dotnet new ntangle
 
 ### FooBar.CodeGen
 
-The `ntangle.yaml` configuration is pre-configured, and `Program.cs` has the correct connection string. Compile the application and execute directly from Visual Studio, or using `dotnet run`.
+The `ntangle.yaml` configuration file is pre-configured, and `Program.cs` has the correct connection string. Compile the application and execute directly from Visual Studio, or using `dotnet run`.
 
 The output from the console application should be similar to the following.
 
@@ -287,9 +295,9 @@ Once added the generated artefacts need to be deployed to the database. Using th
 
 ### FooBar.Publisher
 
-The `Program.cs` is pre-configured, and the `appsettings.json` has the correct connection string. All of the generated C# artefacts should have been automatically included within the .NET project. Compile the application and execute. Leave it running; use `ctrl-c` to stop.
+The `Program.cs` is pre-configured, and the `appsettings.json` has the correct connection string. All of the generated C# artefacts should have been automatically included within the .NET project. Compile the application and execute. Leave it running; use `ctrl-c` to stop once the following test has been performed.
 
-Within your favorite database tool make a change to `[Legacy].[Contact]` table, updating the `Name` column in the first row. Within the next 30 the following console output should be displayed.
+Within your favorite database tool make a change to `[Legacy].[Contact]` table, updating the `Name` column in the first row. Within the next 30 seconds similar console output to the following should be displayed.
 
 ```
 info: FooBar.Publisher.Services.ContactHostedService[0]
@@ -305,9 +313,11 @@ info: Microsoft.Hosting.Lifetime[0]
 info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
       Batch '1': 1 entity operations(s) were found. [MaxQuerySize=50, ContinueWithDataLoss=True, CorrelationId=a57c2994-168a-4875-8bde-bd6354188e88, ExecutionId=04d3958d-d573-4ae3-a8b2-0cb451aacab1, Elapsed=56ms]
 info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
-      Batch '1': 1 event(s) were published/sent successfully. [CorrelationId=a57c2994-168a-4875-8bde-bd6354188e88, ExecutionId=04d3958d-d573-4ae3-a8b2-0cb451aacab1, Elapsed=83ms]
+      Batch '1': 1 event(s) were published successfully. [Publisher=OutboxEventPublisher, CorrelationId=a57c2994-168a-4875-8bde-bd6354188e88, ExecutionId=04d3958d-d573-4ae3-a8b2-0cb451aacab1, Elapsed=83ms]
 info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
       Batch '1': Marked as Completed. [CorrelationId=a57c2994-168a-4875-8bde-bd6354188e88, ExecutionId=04d3958d-d573-4ae3-a8b2-0cb451aacab1, Elapsed=19ms]
+info: FooBar.Publisher.Services.OutboxDequeueHostedService[0]
+      1 event(s) were dequeued. [Elapsed=15ms]
 info: NTangle.Events.LoggerEventPublisher[0]
       {
         "specversion": "1.0",
@@ -341,5 +351,5 @@ info: NTangle.Events.LoggerEventPublisher[0]
         }
       }
 info: FooBar.Publisher.Services.OutboxDequeueHostedService[0]
-      1 event(s) were published/sent successfully. [Elapsed=3ms]
+      1 event(s) were published successfully. [Publisher=LoggerEventPublisher, Elapsed=3ms]
 ```

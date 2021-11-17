@@ -65,12 +65,17 @@ namespace NTangle.Services
                     // Dequeue the events; where there are none to publish, then simply exit and try again later.
                     Logger.LogTrace("Dequeue events. [MaxDequeueSize={MaxDequeueSize}]", MaxDequeueSize);
 
+                    sw = Stopwatch.StartNew();
                     var events = await _mapper.DequeueAsync(db, MaxDequeueSize).ConfigureAwait(false);
+                    sw.Stop();
+
                     if (events == null || !events.Any())
                     {
                         txn.Complete();
                         return;
                     }
+
+                    Logger.LogInformation("{EventCount} event(s) were dequeued. [Elapsed={Elapsed}ms]", events.Count(), sw.ElapsedMilliseconds);
 
                     // Deserilaize the events.
                     var list = new List<EventData>();
@@ -90,7 +95,7 @@ namespace NTangle.Services
                         sw = Stopwatch.StartNew();
                         await publisher.SendAsync(list.ToArray()).ConfigureAwait(false);
                         sw.Stop();
-                        Logger.LogInformation("{EventCount} event(s) were published/sent successfully. [Elapsed={Elapsed}ms]", list.Count, sw.ElapsedMilliseconds);
+                        Logger.LogInformation("{EventCount} event(s) were published successfully. [Publisher={Publisher}, Elapsed={Elapsed}ms]", list.Count, publisher.GetType().Name, sw.ElapsedMilliseconds);
                     }
 
                     // Commit the transaction.
