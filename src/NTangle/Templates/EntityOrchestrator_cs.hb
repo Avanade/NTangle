@@ -181,11 +181,11 @@ namespace {{Root.NamespacePublisher}}.Data
     {{/unless}}
   {{/each}}
   {{#each Columns}}
-                {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"){{#unless @last}},{{/unless}}
+                {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"){{#unless @last}},{{else}}{{#ifne Parent.JoinNonCdcChildren.Count 0}},{{/ifne}}{{/unless}}
   {{/each}}
   {{#each JoinNonCdcChildren}}
       {{#each Columns}}
-                {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"),
+                {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"){{#unless @last}},{{/unless}}
       {{/each}}
   {{/each}}
             };

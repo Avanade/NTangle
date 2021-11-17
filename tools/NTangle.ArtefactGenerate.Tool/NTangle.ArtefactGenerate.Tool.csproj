@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\OnRamp\src\OnRamp\OnRamp.csproj" />
     <ProjectReference Include="..\..\src\NTangle\NTangle.csproj" />
   </ItemGroup>
 

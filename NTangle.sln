@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NTangle", "src\NTangle\NTangle.csproj", "{3DE3E0B8-4078-422C-B331-F14BC779489F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnRamp", "..\OnRamp\src\OnRamp\OnRamp.csproj", "{F17F4E46-1785-4344-80BD-085DAA1653E9}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{07E22463-39F6-4CBC-9790-CF858A88091F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8E857EA7-5ADC-4FD3-BAAE-EC8DC07AFCF1}"
@@ -15,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		CONTRIBUTING.md = CONTRIBUTING.md
 		LICENSE = LICENSE
+		nuget-publish.ps1 = nuget-publish.ps1
 		README.md = README.md
 		SECURITY.md = SECURITY.md
 	EndProjectSection
@@ -35,7 +34,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlServerDemo.Test", "sampl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{780B69CA-D467-45CF-B115-A3FEB0B88BD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTangle.ArtefactGenerate.Tool", "tools\NTangle.ArtefactGenerate.Tool\NTangle.ArtefactGenerate.Tool.csproj", "{D43AAE26-31A4-4F9B-9521-0A7CEB776386}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NTangle.ArtefactGenerate.Tool", "tools\NTangle.ArtefactGenerate.Tool\NTangle.ArtefactGenerate.Tool.csproj", "{D43AAE26-31A4-4F9B-9521-0A7CEB776386}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schemas", "Schemas", "{4715F738-C8FE-49C4-8F18-83875CF4D974}"
 	ProjectSection(SolutionItems) = preProject
@@ -54,6 +53,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generated", "Generated", "{
 		docs\generated\tablemapping.md = docs\generated\tablemapping.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NTangle.Template", "tools\NTangle.Template\NTangle.Template.csproj", "{AD6A38DA-9BB6-4650-A512-434EC19E8DDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,10 +65,6 @@ Global
 		{3DE3E0B8-4078-422C-B331-F14BC779489F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DE3E0B8-4078-422C-B331-F14BC779489F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DE3E0B8-4078-422C-B331-F14BC779489F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F17F4E46-1785-4344-80BD-085DAA1653E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F17F4E46-1785-4344-80BD-085DAA1653E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F17F4E46-1785-4344-80BD-085DAA1653E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F17F4E46-1785-4344-80BD-085DAA1653E9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F2B7EC0C-9268-4E15-B014-6598682BFF4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F2B7EC0C-9268-4E15-B014-6598682BFF4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2B7EC0C-9268-4E15-B014-6598682BFF4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -94,6 +91,10 @@ Global
 		{D43AAE26-31A4-4F9B-9521-0A7CEB776386}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D43AAE26-31A4-4F9B-9521-0A7CEB776386}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D43AAE26-31A4-4F9B-9521-0A7CEB776386}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD6A38DA-9BB6-4650-A512-434EC19E8DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD6A38DA-9BB6-4650-A512-434EC19E8DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD6A38DA-9BB6-4650-A512-434EC19E8DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD6A38DA-9BB6-4650-A512-434EC19E8DDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +108,7 @@ Global
 		{A5F7177D-3747-45DF-BAF0-1E5F466A8C3C} = {54E2D3C7-1AC1-4EA6-A8CA-42EC12A6E299}
 		{D43AAE26-31A4-4F9B-9521-0A7CEB776386} = {780B69CA-D467-45CF-B115-A3FEB0B88BD1}
 		{54D9318B-8D30-41FF-A5DD-554C13AC62F3} = {5B2FCA11-CC69-40D7-9FC3-DC7707C77D45}
+		{AD6A38DA-9BB6-4650-A512-434EC19E8DDD} = {780B69CA-D467-45CF-B115-A3FEB0B88BD1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B97E5639-3430-4AD7-9942-D35EF26F263B}

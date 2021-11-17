@@ -86,20 +86,20 @@ Documentation related to each of the above are as follows:
 - [`Join`](./docs/generated/join.md) - defines none or more table joins to include within the entity.
 - [`JoinOn`](./docs/generated/joinon.md) - defines the join on column characteristics.
 - [`JoinMapping`](./docs/generated/joinmapping.md) - defines global identifier mappings for any of the join table columns.
-- [`TableMapping`](./docs/generated/tablemapping.md) - - defines global identifier mappings for any of the primary table columns.
+- [`TableMapping`](./docs/generated/tablemapping.md) - defines global identifier mappings for any of the primary table columns.
 
 An example [ntangle.yaml](./samples/SqlServerDemo/SqlServerDemo.CodeGen/ntangle.yaml) configuration file exists within the [`SqlServerDemo`](./samples/SqlServerDemo) sample. The [`SqlServerDemo.CodeGen`](./samples/SqlServerDemo/SqlServerDemo.CodeGen) sample also demonstrates how to invoke the code generator from the underlying [`Program`](./samples/SqlServerDemo/SqlServerDemo.CodeGen/Program.cs).
 
-The code-generator will output a number of generated artefacts (see [`SqlServerDemo.Database`](./samples/SqlServerDemo/SqlServerDemo.Database) sample); these will be either database-related or additional .NET runtime components (see [`SqlServerDemo.Publisher`](./samples/SqlServerDemo/SqlServerDemo.Publisher) sample).
+The code-generator will output a number of generated artefacts ; these will be either database-related (see [`SqlServerDemo.Database`](./samples/SqlServerDemo/SqlServerDemo.Database) sample) or corresponding .NET runtime components (see [`SqlServerDemo.Publisher`](./samples/SqlServerDemo/SqlServerDemo.Publisher) sample).
 
 
 The following [`NTangle`](./src/NTangle) namespaces provide code-generation capabilties:
 
 Namespace | Description
 -|-
-[`Config`](./src/NTangle/Config) | The _internal_ code that supports the YAML/JSON configuration.
+[`Config`](./src/NTangle/Config) | The _internal_ capabilities that support the YAML/JSON configuration.
 [`Console`](./src/NTangle/Console) | The code-generation tooling capabilities, primarily [`CodeGenConsole`](./src/NTangle/Console/CodeGenConsole.cs).
-[`Generators`](./src/NTangle/Generators) | The _internal_ code-generators used to select configuration for one or more templates.
+[`Generators`](./src/NTangle/Generators) | The _internal_ code-generators used to select configuration for one or more [`Templates`](./src/NTangle/Templates) as orchestrated by the underlying [`Scripts`](./src/NTangle/Scripts).
 
 <br/>
 
@@ -114,7 +114,7 @@ Namespace | Description
 [`Cdc`](./src/NTangle/Cdc) | The CDC-orchestration capabilities, primarily [`EntityOrchestrator`](./src/NTangle/Cdc/EntityOrchestrator.cs).
 [`Data`](./src/NTangle/Data) | The database access capabilities, primarily [`Database`](./src/NTangle/Data/Database.cs).
 [`Events`](./src/NTangle/Events) | The event capabilities, primarily [`IEventPublisher`](./src/NTangle/Events/IEventPublisher.cs) and [`CloudEventSerializer`](./src/NTangle/Events/CloudEventSerializer.cs).
-[`Services`](./src/NTangle/Services) | The service hosting capabilities, primarily [`HostedService`](./src/NTangle/Services/HostedServiceT.cs).
+[`Services`](./src/NTangle/Services) | The service hosting capabilities, primarily [`HostedService`](./src/NTangle/Services/HostedServiceT.cs) and [`OutboxService`](./src/NTangle/Services/OutboxServiceT.cs).
 
 <br/>
 
@@ -134,7 +134,8 @@ The following tools are provided to support development:
 
 Sample | Description
 -|-
-[`NTangle.ArtefactGenerate.Tool`](./tools/NTangle.ArtefactGenerate.Tool) | This provides a means to auto-generate the corresponding JSON Schema and markdown documentation from the related .NET configuration entities.
+[`NTangle.Template`](./tools/NTangle.Template) | This is the .NET template used to accelerate the creation of an _nTangle_ solution and all projects using `dotnet new`. This leverages the .NET Core [templating](https://docs.microsoft.com/en-au/dotnet/core/tools/custom-templates) functionality.
+[`NTangle.ArtefactGenerate.Tool`](./tools/NTangle.ArtefactGenerate.Tool) | This in an _internal_ tool used for _nTangle_ development that provides a means to auto-generate the corresponding JSON Schema and markdown documentation from the related .NET configuration entities.
 
 <br/>
 

@@ -10,11 +10,15 @@ namespace SqlServerDemo.Test
     /// </summary>
     public static class SqlServerUnitTest
     {
+        /// <summary>
+        /// Gets the <see cref="SqlServerDatabase"/> used for testing.
+        /// </summary>
+        /// <returns>The <see cref="SqlServerDatabase"/>.</returns>
         public static IDatabase GetDatabase()
         {
             var cb = new ConfigurationBuilder().SetBasePath(Environment.CurrentDirectory).AddJsonFile("appsettings.json").AddEnvironmentVariables().Build();
             var cs = cb.GetConnectionString("SqlDb");
-            return new Database(() => new SqlConnection(cs));
+            return new SqlServerDatabase(() => new SqlConnection(cs));
         }
     }
 }

@@ -24,12 +24,12 @@ namespace NTangle.Services
         /// <summary>
         /// The configuration name for <see cref="MaxDequeueSize"/>.
         /// </summary>
-        public const string MaxDequeueSizeName = "OutboxMaxQuerySize";
+        public const string MaxDequeueSizeName = "OutboxMaxDequeueSize";
 
         /// <summary>
-        /// Gets or sets the default interval seconds used where the specified <see cref="Interval"/> is less than or equal to zero. Defaults to <b>one</b> minute.
+        /// Gets or sets the default interval seconds used where the specified <see cref="Interval"/> is less than or equal to zero. Defaults to <b>thirty</b> seconds.
         /// </summary>
-        public static TimeSpan DefaultInterval { get; set; } = TimeSpan.FromMinutes(1);
+        public static TimeSpan DefaultInterval { get; set; } = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HostedService"/> class.

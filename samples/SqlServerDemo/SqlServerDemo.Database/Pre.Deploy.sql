@@ -18,9 +18,9 @@ BEGIN
   EXEC sys.sp_cdc_enable_db
 END
 
--- Legacy schema
-
 GO
+
+-- Legacy schema
 
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE [name] = N'Legacy')
 BEGIN

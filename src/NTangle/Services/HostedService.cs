@@ -32,9 +32,9 @@ namespace NTangle.Services
         public const string ContinueWithDataLossName = "ContinueWithDataLoss";
 
         /// <summary>
-        /// Gets or sets the default interval seconds used where the specified <see cref="Interval"/> is less than or equal to zero. Defaults to <b>one</b> minute.
+        /// Gets or sets the default interval seconds used where the specified <see cref="Interval"/> is less than or equal to zero. Defaults to <b>thirty</b> seconds.
         /// </summary>
-        public static TimeSpan DefaultInterval { get; set; } = TimeSpan.FromMinutes(1);
+        public static TimeSpan DefaultInterval { get; set; } = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HostedService"/> class.
@@ -50,7 +50,7 @@ namespace NTangle.Services
         /// <remarks>Will default to configuration, a) <see cref="TimerHostedServiceBase.ServiceName"/> : <see cref="IntervalName"/>, then b) <see cref="IntervalName"/>, where specified; otherwise, <see cref="DefaultInterval"/>.</remarks>
         public override TimeSpan Interval
         {
-            get => _interval ?? Config.GetValue<TimeSpan?>($"{ServiceName}:{IntervalName}") ?? Config.GetValue<TimeSpan?>(IntervalName) ?? DefaultInterval;
+            get => _interval ?? Config.GetValue<TimeSpan?>($"{ServiceName}_{IntervalName}") ?? Config.GetValue<TimeSpan?>(IntervalName) ?? DefaultInterval;
             set => _interval = value;
         }
 
@@ -61,7 +61,7 @@ namespace NTangle.Services
         /// <para>Will default to configuration, a) <see cref="TimerHostedServiceBase.ServiceName"/> : <see cref="MaxQuerySizeName"/> (e.g. '<c>ContactService:MaxQuerySize</c>'), then b) <see cref="MaxQuerySizeName"/>, where specified.</para></remarks>
         public virtual int? MaxQuerySize
         {
-            get => _maxQuerySize ?? Config.GetValue<int?>($"{ServiceName}:{MaxQuerySizeName}") ?? Config.GetValue<int?>(MaxQuerySizeName);
+            get => _maxQuerySize ?? Config.GetValue<int?>($"{ServiceName}_{MaxQuerySizeName}") ?? Config.GetValue<int?>(MaxQuerySizeName);
             set => _maxQuerySize = value;
         }
 
@@ -72,7 +72,7 @@ namespace NTangle.Services
         /// <para>Will default to configuration, a) <see cref="TimerHostedServiceBase.ServiceName"/> : <see cref="ContinueWithDataLossName"/> (e.g. '<c>ContactService:ContinueWithDataLoss</c>'), then b) <see cref="ContinueWithDataLossName"/>, where specified.</para></remarks>
         public virtual bool? ContinueWithDataLoss
         {
-            get => _continueWithDataLoss ?? Config.GetValue<bool?>($"{ServiceName}:{ContinueWithDataLossName}") ?? Config.GetValue<bool?>(ContinueWithDataLossName);
+            get => _continueWithDataLoss ?? Config.GetValue<bool?>($"{ServiceName}_{ContinueWithDataLossName}") ?? Config.GetValue<bool?>(ContinueWithDataLossName);
             set => _continueWithDataLoss = value;
         }
     }
