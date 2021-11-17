@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -125,11 +124,7 @@ namespace NTangle.Data
         /// <summary>
         /// Check the <see cref="DbException"/> and get underlying error and throw if a known NTangle database error.
         /// </summary>
-        private static void ThrowIfError(DbException dbex)
-        {
-            if (dbex is SqlException sex && sex.Number == 56002) // The SQL Server magic number is 56002.
-                throw new DatabaseErrorException(dbex.Message, dbex);
-        }
+        private void ThrowIfError(DbException dbex) => Database.OnDbException(dbex);
 
         /// <summary>
         /// Executes a non-query command.
@@ -164,7 +159,7 @@ namespace NTangle.Data
         /// <summary>
         /// Wrap the execution and manage the <see cref="DbConnection"/> handling.
         /// </summary>
-        private static async Task<T> ExecuteWrapper<T>(Func<Task<T>> func)
+        private async Task<T> ExecuteWrapper<T>(Func<Task<T>> func)
         {
             try
             {

@@ -8,25 +8,29 @@ using System.Threading.Tasks;
 namespace NTangle.Data
 {
     /// <summary>
-    /// Provides the database access.
+    /// Provides the base database access functionality.
     /// </summary>
-    public class Database : IDatabase, IDisposable
+    /// <typeparam name="TConnection">The <see cref="DbConnection"/> <see cref="Type"/>.</typeparam>
+    public abstract class Database<TConnection> : IDatabase, IDisposable where TConnection : DbConnection
     {
-        private readonly Func<DbConnection> _dbConnCreate;
-        private DbConnection? _dbConn;
+        private readonly Func<TConnection> _dbConnCreate;
+        private TConnection? _dbConn;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Database"/> class.
+        /// Initializes a new instance of the <see cref="Database{TConn}"/> class.
         /// </summary>
-        /// <param name="create">The function to create the <see cref="DbConnection"/>.</param>
-        public Database(Func<DbConnection> create) => _dbConnCreate = create ?? throw new ArgumentNullException(nameof(create));
+        /// <param name="create">The function to create the <typeparamref name="TConnection"/> <see cref="DbConnection"/>.</param>
+        protected Database(Func<TConnection> create) => _dbConnCreate = create ?? throw new ArgumentNullException(nameof(create));
 
-        /// <inheritdoc/>
-        public async Task<DbConnection> GetConnectionAsync()
+        /// <summary>
+        /// Gets the <typeparamref name="TConnection"/> <see cref="DbConnection"/>.
+        /// </summary>
+        /// <remarks>The connection is created and opened on first use, and closed on <see cref="IDisposable.Dispose()"/>.</remarks>
+        public async Task<TConnection> GetConnectionAsync()
         {
             if (_dbConn == null)
             {
-                _dbConn = _dbConnCreate() ?? throw new InvalidOperationException($"The create function must create a valid {nameof(DbConnection)} instance.");
+                _dbConn = _dbConnCreate() ?? throw new InvalidOperationException($"The create function must create a valid {nameof(TConnection)} instance.");
                 await _dbConn.OpenAsync().ConfigureAwait(false);
             }
 
@@ -34,12 +38,18 @@ namespace NTangle.Data
         }
 
         /// <inheritdoc/>
+        async Task<DbConnection> IDatabase.GetConnectionAsync() => await GetConnectionAsync().ConfigureAwait(false);
+
+        /// <inheritdoc/>
         public DatabaseCommand StoredProcedure(string storedProcedure, Action<DatabaseParameterCollection>? parameters = null)
-            => new DatabaseCommand(this, CommandType.StoredProcedure, storedProcedure ?? throw new ArgumentNullException(nameof(storedProcedure)), parameters);
+            => new(this, CommandType.StoredProcedure, storedProcedure ?? throw new ArgumentNullException(nameof(storedProcedure)), parameters);
 
         /// <inheritdoc/>
         public DatabaseCommand SqlStatement(string sqlStatement, Action<DatabaseParameterCollection>? parameters = null)
-            => new DatabaseCommand(this, CommandType.Text, sqlStatement ?? throw new ArgumentNullException(nameof(sqlStatement)), parameters);
+            => new(this, CommandType.Text, sqlStatement ?? throw new ArgumentNullException(nameof(sqlStatement)), parameters);
+
+        /// <inheritdoc/>
+        public virtual void OnDbException(DbException dbex) { }
 
         /// <inheritdoc/>
         public void Dispose()

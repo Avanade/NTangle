@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "NTangle developers",
+  "classifications": [ "NTangle", "CDC", "Database", "Console", "Solution" ],
+  "identity": "NTangle.Solution",
+  "groupIdentity": "NTangle",
+  "name": "NTangle solution",
+  "shortName": "ntangle",
+  "sourceName": "AppName",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "symbols": {
+    "dbprovider": {
+      "type": "parameter",
+      "datatype": "choice",
+      "replaces": "DbProvider",
+      "choices": [
+        {
+          "choice": "SqlServer",
+          "description": "Indicates to use Microsoft SQL Server."
+        }
+      ],
+      "defaultValue": "SqlServer",
+      "description": "The database provider option."
+    },
+    "dbproject": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "SqlServer",
+          "description": "Indicates to use SQL Server data-tier application (DACPAC)."
+        },
+        {
+          "choice": "None",
+          "description": "Indicates that a database project is not required."
+        }
+      ],
+      "defaultValue": "SqlServer",
+      "description": "The database project option."
+    },
+    "implement_dbprovider_sqlserver": {
+      "type": "computed",
+      "value": "(dbprovider == \"SqlServer\")"
+    },
+    "implement_dbproject": {
+      "type": "computed",
+      "value": "(dbproject != \"None\")"
+    },
+    "implement_dbproject_sqlserver": {
+      "type": "computed",
+      "value": "(dbproject == \"SqlServer\")"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "!(implement_dbproject)",
+          "exclude": [ "Company.AppName.Database/**/*" ]
+        },
+        {
+          "condition": "!(dbprovider == \"SqlServer\")",
+          "exclude": [ "Company.AppName.Database/**/*" ]
+        }
+      ]
+    }
+  ]
+}

@@ -103,6 +103,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.21" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.21" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.21" />
+    <PackageReference Include="OnRamp" Version="1.0.1" />
     <PackageReference Include="System.Memory.Data" Version="6.0.0" />
   </ItemGroup>
 
@@ -111,10 +112,6 @@
       <PackagePath>\</PackagePath>
       <Pack>true</Pack>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\OnRamp\src\OnRamp\OnRamp.csproj" />
   </ItemGroup>
 
 </Project>

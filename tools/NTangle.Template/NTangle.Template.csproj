@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Version>1.0.1</Version>
+    <Authors>NTangle Developers</Authors>
+    <Company>Avanade</Company>
+    <Description>NTangle template solution for use with 'dotnet new'.</Description>
+    <Copyright>Avanade (c)</Copyright>
+    <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/Avanade/Tangle/raw/master/docs/images/Logo256x256.png</PackageIconUrl>
+    <PackageIcon>Logo256x256.png</PackageIcon>
+    <RepositoryUrl>https://github.com/Avanade/NTangle</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>ntangle cdc dotnet template solution</PackageTags>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="content\**\*" />
+    <EmbeddedResource Remove="content\**\*" />
+    <None Include="content\**\*" />
+    <Content Include="content\**">
+      <Pack>true</Pack>
+      <PackagePath>contentFiles\any\any\Schema\</PackagePath>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="content\AppName.CodeGen\ntangle.yaml" />
+    <None Remove="content\AppName.CodeGen\Program.cs" />
+    <None Remove="content\AppName.Database\Post.Deploy.sql" />
+    <None Remove="content\AppName.Publisher\AppName.Publisher.csproj" />
+    <None Remove="content\AppName.Publisher\appsettings.json" />
+    <None Remove="content\AppName.sln" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\images\Logo256x256.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
