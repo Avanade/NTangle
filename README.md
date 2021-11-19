@@ -44,9 +44,9 @@ To further guarantee only a single event for a specific version is published the
 
 <br/>
 
-## Additional reading
+## Change-data-capture (CDC)
 
-This [article](https://www.mssqltips.com/sqlservertip/5212/sql-server-temporal-tables-vs-change-data-capture-vs-change-tracking--part-2/) provides an excellent overview of the Microsoft SQL Server CDC-capabilities and walks through the process of setting up and using to aid in the fundamental understanding.
+This official [documentation](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server) describes the Microsoft SQL Server CDC-capabilities.
 
 Although throughout references will be made to [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server), the intention of _nTangle_ is that it is largely agnostic to the database technology, and therefore support for other databases will (or may) be supported in the future based on demand.
 
@@ -56,7 +56,7 @@ Although throughout references will be made to [Microsoft SQL Server](https://ww
 
 _nTangle_ has been created to provide a seamless means to create CDC-enabled aggregated entity publishing solution. The _nTangle_ solution is composed of the following:
 
-1. [Code generation](#Code-generation) - a configuration file defines the database tables and, none or more relationships, which also includes other functionality-based properties, that are used to drive the database-driven code-generation to create the required solution artefacts.
+1. [Code generation](#Code-generation) - a configuration file defines the database tables, none or more relationships, and other functionality-based properties, that are used to drive the database-driven code-generation to create the required solution artefacts.
 2. [Runtime](#Runtime) - the generated solution artefacts leverage a number of .NET runtime components/capabilities to support and enable. The code-generated solution then uses these at runtime to execute and orchestrate the CDC-triggered aggregated entity publishing process. 
 
 <br/>
@@ -117,6 +117,12 @@ Namespace | Description
 [`Services`](./src/NTangle/Services) | The service hosting capabilities, primarily [`HostedService`](./src/NTangle/Services/HostedServiceT.cs) and [`OutboxService`](./src/NTangle/Services/OutboxDequeueHostedService.cs).
 
 <br/>
+
+## Additional documentation
+
+The following are references to additional documentation.
+
+- [Microsoft SQL Server](./docs/SqlServer.md) - deep-dive of Microsoft SQL Server implementation.
 
 ## Samples
 

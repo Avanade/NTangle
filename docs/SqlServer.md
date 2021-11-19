@@ -4,11 +4,33 @@ This documents the _nTangle_ [architecture](#Architecture) and corresponding [co
 
 <br/>
 
+## Overview
+
+At its core _NTangle_ is a database-driven code-generation solution, in that it leverages an existing database to infer its underlying schema (tables and columns). A YAML (or JSON) configuration file is then required to define the CDC requirements, being the root and child tables, and their relationships, representing the entity (aggregate root). The _nTangle_ code-gen tool connects to the database, and using the YAML configuration generates the required database and .NET publishing runtime artefacts. This runtime then uses the database's CDC capabilities detects changes to the underlying tables and triggers the creation of entity events that are then published.
+
+![Overview](../images/Overview.png "Overview")
+
+The core components are:
+- **Database** - the existing tables and generated _nTangle_ runtime artefacts;
+- **Config** - the _nTangle_ code-gen configuration;
+- **Tooling** - the _nTangle_ code generator and generated publisher .NET runtime;
+- **Events** - the entity event (depicted as a [CloudEvent](https://cloudevents.io/)).
+
+<br/>
+
+## Change-data-capture (CDC)
+
+This official [documentation](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server) describes the Microsoft SQL Server CDC-capabilities.
+
+In addition, this [article](https://www.mssqltips.com/sqlservertip/5212/sql-server-temporal-tables-vs-change-data-capture-vs-change-tracking--part-2/) provides an excellent overview of the Microsoft SQL Server CDC-capabilities and walks through the process of setting up and using to aid in the fundamental understanding of this _key_ dependent capability.
+
+<br/>
+
 ## Architecture
 
 The following represents the high-level conceptual run-time architecture for a solution leveraging _nTangle_.
 
-![Logo](../images/Architecture.png "Architecture")
+![Architecture](../images/Architecture.png "Architecture")
 
 </br>
 
