@@ -48,7 +48,7 @@ To further guarantee only a single event for a specific version is published the
 
 This official [documentation](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server) describes the Microsoft SQL Server CDC-capabilities.
 
-Although throughout references will be made to [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server), the intention of _nTangle_ is that it is largely agnostic to the database technology, and therefore support for other databases will (or may) be supported in the future based on demand.
+Although throughout references are made to [Microsoft SQL Server](./docs/SqlServer.md), the intention of _nTangle_ is that it is largely agnostic to the database technology, and therefore support for other databases will (or may) be supported in the future based on demand.
 
 <br/>
 
