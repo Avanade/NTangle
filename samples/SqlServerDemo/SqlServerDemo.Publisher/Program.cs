@@ -29,10 +29,10 @@ namespace SqlServerDemo.Publisher
                             .AddStringIdentifierGenerator()
                             .AddCloudEventSerializer()
                             .AddFileLockSynchronizer()
-                            .AddGeneratedOutboxEventPublisher()
+                            .AddGeneratedOutboxEventPublishing()
                             .AddGeneratedOrchestratorServices()
                             .AddGeneratedHostedServices(hostContext.Configuration)
-                            .AddGeneratedOutboxDequeueHostedService<LoggerEventPublisher>(hostContext.Configuration);
+                            .AddOutboxDequeueHostedService<LoggerEventPublisher>(hostContext.Configuration);
                 });
     }
 }

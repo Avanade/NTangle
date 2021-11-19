@@ -131,6 +131,14 @@ The following walks through the process of demonstrating how to execute the end-
 
 An existing database is required that contains tables and data. To create the database and set up, copy the contents of [`create-database.sql`](./create-database.sql) and execute using your favorite database tool.
 
+The following tables, with the relationships described, will be created.
+
+```
+Contact             // Root (aggregate)
+└── Address         // Child 0:n - Zero--to-many addresses (e.g. Home and/or Postal)
+  └── AddressType   // Child 1:1 - One-to-one address type (reference data)
+```
+
 _Tip:_ Where attempting for a subsequent time and the database already exists use the following to drop prior to recreating a fresh version.
 
 ```

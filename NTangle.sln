@@ -42,6 +42,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schemas", "Schemas", "{4715
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{5B2FCA11-CC69-40D7-9FC3-DC7707C77D45}"
+	ProjectSection(SolutionItems) = preProject
+		docs\SqlServer.md = docs\SqlServer.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generated", "Generated", "{54D9318B-8D30-41FF-A5DD-554C13AC62F3}"
 	ProjectSection(SolutionItems) = preProject

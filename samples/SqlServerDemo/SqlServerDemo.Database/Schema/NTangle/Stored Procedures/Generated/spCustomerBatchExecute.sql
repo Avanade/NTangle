@@ -17,9 +17,6 @@ BEGIN
     DECLARE @CustomerBaseMinLsn BINARY(10), @CustomerMinLsn BINARY(10), @CustomerMaxLsn BINARY(10)
     DECLARE @BatchTrackingId INT
 
-    -- Get the latest 'base' minimum.
-    SET @CustomerBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Customer');
-
     -- Check if there is already an incomplete batch and attempt to reprocess.
     SELECT
         @CustomerMinLsn = [_batch].[CustomerMinLsn],
@@ -34,6 +31,9 @@ BEGIN
     BEGIN
       ;THROW 56002, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
     END
+
+    -- Get the latest 'base' minimum.
+    SET @CustomerBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Customer');
 
     -- Where there is no incomplete batch then the next should be created/processed.
     IF (@BatchTrackingId IS NULL)

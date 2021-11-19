@@ -18,10 +18,6 @@ BEGIN
     DECLARE @AddressBaseMinLsn BINARY(10), @AddressMinLsn BINARY(10), @AddressMaxLsn BINARY(10)
     DECLARE @BatchTrackingId INT
 
-    -- Get the latest 'base' minimum.
-    SET @ContactBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Contact');
-    SET @AddressBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Address');
-
     -- Check if there is already an incomplete batch and attempt to reprocess.
     SELECT
         @ContactMinLsn = [_batch].[ContactMinLsn],
@@ -38,6 +34,10 @@ BEGIN
     BEGIN
       ;THROW 56002, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
     END
+
+    -- Get the latest 'base' minimum.
+    SET @ContactBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Contact');
+    SET @AddressBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Address');
 
     -- Where there is no incomplete batch then the next should be created/processed.
     IF (@BatchTrackingId IS NULL)

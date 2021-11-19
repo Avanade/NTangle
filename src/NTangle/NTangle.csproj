@@ -45,7 +45,7 @@
     <None Remove="Templates\EntityOrchestrator_cs.hb" />
     <None Remove="Templates\Entity_cs.hb" />
     <None Remove="Templates\IdentifierMappingMapper_cs.hb" />
-    <None Remove="Templates\OutboxDequeueHostedService_cs.hb" />
+    <None Remove="Templates\OutboxDequeuePublisher_cs.hb" />
     <None Remove="Templates\SchemaCdc_sql.hb" />
     <None Remove="Templates\ServiceCollectionExtensions_cs.hb" />
     <None Remove="Templates\SpCompleteBatch_sql.hb" />
@@ -70,9 +70,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Scripts\SqlServerDacpac.yaml" />
     <EmbeddedResource Include="Scripts\SqlServerDatabase.yaml" />
-    <EmbeddedResource Include="Templates\OutboxDequeueHostedService_cs.hb" />
     <EmbeddedResource Include="Templates\EntityHostedService_cs.hb" />
     <EmbeddedResource Include="Templates\EntityOrchestrator_cs.hb" />
+    <EmbeddedResource Include="Templates\OutboxDequeuePublisher_cs.hb" />
     <EmbeddedResource Include="Templates\ServiceCollectionExtensions_cs.hb" />
     <EmbeddedResource Include="Templates\OutboxEventPublisher_cs.hb" />
     <EmbeddedResource Include="Templates\SqlServer\SchemaCdc_sql.hb" />

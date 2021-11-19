@@ -20,12 +20,6 @@ BEGIN
     DECLARE @PostsTagsBaseMinLsn BINARY(10), @PostsTagsMinLsn BINARY(10), @PostsTagsMaxLsn BINARY(10)
     DECLARE @BatchTrackingId INT
 
-    -- Get the latest 'base' minimum.
-    SET @PostsBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Posts');
-    SET @CommentsBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Comments');
-    SET @CommentsTagsBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Tags');
-    SET @PostsTagsBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Tags');
-
     -- Check if there is already an incomplete batch and attempt to reprocess.
     SELECT
         @PostsMinLsn = [_batch].[PostsMinLsn],
@@ -46,6 +40,12 @@ BEGIN
     BEGIN
       ;THROW 56002, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
     END
+
+    -- Get the latest 'base' minimum.
+    SET @PostsBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Posts');
+    SET @CommentsBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Comments');
+    SET @CommentsTagsBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Tags');
+    SET @PostsTagsBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Tags');
 
     -- Where there is no incomplete batch then the next should be created/processed.
     IF (@BatchTrackingId IS NULL)

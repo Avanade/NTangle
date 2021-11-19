@@ -108,5 +108,19 @@ namespace NTangle
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddFileLockSynchronizer(this IServiceCollection services) => CheckServices(services).AddScoped<IServiceSynchronizer, FileLockSynchronizer>();
+
+        /// <summary>
+        /// Adds the <see cref="OutboxDequeueHostedService"/> (see <see cref="HostedService"/>) whilst also adding the corresponding <typeparamref name="TPublisher"/> as the <see cref="IOutboxEventPublisher"/> scoped service.
+        /// </summary>
+        /// <typeparam name="TPublisher">The <see cref="IOutboxEventPublisher"/> <see cref="Type"/>.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="config">The <see cref="IConfiguration"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        /// <remarks>To turn off the execution of the hosted service at runtime set the '<c>OutboxDequeue</c>' configuration setting to <c>false</c>.</remarks>
+        public static IServiceCollection AddOutboxDequeueHostedService<TPublisher>(this IServiceCollection services, IConfiguration config) where TPublisher : class, IOutboxEventPublisher
+        {
+            var exe = (config ?? throw new System.ArgumentNullException(nameof(config))).GetValue<bool?>("OutboxDequeue");
+            return (!exe.HasValue || exe.Value) ? services.AddScoped<IOutboxEventPublisher, TPublisher>().AddHostedService<OutboxDequeueHostedService>() : services;
+        }
     }
 }

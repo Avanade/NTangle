@@ -1,18 +1,24 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NTangle.Cdc;
+using NTangle.Data;
 using NTangle.Events;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NTangle.Services
 {
     /// <summary>
     /// Provides the base <see cref="EventOutbox"/> dequeue and publish <see cref="TimerHostedServiceBase"/> capabilities.
     /// </summary>
-    public abstract class OutboxService : TimerHostedServiceBase
+    /// <remarks>This will instantiate an <see cref="IOutboxDequeuePublisher"/> and invoke <see cref="IOutboxDequeuePublisher.DequeueAndPublishAsync(int, CancellationToken)"/>.</remarks>
+    public sealed class OutboxDequeueHostedService : TimerHostedServiceBase
     {
+        private readonly IServiceSynchronizer _synchronizer;
         private TimeSpan? _interval;
         private int? _maxQuerySize;
 
@@ -37,7 +43,9 @@ namespace NTangle.Services
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="config">The <see cref="IConfiguration"/>.</param>
-        internal OutboxService(IServiceProvider serviceProvider, ILogger logger, IConfiguration config) : base(serviceProvider, logger, config) { }
+        /// <param name="synchronizer">The <see cref="IServiceSynchronizer"/>.</param>
+        public OutboxDequeueHostedService(IServiceProvider serviceProvider, ILogger<OutboxDequeueHostedService> logger, IConfiguration config, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, config)
+            => _synchronizer = synchronizer ?? throw new ArgumentNullException(nameof(synchronizer));
 
         /// <summary>
         /// Gets or sets the interval between each execution.
@@ -54,10 +62,33 @@ namespace NTangle.Services
         /// </summary>
         /// <remarks>Where specified overrides the <see cref="IEntityOrchestrator.MaxQuerySize"/>.
         /// <para>Will default to configuration <see cref="MaxDequeueSizeName"/>, where specified; otherwise, 10.</para></remarks>
-        public virtual int MaxDequeueSize
+        public int MaxDequeueSize
         {
             get => _maxQuerySize ?? Config.GetValue<int?>(MaxDequeueSizeName) ?? 10;
             set => _maxQuerySize = value;
+        }
+
+        /// <summary>
+        /// Executes the entity orchestration (<see cref="IEntityOrchestrator.ExecuteAsync(CancellationToken?)"/>) for the next batch and/or last incomplete batch.
+        /// </summary>
+        /// <param name="scopedServiceProvider"><inheritdoc/></param>
+        /// <param name="cancellationToken"><inheritdoc/></param>
+        protected override async Task ExecuteAsync(IServiceProvider scopedServiceProvider, CancellationToken cancellationToken)
+        {
+            // Ensure we have synchronized control; if not exit immediately.
+            if (!_synchronizer.Enter<OutboxDequeueHostedService>())
+                return;
+
+            // Instantiate the configured IOutboxDequeuePublisher and execute.
+            try
+            {
+                var dp = (scopedServiceProvider ?? throw new ArgumentNullException(nameof(scopedServiceProvider))).GetRequiredService<IOutboxDequeuePublisher>();
+                await dp.DequeueAndPublishAsync(MaxDequeueSize, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _synchronizer.Exit<OutboxDequeueHostedService>();
+            }
         }
     }
 }

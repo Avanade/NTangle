@@ -56,9 +56,9 @@ namespace NTangle.Utility
         internal static string? GenerateHash(string? value)
         {
             var buf = Encoding.UTF8.GetBytes(value ?? throw new ArgumentNullException(nameof(value)));
-            using var md5 = System.Security.Cryptography.MD5.Create();
-            var hash = md5.ComputeHash(buf, 0, buf.Length);
-            return Convert.ToBase64String(hash);
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            var hash = new BinaryData(sha256.ComputeHash(buf));
+            return hash.ToString();
         }
 
         /// <summary>

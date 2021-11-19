@@ -1,14 +1,14 @@
 ﻿<br/>
 
-![Logo](./images/Logo256x256.png "OnRamp")
+![Logo](./images/Logo256x256.png "nTangle")
 
 <br/>
 
 ## Introduction
 
-_nTangle_ is a Change Data Capture (CDC) code generation tool and corresponding runtime. Unlike other CDC-based technologies which replicate changes to rows _nTangle_ is designed to replicate business entities (aggregate) changes.
+_nTangle_ is a Change Data Capture (CDC) code generation tool and corresponding runtime. Unlike other CDC-based technologies which replicate changes to rows, _nTangle_ is designed to replicate business entity (aggregate) changes.
 
-For example if a database contains a `Person` and one-to-many related `Address` table, a traditional CDC replicator would leverage the CDC-capabilities of the database as the data source and replicate all changes from both tables largely distinct from each other. Additional logic would then be required within the downstream systems to aggregate these distinct changes back into a holistic business entity, if possible.
+For example, if a database contains a `Person` and one-to-many related `Address` table, a traditional CDC replicator would leverage the CDC-capabilities of the database as the data source and replicate all changes from both tables largely distinct from each other. Additional logic would then be required within the downstream systems to aggregate these distinct changes back into a holistic business entity, if possible.
 
 _nTangle_ tackles this differently by packaging the changes at the source into an aggregated entity which is then replicated. With _nTangle_ the CDC-capabilities of the database are leveraged as the trigger, with a corresponding query across all related tables to produce a holistic business entity. Therefore, if a change is made to `Person` or `Address` this will result in the publishing of the entity. Where transactional changes are made to both `Person` and `Address` a single holistic business entity will be published including all changes.
 
@@ -37,7 +37,7 @@ SalesOrder             // Parent
 ``` 
 
 The CDC capability is used specifically as a trigger for change (being `Create`, `Update` or `Delete`). The resulting data that is published is the latest, not a snapshot in time (CDC captured). The reason for this is two-fold:
-1. Given how the CDC data is retrieved there is no guarantee that the interim data represents a final intended state suitable for publishing; and,
+1. Given how the CDC data is batch retrieved there is no guarantee that the CDC captured data represents a final intended state suitable for publishing; and,
 1. This process is intended to be running near real-time so getting the latest version will produce the most current committed version as at that time.
 
 To further guarantee only a single event for a specific version is published the resulting _entity_ is JSON serialized and hashed; this value is checked (and saved) against the prior version to ensure a publish contains data that is actionable. This will minimize redundant publishing, whilst also making the underlying processing more efficient.
@@ -114,7 +114,7 @@ Namespace | Description
 [`Cdc`](./src/NTangle/Cdc) | The CDC-orchestration capabilities, primarily [`EntityOrchestrator`](./src/NTangle/Cdc/EntityOrchestrator.cs).
 [`Data`](./src/NTangle/Data) | The database access capabilities, primarily [`Database`](./src/NTangle/Data/Database.cs).
 [`Events`](./src/NTangle/Events) | The event capabilities, primarily [`IEventPublisher`](./src/NTangle/Events/IEventPublisher.cs) and [`CloudEventSerializer`](./src/NTangle/Events/CloudEventSerializer.cs).
-[`Services`](./src/NTangle/Services) | The service hosting capabilities, primarily [`HostedService`](./src/NTangle/Services/HostedServiceT.cs) and [`OutboxService`](./src/NTangle/Services/OutboxServiceT.cs).
+[`Services`](./src/NTangle/Services) | The service hosting capabilities, primarily [`HostedService`](./src/NTangle/Services/HostedServiceT.cs) and [`OutboxService`](./src/NTangle/Services/OutboxDequeueHostedService.cs).
 
 <br/>
 

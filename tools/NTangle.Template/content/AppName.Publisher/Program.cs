@@ -35,7 +35,7 @@ namespace AppName.Publisher
 #endif
                             .AddCloudEventSerializer()
                             .AddFileLockSynchronizer()
-                            .AddGeneratedOutboxEventPublisher()
+                            .AddGeneratedOutboxEventPublishing()
                             .AddGeneratedOrchestratorServices()
                             .AddGeneratedHostedServices(hostContext.Configuration)
                             .AddGeneratedOutboxDequeueHostedService<LoggerEventPublisher>(hostContext.Configuration);
