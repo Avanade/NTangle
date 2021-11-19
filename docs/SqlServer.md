@@ -13,9 +13,9 @@ The following represents the high-level conceptual run-time architecture for a s
 </br>
 
 The key components are as follows.
-- [**Orchestrator**](#Orchestrator) - one per entity (aggregate root) change tracking and event publisher orchestrator. The internal execution phases are depicted.
+- [**Orchestrator**](#Orchestrator) - one per entity (aggregate root) change tracking and event publisher orchestrator (execution phases depicted).
 - [**Hosted service**](#Hosted-service) - one per entity (aggregate root) timer-based hosted service responsible for executing the orchestrator.
-- [**Outbox dequeue publisher**](#Outbox-dequeue-publisher) - event outbox dequeue and publishing. The internal execution phases are depicted.
+- [**Outbox dequeue publisher**](#Outbox-dequeue-publisher) - event outbox dequeue and publishing (execution phases depicted).
 - [**Outbox dequeue hosted service**](#Outbox-dequeue-hosted-service) - timer-based hosted service responsible for executing the outbox dequeue publisher.
 
 <br/>
@@ -49,8 +49,8 @@ LSN check | Get minimum and maximum LSNs for each table. If the minimum is less 
 Root CDC | Gets all CDC changes (create, update and delete) for the table (see [`fn_cdc_get_all_changes_`](https://docs.microsoft.com/en-us/sql/relational-databases/system-functions/cdc-fn-cdc-get-all-changes-capture-instance-transact-sql)) up to the maximum query size. Store the result into a temporary `#changes` table.
 Child CDC | Gets all CDC changes (create, update and delete) for each child table up to the maximum query size joining against the parent table(s) to ensure existence. Append the result into the temporary `#changes` table where distinct (as per root table primary key).
 Batch query | Select result set for the latest Batch details (will be in an incomplete state).
-Root query | Select result set using the temporary `#changes` table to left outer join to the root table (latest), then left outer join to [`VersionTracking`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/VersionTracking.sql) (last version hash) and [`IdentifierMapping`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/IdentifierMapping.sql) (for selected colums where configured).
-Child query | Select result set using the temporary `#changes` for each child table using inner join to ensure data is selected for only what currently exists within the database (latest), then left outer join to [`IdentifierMapping`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/IdentifierMapping.sql) (for selected colums where configured).
+Root query | Select result set using the temporary `#changes` table to left outer join to the root table (latest), then left outer joins to [`VersionTracking`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/VersionTracking.sql) (last version hash) and [`IdentifierMapping`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/IdentifierMapping.sql) (for selected colums where configured).
+Child query | Select result set using the temporary `#changes` for each child table using inner joins to ensure data is selected for only what currently exists within the database (latest), then left outer joins to [`IdentifierMapping`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/IdentifierMapping.sql) (for selected colums where configured).
 
 </br>
 
@@ -70,7 +70,9 @@ Where a delete is referenced above, this relates to both physical and logical de
 
 #### Identifier mapping
 
-The orhestrator (where identifier mapping is configured) will assign new global identifiers generated using [`IIdentifierGenerator<T>`](../src/NTangle/IIdentifierGenerator.cs) to each of the selected columns where no value was previously selected during the [change detection](#Change-detection) phase. The [`spIdentifierMappingCreate`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Stored%20Procedures/Generated/spIdentifierMappingCreate.sql) stored procedure is then invoked to persist the mappings into the [`IdentifierMapping`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/IdentifierMapping.sql) table; where mapping is already assigned, then the previously assigned value will be returned for use.
+The orhestrator (where identifier mapping is configured) will assign new global identifiers generated using [`IIdentifierGenerator<T>`](../src/NTangle/IIdentifierGenerator.cs) to each of the selected columns where no value was previously selected during the [change detection](#Change-detection) phase.
+
+The [`spIdentifierMappingCreate`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Stored%20Procedures/Generated/spIdentifierMappingCreate.sql) stored procedure is then invoked to persist the mappings into the [`IdentifierMapping`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/IdentifierMapping.sql) table; where mapping is already assigned, then the previously assigned value will be returned for use and the newly allocated value discarded. This may occur where concurrent access is being performed against the same related identifier.
 
 </br>
 
@@ -86,6 +88,8 @@ The orchestrator will instantiate an [`EventData`](../src/NTangle/Events/EventDa
 
 The default is to use the [`OutboxEventPublisher`](../src/NTangle/Events/OutboxEventPublisherBase.cs) which enqueues all events using stored procedure [`spEventOutboxEnqueue`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Stored%20Procedures/Generated/spEventOutboxEnqueue.sql) into the [`EventOutbox`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/EventOutbox.sql) and [`EventOutboxData`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/EventOutboxData.sql) tables. This can be configured to use an alternate `IEventPublisher` where required.
 
+There are multiple advantages of using the event outbox, a) a log of published events will be maintained, b) performance of orchestrator may be improved, c) dependency of external destination removed from orchestrator, and d) multiple sends will have the same event identifier which is useful in duplicate detection scenarios.
+
 </br>
 
 #### Completion
@@ -94,7 +98,7 @@ The orchestrator will complete the batch and update the latest version tracking 
 
 Step | Description
 -|-
-Batch complete | Update the batch as complete with the [XxxBatchTracking](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/ContactBatchTracking.sql) table, including updating the completed date/time.
+Batch complete | Update the batch as complete within the [XxxBatchTracking](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/ContactBatchTracking.sql) table, including updating the completed date/time.
 Version tracking | Create or update (merge) the latest versions for each of the records published into the [`VersionTracking`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/VersionTracking.sql) table.
 
 <br/>
@@ -112,7 +116,7 @@ The [`OutboxDequeuePublisher`](../samples/SqlServerDemo/SqlServerDemo.Publisher/
 - [Dequeue](#Dequeue) - dequeue one or more events from the outbox;
 - [Publishing](#publishing2) - publish / send events to selected destination.
 
-This phases are encapsulated within a database transaction to ensure that the publishing completes successfully before the dequeue is committed. As a result this will ensure guaranteed delivery, but may result in messages being sent more than once. The event receiver may be required to perform duplicate detection on the event where duplicates can not be tolerated.
+This phases are encapsulated within a database transaction to ensure that the publishing completes successfully before the dequeue is committed. As a result this will ensure guaranteed delivery, but may result in messages being sent more than once. The event receiver may be required to perform duplicate detection on the events where duplicates can not be tolerated.
 
 The [`OutboxDequeuePublisher`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Events/Generated/OutboxDequeuePublisher.cs) inherits from
  [`OutboxDequeuePublisherBase`](../src/NTangle/Data/OutboxDequeuePublisherBase.cs), which implements [`IOutboxDequeuePublisher`](../src/NTangle/Data/IOutboxDequeuePublisher.cs), to enable the standardized dequeue and publish.
@@ -121,7 +125,7 @@ The [`OutboxDequeuePublisher`](../samples/SqlServerDemo/SqlServerDemo.Publisher/
 
 #### Dequeue
 
-The events will be dequeued from the database using stored procedure [`spEventOutboxDequeue`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Stored%20Procedures/Generated/spEventOutboxDequeue.sql); this will dequeue the events  from the underlying [`EventOutbox`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/EventOutbox.sql) and [`EventOutboxData`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/EventOutboxData.sql) tables.
+The events will be dequeued (up to the maximum dequeue size) from the database using stored procedure [`spEventOutboxDequeue`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Stored%20Procedures/Generated/spEventOutboxDequeue.sql); this will dequeue the events  from the underlying [`EventOutbox`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/EventOutbox.sql) and [`EventOutboxData`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/EventOutboxData.sql) tables.
 
 <br/>
 
@@ -144,6 +148,8 @@ The [code-generator](../tools/NTangle.Template/content/AppName.CodeGen/Program.c
 
 Where `Xxx` is referenced in the artefact name this is to be replaced with the name of the entity (root aggregate). Also, the artefact name represents the default, there are opportunities within the `ntangle.yaml` to change anumber of these where applicable.
 
+Finally, features such as _event outbox_ and _identity mapping_ are configurable. Where not leveraged their respective artefacts will not be generated.
+
 <br/>
 
 ### Database
@@ -164,9 +170,8 @@ Table | [`EventOutbox`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/N
 Table | [`EventOutboxData`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/EventOutboxData.sql) | Event outbox data.
 Table | [`IdentifierMapping`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/IdentifierMapping.sql) | Identifier mapping.
 Table | [`VersionTracking`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/VersionTracking.sql) | Version (hash) tracking.
-UDT | [`udtEventOutboxList`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Tables/Generated/VersionTracking.sql) | Event outbox user-defined type.
 UDT | [`udtEventOutboxList`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Types/User-Defined%20Table%20Types/Generated/udtEventOutboxList.sql) | Event outbox list user-defined type.
-UDT | [`udtIdentifierMappingList`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Types/User-Defined%20Table%20Types/Generated/udtIdentifierMappingList.sql) | Version tracking list user-defined type.
+UDT | [`udtIdentifierMappingList`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Types/User-Defined%20Table%20Types/Generated/udtIdentifierMappingList.sql) | Identifier mapping list user-defined type.
 UDT | [`udtVersionTrackingList`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Types/User-Defined%20Table%20Types/Generated/udtVersionTrackingList.sql) | Version tracking list user-defined type.
 
 <br/>
@@ -179,11 +184,11 @@ The `AppName.Publisher` project .NET generated artefacts are as follows.
 Namespace | Artefact | Description
 -|-|-
 <para/> | [`ServiceCollectionExtensions`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Generated/ServiceCollectionExtensions.cs) | [`IServiceCollection`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection) extension methods for Dependency Injection (DI) set up.
-Data | [`XxxCdcOrchestractor`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/ContactCdcOrchestrator.cs) | Change tracking and event publisher orchestrator.
+Data | [`XxxCdcOrchestrator`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/ContactCdcOrchestrator.cs) | Change tracking and event publisher orchestrator.
 Data | [`EventOutboxMapper`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/EventOutboxMapper.cs) | Event outbox database to .NET mapper.
 Data | [`IdentifierMappingMapper`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/IdentifierMappingMapper.cs) | Identifier mapping database to .NET mapper.
 Data | [`VersionTrackingMapper`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/VersionTrackingMapper.cs) | Version tracking database to .NET mapper.
 Entities | [`XxxCdc`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Entities/Generated/ContactCdc.cs) | Entity (aggregate root) representation of database table(s) and relationships.
 Events | [`OutboxDequeuePublisher`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Events/Generated/OutboxDequeuePublisher.cs) | Manages the dequeue of events and publishing thereof.
 Events | [`OutboxEventPublisher`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Events/Generated/OutboxEventPublisher.cs) | Publishes events to the event outbox tables within the database.
-Services | [`XxxHostedService`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Services/Generated/ContactHostedService.cs) | Timer-based host for the `XxxCdcOrestrator`.
+Services | [`XxxHostedService`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Services/Generated/ContactHostedService.cs) | Timer-based host for the `XxxCdcOrchestrator`.
