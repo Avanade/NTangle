@@ -28,7 +28,7 @@ jobs:
     - name: Pull MsSql
       run: docker pull mcr.microsoft.com/mssql/server
       
-    - name: Run MsSql
+    - name: Start MsSql
       run: docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" --name sqlserver -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
 
     - name: Enable MsSql Agent (required for CDC)
@@ -36,5 +36,11 @@ jobs:
       
     - name: Restart MsSql
       run: docker container restart sqlserver
+
+    - name: Set EnvVar for Test
+      run: echo "SqlServerDemo_ConnectionStrings__SqlDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo;User id=sa;Password=yourStrong(!)Password" >> $GITHUB_ENV
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
 
 
