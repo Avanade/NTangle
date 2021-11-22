@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Path
+      run: ls -lR
+
+    - name: Pull SqlServer
+      run: docker pull mcr.microsoft.com/mssql/server
+      
+    - name: Start SqlServer
+      run: docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" --name sqlserver -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+
+    - name: Enable SqlServer Agent (required for CDC)
+      run: docker exec -u root sqlserver bash /opt/mssql/bin/mssql-conf set sqlagent.enabled true
+      
+    - name: Restart SqlServer
+      run: docker container restart sqlserver
+
+    - name: Set EnvVar for Test
+      run: echo "SqlServerDemo_ConnectionStrings__SqlDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo;User id=sa;Password=yourStrong(!)Password" >> $GITHUB_ENV
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Run code-gen for samples (expect no changes)
+      run: ./samples/SqlServerDemo/SqlServerDemo.CodeGen/bin/Debug/netcoreapp3.1/SqlServerDemo.CodeGen -cv SqlServerDemo_ConnectionStrings__SqlDb -c ./samples/SqlServerDemo/SqlServerDemo.CodeGen/ntangle.yaml -o ./samples/SqlServerDemo --expect-no-changes
+

@@ -9,7 +9,7 @@
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>
     <Description>NTangle Code Generator.</Description>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <Copyright>Avanade (c)</Copyright>
     <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Avanade/NTangle</RepositoryUrl>
@@ -104,7 +104,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.21" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.21" />
     <PackageReference Include="OnRamp" Version="1.0.1" />
-    <PackageReference Include="System.Memory.Data" Version="6.0.0" />
+    <PackageReference Include="System.Memory.Data" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>
