@@ -26,7 +26,7 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Path
-      run: pwd
+      run: ls -lR
 
     - name: Run code-gen for samples (expect no changes)
       run: /home/runner/work/NTangle/NTangle/samples/SqlServerDemo/SqlServerDemo.CodeGen/bin/Debug/netcoreapp3.1/SqlServerDemo.CodeGen.exe --expect-no-changes
