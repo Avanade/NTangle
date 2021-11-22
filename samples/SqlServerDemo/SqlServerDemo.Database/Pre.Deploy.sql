@@ -12,7 +12,7 @@
 
 -- Enable CDC for database
 
-IF (SELECT TOP 1 is_cdc_enabled FROM sys.databases WHERE [name] = N'$(DatabaseName)') = 0
+IF (SELECT TOP 1 is_cdc_enabled FROM sys.databases WHERE [name] = DB_NAME()) = 0
 BEGIN
   EXEC sp_changedbowner 'sa'
   EXEC sys.sp_cdc_enable_db
@@ -108,6 +108,8 @@ BEGIN
       CONSTRAINT [IX_Legacy_ContactMapping_UniqueId] UNIQUE ([UniqueId])
     );
 END
+
+GO
 
 -- Customer (w/ logical delete and row version)
 

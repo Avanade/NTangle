@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "SqlServerDemo.Test": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -4,5 +4,5 @@ CREATE TYPE [NTangle].[udtVersionTrackingList] AS TABLE (
    */
 
   [Key] NVARCHAR(128) NOT NULL,
-  [Hash] NVARCHAR(32) NOT NULL
+  [Hash] NVARCHAR(128) NOT NULL
 )

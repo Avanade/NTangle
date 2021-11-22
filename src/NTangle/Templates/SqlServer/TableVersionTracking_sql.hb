@@ -8,7 +8,7 @@ CREATE TABLE [{{CdcSchema}}].[{{VersionTrackingTable}}] (
   [Schema] VARCHAR(64) NOT NULL,
   [Table] VARCHAR(128) NOT NULL,
   [Key] NVARCHAR(128) NOT NULL,
-  [Hash] NVARCHAR(64) NOT NULL,
+  [Hash] NVARCHAR(128) NOT NULL,
   [BatchTrackingId] BIGINT NOT NULL,
   CONSTRAINT [IX_{{CdcSchema}}_{{VersionTrackingTable}}_SchemaTableKey] UNIQUE CLUSTERED ([Schema], [Table], [Key])
 );

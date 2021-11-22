@@ -8,7 +8,7 @@ namespace NTangle.Test
     /// <summary>
     /// Simulates an event send by first serializing to a <i>CloudEvent</i> and then adding to the <see cref="Events"/> list.
     /// </summary>
-    public class TestEventPublisher : IEventPublisher
+    public class TestEventPublisher : IOutboxEventPublisher
     {
         /// <summary>
         /// Gets the list of sent <i>CloudEvents</i>.

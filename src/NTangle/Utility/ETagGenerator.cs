@@ -48,17 +48,16 @@ namespace NTangle.Utility
         }
 
         /// <summary>
-        /// Generates a hash of the string using <see cref="System.Security.Cryptography.MD5"/>.
+        /// Generates a hash of the string using <see cref="System.Security.Cryptography.SHA256"/>.
         /// </summary>
         /// <param name="value">The text value to hash.</param>
         /// <returns>The hashed value.</returns>
-        /// <remarks>The hash is <b>not</b> intended for <i>Cryptographic</i> usage; therefore using the MD5 algorithm is acceptable.</remarks>
         internal static string? GenerateHash(string? value)
         {
             var buf = Encoding.UTF8.GetBytes(value ?? throw new ArgumentNullException(nameof(value)));
             using var sha256 = System.Security.Cryptography.SHA256.Create();
             var hash = new BinaryData(sha256.ComputeHash(buf));
-            return hash.ToString();
+            return System.Convert.ToBase64String(hash);
         }
 
         /// <summary>

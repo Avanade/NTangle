@@ -154,7 +154,7 @@ The events will be dequeued (up to the maximum dequeue size) from the database u
 #### Publishing
 <a id="publishing2"/>
 
-The publisher must implement `IOutboxEventPublisher`. The underlying `IOutboxEventPublisher.SendAsync()` method will be invoked passing the dequeued events for publishing / sending to the selected destination. Once all events have been successfully sent the database transaction will be committed.
+The publisher must implement [`IOutboxEventPublisher`](../src/NTangle/Events/IOutboxEventPublisher.cs). The underlying `IOutboxEventPublisher.SendAsync()` method will be invoked passing the dequeued events for publishing / sending to the selected destination. Once all events have been successfully sent the database transaction will be committed.
 
 <br/>
 

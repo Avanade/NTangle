@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NTangle.Cdc;
@@ -9,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Con = System.Console;
 
 namespace NTangle.Test
 {
@@ -21,6 +23,12 @@ namespace NTangle.Test
         /// Invokes the <see cref="Task.Delay(int)"/> for a standardized 5000 milliseconds.
         /// </summary>
         public static async Task Delay() => await Task.Delay(5000);
+
+        /// <summary>
+        /// Gets (builds) the <see cref="IConfigurationRoot"/>.
+        /// </summary>
+        /// <returns>The <see cref="IConfigurationRoot"/>.</returns>
+        public static IConfigurationRoot GetConfig(string prefix) => new ConfigurationBuilder().SetBasePath(Environment.CurrentDirectory).AddJsonFile("appsettings.json").AddEnvironmentVariables(prefix).Build();
 
         /// <summary>
         /// Gets a console <see cref="ILogger"/>.
@@ -41,43 +49,45 @@ namespace NTangle.Test
         /// <param name="tep">The <see cref="TestEventPublisher"/>.</param>
         public static void WriteResult(EntityOrchestratorResult result, TestEventPublisher tep)
         {
-            System.Console.Out.WriteLine(string.Empty);
-            System.Console.Out.WriteLine("=========================");
-            System.Console.Out.WriteLine("EntityOrchestratorResult");
-            System.Console.Out.WriteLine($"ExecutionId = {result.ExecutionId}");
-            System.Console.Out.WriteLine($"Success = {result.IsSuccessful}");
-            System.Console.Out.WriteLine($"InitialCount = {result.ExecuteStatus?.InitialCount?.ToString() ?? "null"}");
-            System.Console.Out.WriteLine($"ConsolidatedCount = {result.ExecuteStatus?.ConsolidatedCount?.ToString() ?? "null"}");
-            System.Console.Out.WriteLine($"PublishCount = {result.ExecuteStatus?.PublishCount?.ToString() ?? "null"}");
+            Con.Out.WriteLine(string.Empty);
+            Con.Out.WriteLine("=========================");
+            Con.Out.WriteLine("EntityOrchestratorResult");
+            Con.Out.WriteLine($"ExecutionId = {result.ExecutionId}");
+            Con.Out.WriteLine($"Success = {result.IsSuccessful}");
+            Con.Out.WriteLine($"InitialCount = {result.ExecuteStatus?.InitialCount?.ToString() ?? "null"}");
+            Con.Out.WriteLine($"ConsolidatedCount = {result.ExecuteStatus?.ConsolidatedCount?.ToString() ?? "null"}");
+            Con.Out.WriteLine($"PublishCount = {result.ExecuteStatus?.PublishCount?.ToString() ?? "null"}");
 
             if (result.Exception != null)
-                System.Console.Out.WriteLine($"Exception: {result.Exception.Message}");
+                Con.Out.WriteLine($"Exception: {result.Exception.Message}");
 
             if (result.Batch == null)
-                System.Console.Out.WriteLine("Batch = null");
+                Con.Out.WriteLine("Batch = null");
             else
             {
-                System.Console.Out.WriteLine(string.Empty);
-                System.Console.Out.WriteLine("Batch:");
-                System.Console.Out.WriteLine($" Id={result.Batch.Id}");
-                System.Console.Out.WriteLine($" IsComplete = {result.Batch.IsComplete}");
-                System.Console.Out.WriteLine($" CreatedDate = {result.Batch.CreatedDate}");
-                System.Console.Out.WriteLine($" CompletedDate = {result.Batch.CompletedDate?.ToString() ?? "null"}");
-                System.Console.Out.WriteLine($" HasDataLoss = {result.Batch.HasDataLoss}");
-                System.Console.Out.WriteLine($" CorrelationId = {result.Batch.CorrelationId}");
+                Con.Out.WriteLine(string.Empty);
+                Con.Out.WriteLine("Batch:");
+                Con.Out.WriteLine($" Id={result.Batch.Id}");
+                Con.Out.WriteLine($" IsComplete = {result.Batch.IsComplete}");
+                Con.Out.WriteLine($" CreatedDate = {result.Batch.CreatedDate}");
+                Con.Out.WriteLine($" CompletedDate = {result.Batch.CompletedDate?.ToString() ?? "null"}");
+                Con.Out.WriteLine($" HasDataLoss = {result.Batch.HasDataLoss}");
+                Con.Out.WriteLine($" CorrelationId = {result.Batch.CorrelationId}");
             }
 
-            System.Console.Out.WriteLine(string.Empty);
-            System.Console.Out.WriteLine($"Events: {(tep == null ? "null" : tep.Events.Count.ToString())}");
+            Con.Out.WriteLine(string.Empty);
+            Con.Out.WriteLine($"Events: {(tep == null ? "null" : tep.Events.Count.ToString())}");
             if (tep != null && tep.Events.Count > 0)
             {
                 foreach (var @event in tep.Events)
                 {
                     var jt = JToken.Parse(Encoding.UTF8.GetString(@event));
-                    System.Console.Out.WriteLine(jt.ToString(Formatting.Indented));
-                    System.Console.Out.WriteLine(string.Empty);
+                    Con.Out.WriteLine(jt.ToString(Formatting.Indented));
+                    Con.Out.WriteLine(string.Empty);
                 }
             }
+
+            Con.Out.WriteLine(string.Empty);
         }
 
         /// <summary>
