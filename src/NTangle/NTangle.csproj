@@ -9,7 +9,7 @@
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>
     <Description>NTangle Code Generator.</Description>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>preview</LangVersion>
     <Copyright>Avanade (c)</Copyright>
     <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Avanade/NTangle</RepositoryUrl>
