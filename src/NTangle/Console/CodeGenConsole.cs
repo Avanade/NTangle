@@ -3,6 +3,7 @@
 using Microsoft.Data.SqlClient;
 using OnRamp;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Common;
 using System.IO;
 using System.Reflection;
@@ -59,7 +60,9 @@ namespace NTangle.Console
             args.AddAssembly(typeof(CodeGenConsole).Assembly);
             args.AddAssembly(assemblies);
             args.ConnectionString = connectionString;
-            args.SetAppName(appName ?? new DirectoryInfo(GetBaseExeDirectory()).Parent.Name);
+            if (!string.IsNullOrEmpty(appName))
+                args.SetAppName(appName ?? new DirectoryInfo(GetBaseExeDirectory()).Parent.Name);
+
             return new CodeGenConsole(args);
         }
 
@@ -108,6 +111,15 @@ namespace NTangle.Console
             Args.DbConnectionCreator = sqlConnectionCreator ?? (cs => new SqlConnection(cs));
             Args.SetDbProvider("SqlServer");
             return this;
+        }
+
+        /// <inheritdoc/>
+        protected override ValidationResult? OnValidation(ValidationContext context)
+        {
+            if (string.IsNullOrEmpty(Args.GetAppName()))
+                Args.SetAppName(Args.OutputDirectory?.Name ?? "APP-NAME-UNKNOWN");
+
+            return base.OnValidation(context);
         }
     }
 }
