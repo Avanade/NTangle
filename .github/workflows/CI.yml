@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore
+      
+    - name: Pull MsSql
+      run: docker pull mcr.microsoft.com/mssql/server
+      
+    - name: Run MsSql
+      run: docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" --name sqlserver -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
+
+    - name: Enable MsSql Agent (required for CDC)
+      run: docker exec -u root sqlserver bash /opt/mssql/bin/mssql-conf set sqlagent.enabled true
+      
+    - name: Restart MsSql
+      run: docker container restart sqlserver
+
+
