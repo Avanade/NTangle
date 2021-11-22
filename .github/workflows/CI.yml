@@ -24,17 +24,20 @@ jobs:
       
     - name: Build
       run: dotnet build --no-restore
+
+    - name: Run code-gen for samples (expect no changes)
+      run: ./src/samples/SqlServerDemo/SqlServerDemo.CodeGen/dotnet run --no-build --expect-no-changes
       
-    - name: Pull MsSql
+    - name: Pull SqlServer
       run: docker pull mcr.microsoft.com/mssql/server
       
-    - name: Start MsSql
+    - name: Start SqlServer
       run: docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" --name sqlserver -p 1433:1433 -d mcr.microsoft.com/mssql/server:2019-latest
 
-    - name: Enable MsSql Agent (required for CDC)
+    - name: Enable SqlServer Agent (required for CDC)
       run: docker exec -u root sqlserver bash /opt/mssql/bin/mssql-conf set sqlagent.enabled true
       
-    - name: Restart MsSql
+    - name: Restart SqlServer
       run: docker container restart sqlserver
 
     - name: Set EnvVar for Test
