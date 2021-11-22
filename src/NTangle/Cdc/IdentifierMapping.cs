@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-#nullable disable
-
 namespace NTangle.Cdc
 {
     /// <summary>
@@ -13,23 +11,21 @@ namespace NTangle.Cdc
         /// <summary>
         /// Gets or sets the table schema.
         /// </summary>
-        public string Schema { get; set; }
+        public string? Schema { get; set; }
 
         /// <summary>
         /// Gets or sets the table name.
         /// </summary>
-        public string Table { get; set; }
+        public string? Table { get; set; }
 
         /// <summary>
         /// Gets or sets the key represented as string.
         /// </summary>
-        public string Key { get; set; }
+        public string? Key { get; set; }
 
         /// <summary>
         /// Gets or sets the global identifier (equivalent to <see cref="IGlobalIdentifier{T}.GlobalId"/>).
         /// </summary>
-        public T GlobalId { get; set; }
+        public T? GlobalId { get; set; }
     }
 }
-
-#nullable restore

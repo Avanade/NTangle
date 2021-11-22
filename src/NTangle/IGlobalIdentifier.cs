@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-#nullable disable
-
 using System;
 
 namespace NTangle
@@ -14,7 +12,7 @@ namespace NTangle
         /// <summary>
         /// Gets or sets the global identifier.
         /// </summary>
-        object GlobalId { get; set; }
+        object? GlobalId { get; set; }
 
         /// <summary>
         /// Gets the corresponding database table <i>primary key</i> (represented as an <see cref="CompositeKey"/>) as an alternative to the <see cref="IPrimaryKey.PrimaryKey"/> which should be set to <see cref="GlobalId"/>.
@@ -32,13 +30,11 @@ namespace NTangle
         /// <summary>
         /// Gets or sets the global identifier.
         /// </summary>
-        object IGlobalIdentifier.GlobalId { get => GlobalId; set => GlobalId = (T)value; }
+        object? IGlobalIdentifier.GlobalId { get => GlobalId; set => GlobalId = (T?)value; }
 
         /// <summary>
         /// Gets or sets the global identifier.
         /// </summary>
-        new T GlobalId { get; set; }
+        new T? GlobalId { get; set; }
     }
 }
-
-#nullable restore
