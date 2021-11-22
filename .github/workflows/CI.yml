@@ -26,7 +26,7 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Run code-gen for samples (expect no changes)
-      run: ./src/samples/SqlServerDemo/SqlServerDemo.CodeGen/dotnet run --no-build --expect-no-changes
+      run: /home/runner/work/NTangle/NTangle/samples/SqlServerDemo/SqlServerDemo.CodeGen/bin/Debug/netcoreapp3.1/SqlServerDemo.CodeGen.exe --expect-no-changes
       
     - name: Pull SqlServer
       run: docker pull mcr.microsoft.com/mssql/server
