@@ -3,12 +3,13 @@
 using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
-using OnRamp.Database;
+using DbEx.Schema;
 using OnRamp.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NTangle.Config
 {
@@ -153,7 +154,7 @@ namespace NTangle.Config
         public List<string>? OrchestratorCtorParams { get; set; }
 
         /// <summary>
-        /// Gets or sets the CDC .NET <see cref="Data.IDatabase"/> interface name.
+        /// Gets or sets the CDC .NET <see cref="DbEx.IDatabase"/> interface name.
         /// </summary>
         [JsonProperty("database", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty(".NET", Title = "The .NET database `IDatabase` Type name used in the constructor for Dependency Injection (DI).",
@@ -334,12 +335,12 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the corresponding (actual) database table configuration.
         /// </summary>
-        public DbTable? DbTable { get; private set; }
+        public DbTableSchema? DbTable { get; private set; }
 
         /// <summary>
         /// Gets the related <see cref="IsDeletedColumn"/> column.
         /// </summary>
-        public ColumnConfig? ColumnConfigIsDeleted => GetSpecialColumn(IsDeletedColumn);
+        public ColumnConfig? ColumnConfigIsDeleted { get; private set; }
 
         /// <summary>
         /// Gets the fully qualified name schema.table name.
@@ -364,7 +365,7 @@ namespace NTangle.Config
         #endregion
 
         /// <inheritdoc/>
-        protected override void Prepare()
+        protected override async Task PrepareAsync()
         {
             Schema = DefaultWhereNull(Schema, () => Root!.Schema);
             DbTable = Root!.DbTables!.Where(x => x.Name == Name && x.Schema == Schema).SingleOrDefault();
@@ -395,7 +396,7 @@ namespace NTangle.Config
             if (IsTrue(CdcEnable))
                 Root.AddCdcEnabled(Schema!, Table!);
 
-            Mappings = PrepareCollection(Mappings);
+            Mappings = await PrepareCollectionAsync(Mappings).ConfigureAwait(false);
 
             foreach (var c in DbTable.Columns)
             {
@@ -412,7 +413,7 @@ namespace NTangle.Config
                 {
                     cc.IncludeColumnOnDelete = true;
                     cc.IgnoreSerialization = IdentifierMapping == true;
-                    cc.Prepare(Root!, this);
+                    await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
                     PrimaryKeyColumns.Add(cc);
                 }
                 else if (IncludeColumnsOnDelete != null && IncludeColumnsOnDelete.Contains(c.Name!))
@@ -430,7 +431,7 @@ namespace NTangle.Config
                             cc.IdentifierMappingTable = cm.Table;
                         }
 
-                        cc.Prepare(Root!, this);
+                        await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
                         Columns.Add(cc);
                     }
                 }
@@ -439,7 +440,7 @@ namespace NTangle.Config
                 if (cc.Name == ColumnConfigIsDeleted?.Name)
                 {
                     cc.NameAlias = "IsDeleted";
-                    cc.Prepare(Root!, this);
+                    await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
                     Columns.Add(cc);
                 }
             }
@@ -456,7 +457,7 @@ namespace NTangle.Config
                     IgnoreSerialization = c.IgnoreSerialization || c.IdentifierMappingTable != null
                 };
 
-                cc.Prepare(Root!, this);
+                await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
                 SelectedColumns.Add(cc);
 
                 if (c.IdentifierMappingTable != null)
@@ -464,7 +465,7 @@ namespace NTangle.Config
                     cc = new ColumnConfig
                     {
                         Name = "GlobalId",
-                        DbColumn = new DbColumn { Name = c.Name, Type = Root!.IdentifierMappingSqlType, DbTable = c.DbColumn!.DbTable },
+                        DbColumn = new DbColumnSchema(c.DbColumn!.DbTable, c.Name!, Root!.IdentifierMappingSqlType),
                         NameAlias = "Global" + c.NameAlias,
                         IdentifierMappingAlias = c.IdentifierMappingAlias,
                         IdentifierMappingSchema = c.IdentifierMappingSchema,
@@ -472,22 +473,24 @@ namespace NTangle.Config
                         IdentifierMappingParent = cc
                     };
 
-                    cc.Prepare(Root!, this);
+                    await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
                     SelectedColumns.Add(cc);
                 }
             }
 
-            PrepareCtorParams();
-            PrepareJoins();
+            await PrepareCtorParams();
+            await PrepareJoins();
 
             UsesGlobalIdentifier = IdentifierMapping == true || Mappings!.Count > 0 || Joins.Any(x => x.IdentifierMapping == true || (x.Mappings!.Count > 0));
             SetUpExcludePropertiesFromETag();
+
+            ColumnConfigIsDeleted = await GetSpecialColumn(IsDeletedColumn).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Prepares the constructor parameters.
         /// </summary>
-        private void PrepareCtorParams()
+        private async Task PrepareCtorParams()
         {
             if (OrchestratorCtorParams == null || OrchestratorCtorParams.Count == 0)
                 return;
@@ -509,7 +512,7 @@ namespace NTangle.Config
                 else
                     pc.Name = StringConverter.ToPascalCase(parts[1]);
 
-                pc.Prepare(Root!, this);
+                await pc.PrepareAsync(Root!, this).ConfigureAwait(false);
                 OrchestratorCtorParameters.Add(pc);
             }
         }
@@ -517,7 +520,7 @@ namespace NTangle.Config
         /// <summary>
         /// Prepares the joins.
         /// </summary>
-        private void PrepareJoins()
+        private async Task PrepareJoins()
         {
             if (Joins == null)
                 Joins = new List<JoinConfig>();
@@ -526,7 +529,7 @@ namespace NTangle.Config
             var dict = new Dictionary<string, int> { { Alias!, 1 } };
             foreach (var join in Joins)
             {
-                join.Alias = DefaultWhereNull(join.Alias, () => DbTable.CreateAlias(join.Name!));
+                join.Alias = DefaultWhereNull(join.Alias, () => DbTableSchema.CreateAlias(join.Name!));
 
                 if (dict.TryGetValue(join.Alias!, out var val))
                 {
@@ -536,7 +539,7 @@ namespace NTangle.Config
                 else
                     dict.Add(join.Alias!, 1);
 
-                join.Prepare(Root!, this);
+                await join.PrepareAsync(Root!, this).ConfigureAwait(false);
             }
 
             // Do some further validation.
@@ -589,7 +592,7 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the named special column.
         /// </summary>
-        private ColumnConfig? GetSpecialColumn(string? name)
+        private async Task<ColumnConfig?> GetSpecialColumn(string? name)
         {
             if (string.IsNullOrEmpty(name))
                 return null;
@@ -599,7 +602,7 @@ namespace NTangle.Config
                 return null;
 
             var cc = new ColumnConfig { Name = c.Name, DbColumn = c };
-            cc.Prepare(Root!, this);
+            await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
             return cc;
         }
     }

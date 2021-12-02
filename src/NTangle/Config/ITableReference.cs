@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using OnRamp.Database;
+using DbEx.Schema;
 
 namespace NTangle.Config
 {
@@ -27,6 +27,6 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the corresponding <see cref="DbTable"/>.
         /// </summary>
-        DbTable? DbTable { get; }
+        DbTableSchema? DbTable { get; }
     }
 }

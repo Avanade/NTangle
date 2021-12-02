@@ -3,8 +3,9 @@
 using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
-using OnRamp.Database;
+using DbEx.Schema;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NTangle.Config
 {
@@ -52,17 +53,17 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the corresponding (actual) database table configuration.
         /// </summary>
-        public DbTable? DbTable { get; private set; }
+        public DbTableSchema? DbTable { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="Name"/> <see cref="DbColumn"/>.
         /// </summary>
-        public DbColumn? DbColumn { get; private set; }
+        public DbColumnSchema? DbColumn { get; private set; }
 
         #endregion
 
         /// <inheritdoc/>
-        protected override void Prepare()
+        protected override Task PrepareAsync()
         {
             Schema = DefaultWhereNull(Schema, () => Parent!.Schema);
 
@@ -79,6 +80,8 @@ namespace NTangle.Config
 
             if (DbTable.Columns.Count(x => x.IsPrimaryKey) != 1)
                 throw new CodeGenException(this, nameof(Table), $"References table '[{Schema}].[{Table}]' which must only have a single column representing the primary key.");
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using DbEx.SqlServer;
 using NTangle.Cdc;
 using System.Collections.Generic;
 

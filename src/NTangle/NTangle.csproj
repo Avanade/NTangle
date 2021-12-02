@@ -17,7 +17,7 @@
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>strong-name-key.snk</AssemblyOriginatorKeyFile>
-    <PackageIconUrl>https://github.com/Avanade/NTangle/raw/master/docs/images/Logo256x256.png</PackageIconUrl>
+    <PackageIconUrl>https://github.com/Avanade/NTangle/raw/main/images/Logo256x256.png</PackageIconUrl>
     <PackageIcon>Logo256x256.png</PackageIcon>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -99,11 +99,12 @@
   <ItemGroup>
     <PackageReference Include="CloudNative.CloudEvents" Version="2.1.1" />
     <PackageReference Include="CloudNative.CloudEvents.NewtonsoftJson" Version="2.1.1" />
+    <PackageReference Include="DbEx" Version="1.0.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.21" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.21" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.21" />
-    <PackageReference Include="OnRamp" Version="1.0.1" />
+    <PackageReference Include="OnRamp" Version="1.0.2" />
     <PackageReference Include="System.Memory.Data" Version="1.0.2" />
   </ItemGroup>
 

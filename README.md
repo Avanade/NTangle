@@ -18,7 +18,7 @@ This has a key advantage of being an excellent candidate within event-streaming 
 
 ## Status
 
-[![CI](https://github.com/Avanade/NTangle/workflows/CI/badge.svg)](https://github.com/Avanade/NTangle/actions?query=workflow%3ACI) [![NuGet version](https://badge.fury.io/nu/NTangle.svg)](https://badge.fury.io/nu/NTangle)
+[![CI](https://github.com/Avanade/NTangle/actions/workflows/CI.yml/badge.svg)](https://github.com/Avanade/NTangle/actions/workflows/CI.yml) [![NuGet version](https://badge.fury.io/nu/NTangle.svg)](https://badge.fury.io/nu/NTangle)
 
 The included [change log](CHANGELOG.md) details all key changes per published version.
 

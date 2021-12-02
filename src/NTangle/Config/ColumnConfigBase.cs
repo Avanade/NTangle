@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
 using OnRamp.Config;
-using OnRamp.Database;
+using DbEx.Schema;
 using System;
+using System.Threading.Tasks;
 
 namespace NTangle.Config
 {
@@ -23,9 +24,9 @@ namespace NTangle.Config
         public string? Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the database <see cref="OnRamp.Database.DbColumn"/> configuration.
+        /// Gets or sets the database <see cref="DbColumnSchema"/> configuration.
         /// </summary>
-        public DbColumn? DbColumn { get; set; }
+        public DbColumnSchema? DbColumn { get; set; }
 
         /// <summary>
         /// Gets the qualified name (includes the alias).
@@ -40,7 +41,7 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the corresponding .NET <see cref="System.Type"/> name.
         /// </summary>
-        public string DotNetType => DbType.GetDotNetTypeName(DbColumn!.Type);
+        public string DotNetType => DbTypeMapper.GetDotNetTypeName(DbColumn!.Type);
 
         /// <summary>
         /// Indicates whether the .NET property is nullable.
@@ -90,9 +91,10 @@ namespace NTangle.Config
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        protected override void Prepare()
+        protected override Task PrepareAsync()
         {
             NameAlias = DefaultWhereNull(NameAlias, () => Root!.RenameForDotNet(Name));
+            return Task.CompletedTask;
         }
     }
 }

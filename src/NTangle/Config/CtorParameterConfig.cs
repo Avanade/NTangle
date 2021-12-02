@@ -2,6 +2,7 @@
 
 using OnRamp.Config;
 using OnRamp.Utility;
+using System.Threading.Tasks;
 
 namespace NTangle.Config
 {
@@ -39,10 +40,11 @@ namespace NTangle.Config
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        protected override void Prepare()
+        protected override Task PrepareAsync()
         {
             PrivateName = DefaultWhereNull(PrivateName, () => StringConverter.ToPrivateCase(Name));
             ArgumentName = DefaultWhereNull(ArgumentName, () => StringConverter.ToCamelCase(Name));
+            return Task.CompletedTask;
         }
     }
 }

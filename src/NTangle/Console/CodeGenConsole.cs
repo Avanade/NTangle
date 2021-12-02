@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
 using Microsoft.Data.SqlClient;
+using NTangle.Data.SqlServer;
 using OnRamp;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -14,7 +15,7 @@ namespace NTangle.Console
     /// <b>NTangle</b>-specific code-generation console that inherits from <see cref="OnRamp.Console.CodeGenConsoleBase"/>.
     /// </summary>
     /// <remarks>The <b>NTangle</b> capabilities are designed to be database provider agnostic, as such the underlying database access is managed via the common data capabilities such as <see cref="DbConnection"/>. Where no database provider
-    /// is specified then SQL Server (via <see cref="UseSqlServer(Func{string, SqlConnection}?)"/>) is used as the default.</remarks>
+    /// is specified then SQL Server (via <see cref="UseSqlServer(Func{string, SqlServerDatabase}?)"/>) is used as the default.</remarks>
     public class CodeGenConsole : OnRamp.Console.CodeGenConsoleBase
     {
         /// <summary>
@@ -23,7 +24,7 @@ namespace NTangle.Console
         public const string DefaultConfigFileName = "ntangle.yaml";
 
         /// <summary>
-        /// Gets the default script file name (see <see cref="ICodeGeneratorArgs.ScriptFileName"/>) where <see cref="UseSqlServer(Func{string, SqlConnection}?)"/> is used.
+        /// Gets the default script file name (see <see cref="ICodeGeneratorArgs.ScriptFileName"/>) where <see cref="UseSqlServer(Func{string, SqlServerDatabase}?)"/> is used.
         /// </summary>
         public const string DefaultSqlServerScriptFileName = "SqlServerDacpac.yaml";
 
@@ -72,9 +73,12 @@ namespace NTangle.Console
         internal CodeGenConsole(CodeGeneratorArgs args) : base(typeof(CodeGenConsole).Assembly, args, Assembly.GetEntryAssembly()!.GetName().Name, options: OnRamp.Console.SupportedOptions.All)
         {
             MastheadText = DefaultMastheadText;
-            Args.CreateConnectionStringEnvironmentVariableName ??= csargs => $"{csargs.GetAppName()?.Replace(".", "_", StringComparison.InvariantCulture)}_ConnectionString";
+            Args.CreateConnectionStringEnvironmentVariableName ??= _ => $"{args.GetAppName()?.Replace(".", "_", StringComparison.InvariantCulture)}_ConnectionString";
             Args.ConfigFileName ??= DefaultConfigFileName;
-            UseSqlServer();
+
+            // Default to SQL Server if nothing specified so far, can be overridden later.
+            if (args.GetDbProvider() == null)
+                UseSqlServer();
         }
 
         /// <summary>
@@ -102,13 +106,14 @@ namespace NTangle.Console
         /// <summary>
         /// Uses (overrides) the database connection creation to leverage the SQL Server <see cref="SqlConnection"/> and sets the <see cref="UseScript(string)">script</see> to <see cref="DefaultSqlServerScriptFileName"/>.
         /// </summary>
-        /// <param name="sqlConnectionCreator">The optional <paramref name="sqlConnectionCreator"/> to enable advanced <see cref="SqlConnection"/> creation; defaults to using <see cref="SqlConnection(string)"/> where not specified.</param>
+        /// <param name="sqlDatabaseCreator">The optional <paramref name="sqlDatabaseCreator"/> to enable advanced <see cref="SqlServerDatabase"/> creation; otherwise, defaults.</param>
         /// <returns>The current instance to support fluent-style method-chaining.</returns>
         /// <remarks>Also invokes <see cref="CodeGeneratorArgsExtensions.SetDbProvider(ICodeGeneratorArgs, string?)"/> passing '<c>SqlServer</c>'.</remarks>
-        public CodeGenConsole UseSqlServer(Func<string, SqlConnection>? sqlConnectionCreator = null)
+        public CodeGenConsole UseSqlServer(Func<string, SqlServerDatabase>? sqlDatabaseCreator = null)
         {
             UseScript(DefaultSqlServerScriptFileName);
-            Args.DbConnectionCreator = sqlConnectionCreator ?? (cs => new SqlConnection(cs));
+            sqlDatabaseCreator ??= (cs) => new SqlServerDatabase(() => new SqlConnection(cs));
+            Args.SetCreateDatabase(sqlDatabaseCreator);
             Args.SetDbProvider("SqlServer");
             return this;
         }

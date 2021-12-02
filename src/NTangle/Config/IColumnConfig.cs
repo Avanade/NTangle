@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using OnRamp.Database;
+using DbEx.Schema;
 
 namespace NTangle.Config
 {
@@ -15,9 +15,9 @@ namespace NTangle.Config
         string? Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the database <see cref="OnRamp.Database.DbColumn"/> configuration.
+        /// Gets or sets the database <see cref="DbColumnSchema"/> configuration.
         /// </summary>
-        DbColumn? DbColumn { get; set; }
+        DbColumnSchema? DbColumn { get; set; }
 
         /// <summary>
         /// Gets the qualified name (includes the alias).
