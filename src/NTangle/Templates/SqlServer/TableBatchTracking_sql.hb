@@ -1,9 +1,11 @@
 ﻿{{! Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle }}
 CREATE TABLE [{{CdcSchema}}].[{{BatchTrackingTable}}] (
+{{#unless Root.IsGenOnce}}
   /*
    * This is automatically generated; any changes will be lost.
    */
 
+{{/unless}}
   [BatchTrackingId] BIGINT IDENTITY (1, 1) NOT NULL PRIMARY KEY CLUSTERED ([BatchTrackingId] ASC),
   [CreatedDate] DATETIME2 NOT NULL,
   [IsComplete] BIT NOT NULL,

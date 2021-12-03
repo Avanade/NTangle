@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <None Remove="Scripts\SqlServerDatabase.yaml" />
+    <None Remove="Scripts\SqlServerDbEx.yaml" />
     <None Remove="Templates\EntityHostedService_cs.hb" />
     <None Remove="Templates\EntityOrchestrator_cs.hb" />
     <None Remove="Templates\Entity_cs.hb" />
@@ -68,6 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Scripts\SqlServerDbEx.yaml" />
     <EmbeddedResource Include="Scripts\SqlServerDacpac.yaml" />
     <EmbeddedResource Include="Scripts\SqlServerDatabase.yaml" />
     <EmbeddedResource Include="Templates\EntityHostedService_cs.hb" />

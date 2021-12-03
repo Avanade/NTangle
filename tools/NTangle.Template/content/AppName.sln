@@ -7,7 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FooBar.CodeGen", "FooBar.Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FooBar.Publisher", "FooBar.Publisher\FooBar.Publisher.csproj", "{67967882-F0A3-4286-A1BA-FF939F3C67BE}"
 EndProject
-//#if (implement_dbproject)
+//#if (implement_dbproject_dbex)
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FooBar.Database", "FooBar.Database\FooBar.Database.csproj", "{9035C78E-76DC-4B44-84DC-422AB755F79F}"
+EndProject
+//#endif
+//#if (implement_dbproject_dacpac)
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "FooBar.Database", "FooBar.Database\FooBar.Database.sqlproj", "{393D4F63-1F80-42A5-8ED7-E211698CCD94}"
 EndProject
 //#endif
@@ -45,7 +49,21 @@ Global
 		{67967882-F0A3-4286-A1BA-FF939F3C67BE}.Release|x64.Build.0 = Release|Any CPU
 		{67967882-F0A3-4286-A1BA-FF939F3C67BE}.Release|x86.ActiveCfg = Release|Any CPU
 		{67967882-F0A3-4286-A1BA-FF939F3C67BE}.Release|x86.Build.0 = Release|Any CPU
-//#if (implement_dbproject)
+//#if (implement_dbproject_dbex)
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Debug|x64.Build.0 = Debug|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Debug|x86.Build.0 = Debug|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Release|x64.ActiveCfg = Release|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Release|x64.Build.0 = Release|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Release|x86.ActiveCfg = Release|Any CPU
+		{9035C78E-76DC-4B44-84DC-422AB755F79F}.Release|x86.Build.0 = Release|Any CPU
+//#endif
+//#if (implement_dbproject_dacpac)
 		{393D4F63-1F80-42A5-8ED7-E211698CCD94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{393D4F63-1F80-42A5-8ED7-E211698CCD94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{393D4F63-1F80-42A5-8ED7-E211698CCD94}.Debug|Any CPU.Deploy.0 = Debug|Any CPU

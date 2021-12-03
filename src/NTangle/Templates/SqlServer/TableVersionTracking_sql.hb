@@ -1,9 +1,11 @@
 ﻿{{! Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle }}
 CREATE TABLE [{{CdcSchema}}].[{{VersionTrackingTable}}] (
+{{#unless Root.IsGenOnce}}
   /*
    * This is automatically generated; any changes will be lost.
    */
 
+{{/unless}}
   [{{VersionTrackingTable}}Id] UNIQUEIDENTIFIER NOT NULL DEFAULT (NEWSEQUENTIALID()) PRIMARY KEY NONCLUSTERED ([{{VersionTrackingTable}}Id] ASC),
   [Schema] VARCHAR(64) NOT NULL,
   [Table] VARCHAR(128) NOT NULL,

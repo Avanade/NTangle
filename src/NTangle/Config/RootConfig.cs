@@ -348,6 +348,11 @@ namespace NTangle.Config
         public string? AppName => CodeGenArgs!.GetAppName(true);
 
         /// <summary>
+        /// Indicates whether the scripted template is gen-once only.
+        /// </summary>
+        public bool? IsGenOnce => (bool?)RuntimeParameters.GetValueOrDefault(nameof(OnRamp.Scripts.CodeGenScriptItem.IsGenOnce));
+
+        /// <summary>
         /// Gets the .NET <see cref="Type"/> that corresponds to the <see cref="IdentifierMappingType"/>.
         /// </summary>
         public string IdentifierMappingDotNetType => IdentifierMappingType switch

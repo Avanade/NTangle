@@ -10,4 +10,4 @@
 --------------------------------------------------------------------------------------
 */
 
-:r .\Generated\CdcEnable.sql
+:r .\Generated\CdcEnable.post.deploy.sql

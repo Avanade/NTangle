@@ -14,19 +14,13 @@ namespace NTangle.Console
     /// <summary>
     /// <b>NTangle</b>-specific code-generation console that inherits from <see cref="OnRamp.Console.CodeGenConsoleBase"/>.
     /// </summary>
-    /// <remarks>The <b>NTangle</b> capabilities are designed to be database provider agnostic, as such the underlying database access is managed via the common data capabilities such as <see cref="DbConnection"/>. Where no database provider
-    /// is specified then SQL Server (via <see cref="UseSqlServer(Func{string, SqlServerDatabase}?)"/>) is used as the default.</remarks>
+    /// <remarks>The <b>NTangle</b> capabilities are designed to be database provider agnostic, as such the underlying database access is managed via the common data capabilities such as <see cref="DbConnection"/>.</remarks>
     public class CodeGenConsole : OnRamp.Console.CodeGenConsoleBase
     {
         /// <summary>
         /// Gets the default configuration file name (see <see cref="ICodeGeneratorArgs.ConfigFileName"/>).
         /// </summary>
         public const string DefaultConfigFileName = "ntangle.yaml";
-
-        /// <summary>
-        /// Gets the default script file name (see <see cref="ICodeGeneratorArgs.ScriptFileName"/>) where <see cref="UseSqlServer(Func{string, SqlServerDatabase}?)"/> is used.
-        /// </summary>
-        public const string DefaultSqlServerScriptFileName = "SqlServerDacpac.yaml";
 
         /// <summary>
         /// Gets the default masthead text.
@@ -61,7 +55,7 @@ namespace NTangle.Console
             args.AddAssembly(typeof(CodeGenConsole).Assembly);
             args.AddAssembly(assemblies);
             args.ConnectionString = connectionString;
-            if (!string.IsNullOrEmpty(appName))
+            if (string.IsNullOrEmpty(appName))
                 args.SetAppName(appName ?? new DirectoryInfo(GetBaseExeDirectory()).Parent.Name);
 
             return new CodeGenConsole(args);
@@ -75,10 +69,6 @@ namespace NTangle.Console
             MastheadText = DefaultMastheadText;
             Args.CreateConnectionStringEnvironmentVariableName ??= _ => $"{args.GetAppName()?.Replace(".", "_", StringComparison.InvariantCulture)}_ConnectionString";
             Args.ConfigFileName ??= DefaultConfigFileName;
-
-            // Default to SQL Server if nothing specified so far, can be overridden later.
-            if (args.GetDbProvider() == null)
-                UseSqlServer();
         }
 
         /// <summary>
@@ -104,14 +94,15 @@ namespace NTangle.Console
         }
 
         /// <summary>
-        /// Uses (overrides) the database connection creation to leverage the SQL Server <see cref="SqlConnection"/> and sets the <see cref="UseScript(string)">script</see> to <see cref="DefaultSqlServerScriptFileName"/>.
+        /// Uses (overrides) the database connection creation to leverage the SQL Server <see cref="SqlConnection"/> and sets the <see cref="UseScript(string)">script</see> according to the <paramref name="deploymentOption"/>.
         /// </summary>
+        /// <param name="deploymentOption">The <see cref="SqlServerDeployment"/> option.</param>
         /// <param name="sqlDatabaseCreator">The optional <paramref name="sqlDatabaseCreator"/> to enable advanced <see cref="SqlServerDatabase"/> creation; otherwise, defaults.</param>
         /// <returns>The current instance to support fluent-style method-chaining.</returns>
         /// <remarks>Also invokes <see cref="CodeGeneratorArgsExtensions.SetDbProvider(ICodeGeneratorArgs, string?)"/> passing '<c>SqlServer</c>'.</remarks>
-        public CodeGenConsole UseSqlServer(Func<string, SqlServerDatabase>? sqlDatabaseCreator = null)
+        public CodeGenConsole UseSqlServer(SqlServerDeployment deploymentOption, Func<string, SqlServerDatabase>? sqlDatabaseCreator = null)
         {
-            UseScript(DefaultSqlServerScriptFileName);
+            UseScript($"SqlServer{deploymentOption}.yaml");
             sqlDatabaseCreator ??= (cs) => new SqlServerDatabase(() => new SqlConnection(cs));
             Args.SetCreateDatabase(sqlDatabaseCreator);
             Args.SetDbProvider("SqlServer");
@@ -123,6 +114,9 @@ namespace NTangle.Console
         {
             if (string.IsNullOrEmpty(Args.GetAppName()))
                 Args.SetAppName(Args.OutputDirectory?.Name ?? "APP-NAME-UNKNOWN");
+
+            if (Args.GetCreateDatabase() == null)
+                throw new CodeGenException("A database provider must be specified during application startup, consider using the likes of 'UseSqlServer()' to specify; e.g: 'CodeGenConsole.Create(\"...\").UseSqlServer(...).RunAsync(args)'.");
 
             return base.OnValidation(context);
         }

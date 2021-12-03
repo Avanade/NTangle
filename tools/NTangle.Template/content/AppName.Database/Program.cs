@@ -1,23 +1,22 @@
-﻿using NTangle.Console;
+﻿using DbEx.Console;
 using System.Threading.Tasks;
 
 namespace AppName.CodeGen
 {
     /// <summary>
-    /// <see href="https://github.com/Avanade/NTangle">NTangle</see>-based code-generation console program.
+    /// <see href="https://github.com/Avanade/DbEx">DbEx</see>-based database deployment migration console program.
     /// </summary>
     internal class Program
     {
         /// <summary>
-        /// Runs the code generation using the passed <paramref name="args"/> string.
+        /// Runs the database deployment migration using the passed <paramref name="args"/> string.
         /// </summary>
         /// <param name="args">>The command-line arguments.</param>
         /// <returns><b>Zero</b> indicates success; otherwise, unsuccessful.</returns>
         /// <remarks>The specified connection string is for default development purposes only, this should be overriden using a command line argument ('<c>-cs|--connection-string</c>' or '<c>-cv|--connection-varname</c>') 
         /// or environment variable ('<c>SqlServerDemo_ConnectionString</c>'). Note: any '<c>.</c>' characters in the environment variable name must be replaced with an '<c>_</c>'.</remarks>
-        public static async Task Main(string[] args) => await CodeGenConsole
-            .Create("Data Source=.;Initial Catalog=AppName;Integrated Security=True")
-            .UseDbProvider(SqlServerDeployment.DbProject)
+        internal static async Task<int> Main(string[] args) => await SqlServerMigratorConsole
+            .Create<Program>("Data Source=.;Initial Catalog=AppName;Integrated Security=True")
             .RunAsync(args).ConfigureAwait(false);
     }
 }

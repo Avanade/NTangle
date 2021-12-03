@@ -1,8 +1,4 @@
 CREATE TABLE [NTangle].[VersionTracking] (
-  /*
-   * This is automatically generated; any changes will be lost.
-   */
-
   [VersionTrackingId] UNIQUEIDENTIFIER NOT NULL DEFAULT (NEWSEQUENTIALID()) PRIMARY KEY NONCLUSTERED ([VersionTrackingId] ASC),
   [Schema] VARCHAR(64) NOT NULL,
   [Table] VARCHAR(128) NOT NULL,

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SqlServerDemo.Database": {
+      "commandName": "Project",
+      "commandLineArgs": "dropandall"
+    }
+  }
+}

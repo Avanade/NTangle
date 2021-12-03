@@ -14,8 +14,10 @@
 
 IF (SELECT TOP 1 is_cdc_enabled FROM sys.databases WHERE [name] = DB_NAME()) = 0
 BEGIN
-  EXEC sp_changedbowner 'sa'
-  EXEC sys.sp_cdc_enable_db
+    DECLARE @user NVARCHAR(256) = SUSER_NAME()
+    EXEC sp_changedbowner 'sa'
+    EXEC sys.sp_cdc_enable_db
+    EXEC sp_changedbowner @user
 END
 
 GO

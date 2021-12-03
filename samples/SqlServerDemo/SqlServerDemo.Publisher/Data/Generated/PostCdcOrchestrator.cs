@@ -5,6 +5,7 @@
 #nullable enable
 #pragma warning disable
 
+using DbEx;
 using Microsoft.Extensions.Logging;
 using NTangle;
 using NTangle.Cdc;

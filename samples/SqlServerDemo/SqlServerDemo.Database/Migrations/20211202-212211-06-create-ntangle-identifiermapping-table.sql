@@ -1,8 +1,4 @@
 CREATE TABLE [NTangle].[IdentifierMapping] (
-  /*
-   * This is automatically generated; any changes will be lost.
-   */
-
   [Schema] VARCHAR(64) NOT NULL,
   [Table] VARCHAR(128) NOT NULL,
   [Key] NVARCHAR(128) NOT NULL,

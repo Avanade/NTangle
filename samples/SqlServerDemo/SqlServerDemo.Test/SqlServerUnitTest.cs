@@ -1,17 +1,21 @@
-﻿using DbUp;
+﻿using DbEx;
+using DbEx.Console;
+using DbEx.Migration;
 using DbUp.Engine;
 using DbUp.Engine.Output;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using NTangle.Data;
+using NTangle.Data.SqlServer;
 using NTangle.Test;
 using NUnit.Framework;
 using OnRamp.Console;
+using SqlServerDemo.CodeGen;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SqlServerDemo.Test
 {
@@ -19,7 +23,7 @@ namespace SqlServerDemo.Test
     /// Provides test helping/utility functions.
     /// </summary>
     [SetUpFixture]
-    public static class SqlServerUnitTest
+    public class SqlServerUnitTest
     {
         /// <summary>
         /// Gets the <see cref="SqlServerDatabase"/> used for testing.
@@ -36,51 +40,13 @@ namespace SqlServerDemo.Test
         /// Set up the database, drop, create and apply scripts.
         /// </summary>
         [OneTimeSetUp]
-        public static void SetUpDatabase()
+        public static async Task SetUpDatabase()
         {
             var cs = UnitTest.GetConfig("SqlServerDemo_").GetConnectionString("SqlDb");
-            var ls = new LoggerSink(UnitTest.GetLogger<LoggerSink>());
-            var di = GetDatabaseDirectory();
-            var scripts = new List<SqlScript>();
-            var grp = 0;
 
-            Console.WriteLine("DATABASE SETUP - Start...");
-
-            // Drop the database where pre-existing.
-            DropDatabase.For.SqlDatabase(cs, ls);
-
-            // Create a new empty database.
-            EnsureDatabase.For.SqlDatabase(cs, ls);
-
-            // Add the pre scripts(s).
-            AddScript(scripts, grp++, di, "Pre.Deploy.sql");
-
-            // Add all the scripts within each folder.
-            var sdi = new DirectoryInfo(Path.Combine(di.FullName, "Schema", "NTangle"));
-            if (!sdi.Exists)
-                throw new InvalidOperationException($"Directory does not exist: {sdi.FullName}");
-
-            AddScripts(scripts, grp++, sdi, "Generated");
-            AddScripts(scripts, grp++, sdi, "Tables");
-            AddScripts(scripts, grp++, sdi, "Types");
-            AddScripts(scripts, grp++, sdi, "Stored Procedures");
-
-            // Add the post scripts(s).
-            AddScripts(scripts, grp++, di, "Generated");
-
-            // Apply all the scripts.
-            var result = DeployChanges.To.SqlDatabase(cs)
-                .WithScripts(scripts)
-                .WithoutTransaction()
-                .LogTo(ls)
-                .Build()
-                .PerformUpgrade();
-
-            if (!result.Successful)
-                throw new InvalidOperationException($"Database deployment failed: {result.Error.Message}");
-
-            Console.WriteLine("DATABASE SETUP - Finished...");
-            Console.WriteLine(string.Empty);
+            await SqlServerMigratorConsole
+                .Create<Program>(cs)
+                .RunAsync(MigrationCommand.DropAndAll).ConfigureAwait(false);
         }
 
         /// <summary>

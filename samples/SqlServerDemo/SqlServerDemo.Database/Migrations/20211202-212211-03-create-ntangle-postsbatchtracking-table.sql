@@ -1,8 +1,4 @@
 CREATE TABLE [NTangle].[PostsBatchTracking] (
-  /*
-   * This is automatically generated; any changes will be lost.
-   */
-
   [BatchTrackingId] BIGINT IDENTITY (1, 1) NOT NULL PRIMARY KEY CLUSTERED ([BatchTrackingId] ASC),
   [CreatedDate] DATETIME2 NOT NULL,
   [IsComplete] BIT NOT NULL,
