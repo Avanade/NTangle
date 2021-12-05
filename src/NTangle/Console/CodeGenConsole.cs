@@ -5,17 +5,16 @@ using NTangle.Data.SqlServer;
 using OnRamp;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Data.Common;
 using System.IO;
 using System.Reflection;
 
 namespace NTangle.Console
 {
     /// <summary>
-    /// <b>NTangle</b>-specific code-generation console that inherits from <see cref="OnRamp.Console.CodeGenConsoleBase"/>.
+    /// <b>NTangle</b>-specific code-generation console that inherits from <see cref="OnRamp.Console.CodeGenConsole"/>.
     /// </summary>
-    /// <remarks>The <b>NTangle</b> capabilities are designed to be database provider agnostic, as such the underlying database access is managed via the common data capabilities such as <see cref="DbConnection"/>.</remarks>
-    public class CodeGenConsole : OnRamp.Console.CodeGenConsoleBase
+    /// <remarks>The <b>NTangle</b> capabilities are designed to be database provider agnostic, as such the underlying database access will need to be specified; e.g. <see cref="UseSqlServer(SqlServerDeployment, Func{string, SqlServerDatabase}?)"/>.</remarks>
+    public class CodeGenConsole : OnRamp.Console.CodeGenConsole
     {
         /// <summary>
         /// Gets the default configuration file name (see <see cref="ICodeGeneratorArgs.ConfigFileName"/>).
@@ -33,42 +32,24 @@ namespace NTangle.Console
 ";
 
         /// <summary>
-        /// Creates a new instance of the <see cref="CodeGenConsole"/> class defaulting to <see cref="Assembly.GetCallingAssembly"/>.
-        /// </summary>
-        /// <param name="connectionString">The default connection string.</param>
-        /// <param name="appName">The application name; defaults to the <see cref="OnRamp.Console.CodeGenConsoleBase.GetBaseExeDirectory"/> <see cref="DirectoryInfo.Parent"/> directory name.</param>
-        /// <param name="outputDirectory">The output path/directory; defaults to the resulting <see cref="OnRamp.Console.CodeGenConsoleBase.GetBaseExeDirectory"/> <see cref="DirectoryInfo.Parent"/>.</param>
-        /// <returns>The <see cref="CodeGenConsole"/> instance.</returns>
-        public static CodeGenConsole Create(string connectionString, string? appName = null, string? outputDirectory = null) => Create(new Assembly[] { Assembly.GetCallingAssembly() }, connectionString, appName, outputDirectory);
-
-        /// <summary>
         /// Creates a new instance of the <see cref="CodeGenConsole"/> class.
         /// </summary>
-        /// <param name="assemblies">The list of additional assemblies to probe for resources.</param>
         /// <param name="connectionString">The default connection string.</param>
-        /// <param name="appName">The application name; defaults to the <see cref="OnRamp.Console.CodeGenConsoleBase.GetBaseExeDirectory"/> <see cref="DirectoryInfo.Parent"/> directory name.</param>
-        /// <param name="outputDirectory">The output path/directory; defaults to the resulting <see cref="OnRamp.Console.CodeGenConsoleBase.GetBaseExeDirectory"/> <see cref="DirectoryInfo.Parent"/>.</param>
-        /// <returns>The <see cref="CodeGenConsole"/> instance.</returns>
-        public static CodeGenConsole Create(Assembly[] assemblies, string connectionString, string? appName = null, string? outputDirectory = null)
+        /// <param name="assemblies">The list of additional assemblies to probe for resources; where none are passed then <see cref="Assembly.GetCallingAssembly"/> will be added as default</param>
+        /// <remarks>Also adds this <see cref="Assembly"/> before adding the passed <paramref name="assemblies"/> into <see cref="CodeGeneratorArgsBase.Assemblies"/>.</remarks>
+        public CodeGenConsole(string connectionString, params Assembly[] assemblies) : base()
         {
-            var args = new CodeGeneratorArgs { OutputDirectory = string.IsNullOrEmpty(outputDirectory) ? new DirectoryInfo(GetBaseExeDirectory()).Parent : new DirectoryInfo(outputDirectory) };
-            args.AddAssembly(typeof(CodeGenConsole).Assembly);
-            args.AddAssembly(assemblies);
-            args.ConnectionString = connectionString;
-            if (string.IsNullOrEmpty(appName))
-                args.SetAppName(appName ?? new DirectoryInfo(GetBaseExeDirectory()).Parent.Name);
+            Args.ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            Args.AddAssembly(typeof(CodeGenConsole).Assembly);
+            if (assemblies == null || assemblies.Length == 0)
+                Args.AddAssembly(Assembly.GetCallingAssembly());
+            else
+                Args.AddAssembly(assemblies);
 
-            return new CodeGenConsole(args);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeGenConsole"/> class.
-        /// </summary>
-        internal CodeGenConsole(CodeGeneratorArgs args) : base(typeof(CodeGenConsole).Assembly, args, Assembly.GetEntryAssembly()!.GetName().Name, options: OnRamp.Console.SupportedOptions.All)
-        {
-            MastheadText = DefaultMastheadText;
-            Args.CreateConnectionStringEnvironmentVariableName ??= _ => $"{args.GetAppName()?.Replace(".", "_", StringComparison.InvariantCulture)}_ConnectionString";
+            Args.OutputDirectory = new DirectoryInfo(GetBaseExeDirectory()).Parent;
+            Args.CreateConnectionStringEnvironmentVariableName ??= _ => $"{Args.GetAppName()?.Replace(".", "_", StringComparison.InvariantCulture)}_ConnectionString";
             Args.ConfigFileName ??= DefaultConfigFileName;
+            MastheadText = DefaultMastheadText;
         }
 
         /// <summary>
