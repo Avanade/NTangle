@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using DbEx.Schema;
 using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
-using OnRamp.Database;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NTangle.Config
 {
@@ -59,9 +60,9 @@ namespace NTangle.Config
         public string? NameAlias { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="ToColumn"/> <see cref="DbColumn"/>.
+        /// Gets the <see cref="ToColumn"/> <see cref="DbColumnSchema"/>.
         /// </summary>
-        public DbColumn? ToDbColumn { get; set; }
+        public DbColumnSchema? ToDbColumn { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ToColumn"/> alias.
@@ -71,7 +72,7 @@ namespace NTangle.Config
         #endregion
 
         /// <inheritdoc/>
-        protected override void Prepare()
+        protected override Task PrepareAsync()
         {
             if (Name != null && Name.StartsWith("@", StringComparison.OrdinalIgnoreCase))
                 Name = Name[1..];
@@ -107,6 +108,8 @@ namespace NTangle.Config
                     ToColumnAlias = t.Columns.SingleOrDefault(x => x.Name == ToColumn)?.NameAlias ?? Name;
                 }
             }
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using DbEx;
 using Newtonsoft.Json;
 using NTangle.Data;
 using System;
@@ -37,6 +38,9 @@ namespace NTangle.Events
                     Type = @event.Type,
                     Source = @event.Source?.ToString(),
                     Timestamp = @event.Timestamp,
+                    CorrelationId = @event.CorrelationId,
+                    TenantId = @event.TenantId,
+                    PartitionKey = @event.PartitionKey,
                     EventData = new BinaryData(JsonConvert.SerializeObject(@event))
                 });
             }

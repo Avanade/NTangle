@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using DbEx;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Data.Common;
 
-namespace NTangle.Data
+namespace NTangle.Data.SqlServer
 {
     /// <summary>
     /// Provides the <b>Microsoft SQL Server</b> specific database access functionality.

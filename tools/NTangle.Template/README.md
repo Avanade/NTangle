@@ -16,16 +16,31 @@ dotnet new -i ntangle.template --nuget-source https://api.nuget.org/v3/index.jso
 dotnet new -i ntangle.template --nuget-source C:\Users\Name\nuget-publish
 ```
 
+To verify once installed, execute `dotnet new ntangle --help`. This will output the following showing the supported _NTangle_ command line options.
+
+```
+NTangle solution (C#)
+Author: NTangle developers
+Options:
+  -db|--dbproject  The database project option.
+                       DbEx      - Indicates to use DbEx-based deployment migration application.
+                       Dacpac    - Indicates to use SQL Server data-tier application (DACPAC).
+                       None      - Indicates that a database project is not required.
+                   Default: DbEx
+```
+
 <br/>
 
 ## Create solution
 
 To create the _Solution_ you must first be in the directory that you intend to create the artefacts within. The directory name is then used as the default for the application name.
 
-The `dotnet new` command is used to create the initial solution artefacts that will leverage Microsoft SQL Server, and by extension a Microsoft SQL Server data-tier application, by default.
+The `dotnet new` command is used to create the initial solution artefacts that will leverage Microsoft SQL Server. When creating the database project type can be specified; either using [`DbEx`](https://github.com/Avanade/dbex) (default) or traditional [`Dacpac`](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications).
 
 ```
 dotnet new ntangle
+dotnet new ntangle -db DbEx
+dotnet new ntangle -db Dacpac
 ```
 
 <br/>
@@ -56,12 +71,12 @@ The templated structure represents the bare minimum needed to start. Generally, 
 
 ### AppName.CodeGen
 
-The connection string defaulted within the [`Program.cs`](./content/AppName.CodeGen/Program.cs) needs to be validated and adjusted to that required for development purposes. The connection string can be overridden either by using the default environment variable (e.g. `AppName_ConnectionString` where any `.` characters in the `AppName` will be replaced with a corresponding `_`), or as a command line argument.
+The connection string defaulted within the [`Program.cs`](./content/AppName.CodeGen/Program.cs) needs to be validated and adjusted to that required for development purposes. The connection string can be overridden either by using the default environment variable (e.g. `AppName_ConnectionString` where any `.` characters in the `AppName` are replaced with a corresponding `_`), or as a command line argument.
 
 The command line arguments are as follows:
 
 ```
-NTangle Code Generator.
+AppName.CodeGen
 
 Usage: AppName.CodeGen [options]
 
@@ -80,13 +95,47 @@ Options:
 
 Otherwise, the **key** artefact that is maintained is [`ntangle.yaml`](./content/AppName.CodeGen/ntangle.yaml) that contains the CDC-related table configuration used to drive the code-generation. The contents are provided as an example only, and generally would be removed and replaced with the _actual_ configuration.
 
-To execute the code-generation use `dotnet run` or execute the `AppName.CodeGen.exe` directly.
+To execute the code-generation use `dotnet run`, or execute the `AppName.CodeGen.exe` directly.
 
 <br/>
 
-### AppName.Database
+### AppName.Database (DbEx)
 
-A Microsoft SQL Server data-tier application ([DAC](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications)) will have been generated. This project will be empty except for [`Post.Deploy.sql`](./content/AppName.Database/Post.Deploy.sql), this executes `:r .\Generated\CdcEnable.sql` which will be created once code-generation has been executed (where configured to do so, which is the default).
+A console application is generated with a reference to _DbEx_ (please review this [repo](https://github.com/Avanade/dbex) to further understand the database migration deployment capabilities).
+
+The connection string defaulted within the [`Program.cs`](./content/AppName.CodeGen/Program.cs) needs to be validated and adjusted to that required for development purposes. The connection string can be overridden either by using the default environment variable (e.g. `AppName_ConnectionString` where any `.` characters in the `AppName` are replaced with a corresponding `_`), or as a command line argument.
+
+The command line arguments are as follows:
+
+```
+AppName.Database
+
+Usage: AppName.Database [options] <command> <script-args>
+
+Arguments:
+  command                    Database migration command.
+                             Allowed values are: None, Drop, Create, Migrate, Schema, Reset, Data, All, DropAndAll, ResetAndData, ResetAndAll, Script.
+  script-args                Arguments for the Script command (first being the script name).
+
+Options:
+  -?|-h|--help               Show help information.
+  -cs|--connection-string    Database connection string.
+  -cv|--connection-varname   Database connection string environment variable name.
+  -so|--schema-order         Database schema name (multiple can be specified in priority order).
+  -o|--output                Output directory path.
+  -a|--assembly              Assembly containing embedded resources (multiple can be specified in probing order).
+  -eo|--entry-assembly-only  Use the entry assembly only (ignore all other assemblies).
+```
+
+All required artefacts are generally added to this project using [`AppName.CodeGen`](#AppName.CodeGen).
+
+To execute the database migration use `dotnet run`, or execute the `AppName.Database.exe` directly.
+
+<br/>
+
+### AppName.Database (Dacpac)
+
+A Microsoft SQL Server data-tier application ([DAC](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications)) will have been generated. This project will be empty except for [`Post.Deploy.sql`](./content/AppName.Database/Post.Deploy.sql), this executes `:r .\Generated\CdcEnable.post.deploy.sql` which will be created once code-generation has been executed (where configured to do so, which is the default).
 
 _Tip:_ If after genneration, any of the generated files are not automatically added to the Visual Studio Project structure, the _Show All Files_ in the _Solution Explorer_ can be used to view, and then added en masse by selecting and using the _Include In Project_ function.
 
@@ -151,7 +200,7 @@ DROP DATABASE [FooBar]
 
 ### Create solution
 
-To start, create a new `FooBar` directory, change to that directory, and then create the solution using the _NTangle_ template. Once created, open the solution in Visual Studio.
+To start, create a new `FooBar` directory, change to that directory, and then create the solution using the _NTangle_ template. For the purposes of this demo that database artefacts will be managed by _DbEx_. Once created, open the solution in Visual Studio.
 
 ```
 mkdir FooBar
@@ -175,12 +224,13 @@ The output from the console application should be similar to the following.
 NTangle [v1.0.1]
 
 Config = ntangle.yaml
-Script = SqlServerDacpac.yaml
+Script = SqlServerDbEx.yaml
 OutDir = C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar
 ExpectNoChanges = False
 IsSimulation = False
 Parameters:
   AppName = FooBar
+  CreateDatabase = System.Func`2[System.String,NTangle.Data.SqlServer.SqlServerDatabase]
   DbProvider = SqlServer
 Assemblies:
   FooBar.CodeGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
@@ -188,7 +238,7 @@ Assemblies:
 
 Scripts:
   Querying database to infer table(s)/column(s) schema...
-    Database query complete [1149ms]
+    Database schema query complete [1390ms]
 
  Template: SqlServer/SpExecuteBatch_sql.hb (TableCodeGenerator: Database/Schema/Xxx/Stored Procedures)
     Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spContactBatchExecute.sql
@@ -230,66 +280,63 @@ Scripts:
  Template: OutboxEventPublisher_cs.hb (OutboxCodeGenerator: Publisher/Events)
     Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Events\Generated\OutboxEventPublisher.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
+ Template: OutboxDequeuePublisher_cs.hb (OutboxCodeGenerator: Publisher/Events)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Events\Generated\OutboxDequeuePublisher.cs
+  [Files: Unchanged = 0, Updated = 0, Created = 1]
  Template: ServiceCollectionExtensions_cs.hb (RootCodeGenerator: Publisher)
     Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Generated\ServiceCollectionExtensions.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
  Template: EntityHostedService_cs.hb (RootCodeGenerator: Publisher/Services)
     Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Services\Generated\ContactHostedService.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: OutboxDequeueHostedService_cs.hb (OutboxCodeGenerator: Publisher/Services)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Services\Generated\OutboxDequeueHostedService.cs
+ Template: SqlServer/SchemaCdc_sql.hb (CdcSchemaCreateCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-01-create-ntangle-schema.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/CdcEnable_sql.hb (CdcEnableCodeGenerator: Database)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Generated\CdcEnable.sql
+ Template: SqlServer/TableVersionTracking_sql.hb (RootCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-02-create-ntangle-versiontracking-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SchemaCdc_sql.hb (CdcSchemaCreateCodeGenerator: Database/Schema/Xxx)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Generated\NTangle.sql
+ Template: SqlServer/TableBatchTracking_sql.hb (TableCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-03-create-ntangle-contactbatchtracking-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableVersionTracking_sql.hb (RootCodeGenerator: Database/Schema/Xxx/Tables)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Tables\Generated\VersionTracking.sql
+ Template: SqlServer/TableEventOutbox_sql.hb (OutboxCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-04-create-ntangle-eventoutbox-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableBatchTracking_sql.hb (TableCodeGenerator: Database/Schema/Xxx/Tables)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Tables\Generated\ContactBatchTracking.sql
+ Template: SqlServer/TableEventOutboxData_sql.hb (OutboxCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-05-create-ntangle-eventoutboxdata-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableIdentifierMapping_sql.hb (IdentifierMappingCodeGenerator: Database/Schema/Xxx/Tables)
+ Template: SqlServer/TableIdentifierMapping_sql.hb (IdentifierMappingCodeGenerator: Database/Migrations (GenOnce))
   [Files: Unchanged = 0, Updated = 0, Created = 0]
- Template: SqlServer/TableEventOutbox_sql.hb (OutboxCodeGenerator: Database/Schema/Xxx/Tables)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Tables\Generated\EventOutbox.sql
-  [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableEventOutboxData_sql.hb (OutboxCodeGenerator: Database/Schema/Xxx/Tables)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Tables\Generated\EventOutboxData.sql
+ Template: SqlServer/CdcEnable_sql.hb (CdcEnableCodeGenerator: Database/Migrations)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\CdcEnable.post.deploy.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
 
-Complete. [1288ms, Files: Unchanged = 0, Updated = 0, Created = 21, TotalLines = 1022]
+FooBar.CodeGen Complete. [1360ms, Files: Unchanged = 0, Updated = 0, Created = 21, TotalLines = 999]
 ```
 
 <br/>
 
 ### FooBar.Database
 
-As stated earlier, the generated artefacts are not included in the project automatically - these all need to be added. Within Visual Studio the _Show All Files_ in the _Solution Explorer_ can be used to view, and then added en masse by selecting and using the _Include In Project_ (context menu) function. The _Build Action_ for `Generated\CdcEnable.sql` will need to be updated to `None` (see [earlier instructions tip](#AppName.Database)).
-
-The artefacts to be added are as follows.
+As _DbEx_ is being used, the generated artefacts are included in the project automatically. The artefacts are as follows.
 
 ```
 └── Generated
   └── CdcEnable.sql
 └── Schema
+  └── Migrations
+    └── yyyymmdd-hhmmss-01-create-ntangle-schema.sql
+    └── yyyymmdd-hhmmss-02-create-ntangle-versiontracking-table.sql
+    └── yyyymmdd-hhmmss-03-create-ntangle-contactbatchtracking-table.sql
+    └── yyyymmdd-hhmmss-04-create-ntangle-eventoutbox-table.sql
+    └── yyyymmdd-hhmmss-05-create-ntangle-eventoutboxdata-table.sql
+    └── CdcEnable.post.deploy.sql
   └── NTangle
-    └── Generated
-      └── NTangle.sql
     └── Stored Procedures
       └── Generated
         └── spContactBatchComplete.sql
         └── spContactBatchExecute.sql
         └── spEventOutboxDequeue.sql
         └── spEventOutboxEnqueue.sql
-    └── Tables
-      └── Generated
-        └── ContactBatchTracking.sql
-        └── EventOutbox.sql
-        └── EventOutboxData.sql
-        └── VersionTracking.sql
     └── Types
       └── User-Defined Table Types
         └── Generated
@@ -297,7 +344,98 @@ The artefacts to be added are as follows.
           └── udtVersionTrackingList.sql
 ```
 
-Once added the generated artefacts need to be deployed to the database. Using the _Publish_ function from the project deploy to the previously created `FooBar` database.
+The `Program.cs` has the correct connection string. Compile the application and execute directly from Visual Studio (after setting the _Application arguments_ to `all` within the `Debug` tab of the `Project Properties`), or using `dotnet run all`.
+
+The output from the console application should be similar to the following.
+
+
+```
+╔╦╗┌┐ ╔═╗─┐ ┬  ╔╦╗┌─┐┌┬┐┌─┐┌┐ ┌─┐┌─┐┌─┐  ╔╦╗┌─┐┌─┐┬
+ ║║├┴┐║╣ ┌┴┬┘   ║║├─┤ │ ├─┤├┴┐├─┤└─┐├┤    ║ │ ││ ││
+═╩╝└─┘╚═╝┴ └─  ═╩╝┴ ┴ ┴ ┴ ┴└─┘┴ ┴└─┘└─┘   ╩ └─┘└─┘┴─┘
+
+FooBar.Database [v1.0.0]
+
+Command = All
+SchemaOrder =
+OutDir =
+Assemblies:
+  FooBar.Database, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  DbEx, Version=1.0.1.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+
+--------------------------------------------------------------------------------
+
+DATABASE CREATE: Checking database existence and creating where not found...
+  Create database (using DbUp)...
+    Master ConnectionString => Data Source=.;Initial Catalog=master;Integrated Security=True;Password=
+
+Complete [400ms].
+
+--------------------------------------------------------------------------------
+
+DATABASE MIGRATE: Migrating the database...
+  Probing for embedded resources: FooBar.Database.Migrations.*.sql, DbEx.Migrations.*.sql
+  Migrate (using DbUp) the embedded resources...
+    Beginning database upgrade
+    Checking whether journal table exists..
+    Journal table does not exist
+    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-01-create-ntangle-schema.sql'
+    Checking whether journal table exists..
+    Creating the [SchemaVersions] table
+    The [SchemaVersions] table has been created
+    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-02-create-ntangle-versiontracking-table.sql'
+    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-03-create-ntangle-contactbatchtracking-table.sql'
+    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-04-create-ntangle-eventoutbox-table.sql'
+    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-05-create-ntangle-eventoutboxdata-table.sql'
+    Executing Database Server script 'FooBar.Database.Migrations.CdcEnable.post.deploy.sql'
+    Upgrade successful
+
+Complete [7323ms].
+
+--------------------------------------------------------------------------------
+
+DATABASE SCHEMA: Drops and creates the database objects...
+  Probing for files (recursively): C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\*\*.sql
+  Probing for embedded resources: FooBar.Database.Schema.*.sql, DbEx.Schema.*.sql
+  Drop (using DbUp) known schema objects...
+    Beginning database upgrade
+    Checking whether journal table exists..
+    Fetching list of already executed scripts.
+    Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spEventOutboxEnqueue]'
+    Checking whether journal table exists..
+    Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spEventOutboxDequeue]'
+    Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spContactBatchExecute]'
+    Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spContactBatchComplete]'
+    Executing Database Server script 'DROP TYPE IF EXISTS [NTangle].[udtVersionTrackingList]'
+    Executing Database Server script 'DROP TYPE IF EXISTS [NTangle].[udtEventOutboxList]'
+    Upgrade successful
+  Create (using DbUp) known schema objects...
+    Beginning database upgrade
+    Checking whether journal table exists..
+    Fetching list of already executed scripts.
+    Executing Database Server script 'FooBar.Database.Schema.NTangle.Types.User_Defined_Table_Types.Generated.udtEventOutboxList.sql'
+    Checking whether journal table exists..
+    Executing Database Server script 'FooBar.Database.Schema.NTangle.Types.User_Defined_Table_Types.Generated.udtVersionTrackingList.sql'
+    Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spContactBatchComplete.sql'
+    Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spContactBatchExecute.sql'
+    Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spEventOutboxDequeue.sql'
+    Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spEventOutboxEnqueue.sql'
+    Upgrade successful
+
+Complete [286ms].
+
+--------------------------------------------------------------------------------
+
+DATABASE DATA: Insert or merge the embedded YAML data...
+  Probing for embedded resources: DbEx.Data.*.sql, FooBar.Database.Data.*.sql
+  ** Nothing found. **
+
+Complete [6ms].
+
+--------------------------------------------------------------------------------
+
+FooBar.Database Complete. [8063ms]
+```
 
 <br/>
 

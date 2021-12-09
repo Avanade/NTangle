@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NTangle\NTangle.csproj" />
     <ProjectReference Include="..\..\..\tests\NTangle.Test\NTangle.Test.csproj" />
+    <ProjectReference Include="..\SqlServerDemo.Database\SqlServerDemo.Database.csproj" />
     <ProjectReference Include="..\SqlServerDemo.Publisher\SqlServerDemo.Publisher.csproj" />
   </ItemGroup>
 

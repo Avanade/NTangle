@@ -4,6 +4,7 @@
   "source": "/database/cdc/legacy/contact/1",
   "subject": "legacy.contact",
   "action": "updated",
+  "partitionkey": "Contact",
   "datacontenttype": "application/json",
   "data": {
     "name": "Name1",

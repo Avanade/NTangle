@@ -14,6 +14,7 @@ Category | Description
 [`Infer`](#Infer) | Provides the _special Column Name inference_ configuration.
 [`.NET`](#NET) | Provides the _.NET_ configuration.
 [`Event`](#Event) | Provides the _event_ configuration.
+[`Outbox`](#Outbox) | Provides the _outbox_ configuration.
 [`Path`](#Path) | Provides the _Path (Directory)_ configuration for the generated artefacts.
 [`Namespace`](#Namespace) | Provides the _.NET Namespace_ configuration for the generated artefacts.
 [`Collections`](#Collections) | Provides related child (hierarchical) configuration.
@@ -77,6 +78,19 @@ Property | Description
 `eventSourceKind` | The URI kind for the event source URIs for CDC. Valid options are: `None`, `Absolute`, `Relative`, `RelativeOrAbsolute`.<br/>&dagger; Defaults to `Relative` (being a relative path).
 `eventSourceRoot` | The URI root for the event source by prepending to all event source URIs for CDC.<br/>&dagger; The event source is only updated where an `EventSourceKind` is not `None`.
 `eventSourceFormat` | The default formatting for the Source when an Event is published via CDC. Valid options are: `NameOnly`, `NameAndKey`, `NameAndTableKey`.<br/>&dagger; Defaults to `NameAndTableKey` (being the child `Cdc.ModelName` appended with the corresponding table key).
+
+<br/>
+
+## Outbox
+Provides the _outbox_ configuration.
+
+Property | Description
+-|-
+`outbox` | Indicates whether to generate the event outbox SQL and .NET artefacts.<br/>&dagger; Defaults to `false`.
+`outboxSchema` | The schema name of the event outbox table.<br/>&dagger; Defaults to `CdcSchema`.
+`outboxTable` | The name of the event outbox table.<br/>&dagger; Defaults to `EventOutbox` (literal).
+`outboxEnqueueStoredProcedure` | The stored procedure name for the event outbox enqueue.<br/>&dagger; Defaults to `spEventOutboxEnqueue` (literal).
+`outboxDequeueStoredProcedure` | The stored procedure name for the event outbox dequeue.<br/>&dagger; Defaults to `spEventOutboxDequeue` (literal).
 
 <br/>
 

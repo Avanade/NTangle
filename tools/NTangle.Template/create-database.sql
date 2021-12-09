@@ -1,4 +1,13 @@
-﻿-- Create the database.
+﻿IF DB_ID('FooBar') IS NOT NULL
+BEGIN
+    USE master
+    ALTER DATABASE [FooBar] SET SINGLE_USER WITH ROLLBACK IMMEDIATE
+    DROP DATABASE [FooBar]
+END
+
+GO
+
+-- Create the database.
 CREATE DATABASE FooBar
 
 GO

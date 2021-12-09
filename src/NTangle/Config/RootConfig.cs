@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using DbEx.Schema;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NTangle.Console;
 using OnRamp;
 using OnRamp.Config;
-using OnRamp.Database;
 using OnRamp.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NTangle.Config
 {
@@ -339,12 +340,17 @@ namespace NTangle.Config
         /// <summary>
         /// Gets or sets the list of tables that exist within the database.
         /// </summary>
-        public List<DbTable>? DbTables { get; private set; }
+        public List<DbTableSchema>? DbTables { get; private set; }
 
         /// <summary>
         /// Gets the application name from the <see cref="ICodeGeneratorArgs.Parameters"/>.
         /// </summary>
         public string? AppName => CodeGenArgs!.GetAppName(true);
+
+        /// <summary>
+        /// Indicates whether the scripted template is gen-once only.
+        /// </summary>
+        public bool? IsGenOnce => (bool?)RuntimeParameters.GetValueOrDefault(nameof(OnRamp.Scripts.CodeGenScriptItem.IsGenOnce));
 
         /// <summary>
         /// Gets the .NET <see cref="Type"/> that corresponds to the <see cref="IdentifierMappingType"/>.
@@ -381,9 +387,9 @@ namespace NTangle.Config
         #endregion
 
         /// <inheritdoc/>
-        protected override void Prepare()
+        protected override async Task PrepareAsync()
         {
-            LoadDbTablesConfig();
+            await LoadDbTablesConfigAsync().ConfigureAwait(false);
 
             Schema = DefaultWhereNull(Schema, () => "dbo");
             CdcSchema = DefaultWhereNull(CdcSchema, () => "NTangle");
@@ -412,24 +418,27 @@ namespace NTangle.Config
             NamespaceBase = DefaultWhereNull(NamespaceBase, () => AppName);
             NamespacePublisher = DefaultWhereNull(NamespacePublisher, () => $"{NamespaceBase}.Publisher");
 
-            Tables = PrepareCollection(Tables);
+            Tables = await PrepareCollectionAsync(Tables).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Load the database table and columns configuration.
         /// </summary>
-        private void LoadDbTablesConfig()
+        private async Task LoadDbTablesConfigAsync()
         {
             CodeGenArgs!.Logger?.Log(LogLevel.Information, $"  Querying database to infer table(s)/column(s) schema...");
 
             var cs = CodeGenArgs.ConnectionString ?? throw new CodeGenException("Connection string must be specified via an environment variable or as a command-line option.");
 
             var sw = Stopwatch.StartNew();
-            using var db = CodeGenArgs.CreateConnection();
-            DbTables = OnRamp.Database.Database.GetSchemaAsync(db, false).GetAwaiter().GetResult();
+            var db = CodeGenArgs.GetCreateDatabase(false)?.Invoke(CodeGenArgs.ConnectionString!);
+            if (db == null)
+                throw new CodeGenException(this, null, "A database provider must be specified during application startup, consider using the likes of 'UseSqlServer' to specify; e.g: 'CodeGenConsole.Create(\"...\").UseSqlServer().RunAsync(args)'.");
+
+            DbTables = await db.SelectSchemaAsync().ConfigureAwait(false);
 
             sw.Stop();
-            CodeGenArgs.Logger?.Log(LogLevel.Information, $"    Database query complete [{sw.ElapsedMilliseconds}ms]");
+            CodeGenArgs.Logger?.Log(LogLevel.Information, $"    Database schema query complete [{sw.ElapsedMilliseconds}ms]");
             CodeGenArgs.Logger?.Log(LogLevel.Information, string.Empty);
         }
 

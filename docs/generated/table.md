@@ -67,6 +67,7 @@ Property | Description
 `database` | The .NET database `IDatabase` Type name used in the constructor for Dependency Injection (DI).<br/>&dagger; Defaults to `IDatabase`.
 `includeColumnsOnDelete` | The list of `Column` names that should be included (in addition to the primary key) for a logical delete.<br/>&dagger; Where a column is not specified in this list its corresponding .NET property will be automatically cleared by the `CdcDataOrchestrator` as the data is technically considered as non-existing.
 `excludeColumnsFromETag` | The list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).<br/>&dagger; Defaults to `Root.CdcExcludeColumnsFromETag`.
+`partitionKeyColumns` | The list of `Column` names that represent the partition key.
 
 <br/>
 

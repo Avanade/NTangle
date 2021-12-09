@@ -3,11 +3,12 @@
 using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
-using OnRamp.Database;
+using DbEx.Schema;
 using OnRamp.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NTangle.Config
 {
@@ -234,7 +235,7 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the corresponding (actual) database table configuration.
         /// </summary>
-        public DbTable? DbTable { get; private set; }
+        public DbTableSchema? DbTable { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="JoinTo"/> alias.
@@ -310,7 +311,7 @@ namespace NTangle.Config
         #endregion
 
         /// <inheritdoc/>
-        protected override void Prepare()
+        protected override async Task PrepareAsync()
         {
             if (Name != null && Name.StartsWith("@", StringComparison.OrdinalIgnoreCase))
                 Name = Name[1..];
@@ -358,7 +359,7 @@ namespace NTangle.Config
                 JoinToAlias = Parent!.Alias;
 
             // Prepare the identifier mappings.
-            Mappings = PrepareCollection(Mappings);
+            Mappings = await PrepareCollectionAsync(Mappings).ConfigureAwait(false);
 
             // Deal with the columns.
             foreach (var c in DbTable.Columns)
@@ -369,7 +370,7 @@ namespace NTangle.Config
                 {
                     cc = new JoinColumnConfig { Name = c.Name, DbColumn = c, IncludeColumnOnDelete = IncludeColumnsOnDelete != null && IncludeColumnsOnDelete.Contains(c.Name!) };
                     cc.IgnoreSerialization = IdentifierMapping == true || (ExcludeColumns != null && ExcludeColumns.Contains(c.Name!));
-                    cc.Prepare(Root!, this);
+                    await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
                     PrimaryKeyColumns.Add(cc);
                 }
 
@@ -393,7 +394,7 @@ namespace NTangle.Config
                     cc.IdentifierMappingTable = cm.Table;
                 }
 
-                cc.Prepare(Root!, this);
+                await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
                 Columns.Add(cc);
 
                 if (cc.IdentifierMappingTable != null)
@@ -401,7 +402,7 @@ namespace NTangle.Config
                     var cc2 = new JoinColumnConfig
                     {
                         Name = "GlobalId",
-                        DbColumn = new DbColumn { Name = c.Name, Type = Root!.IdentifierMappingSqlType, DbTable = cc.DbColumn!.DbTable },
+                        DbColumn = new DbColumnSchema(cc.DbColumn!.DbTable, c.Name, Root!.IdentifierMappingSqlType),
                         NameAlias = "Global" + cc.NameAlias,
                         IdentifierMappingAlias = cc.IdentifierMappingAlias,
                         IdentifierMappingSchema = cc.IdentifierMappingSchema,
@@ -413,7 +414,7 @@ namespace NTangle.Config
                     cc.IdentifierMappingParent = null;
                     cc.IgnoreSerialization = true;
 
-                    cc2.Prepare(Root!, this);
+                    await cc2.PrepareAsync(Root!, this).ConfigureAwait(false);
                     Columns.Add(cc2);
                 }
 
@@ -426,7 +427,7 @@ namespace NTangle.Config
 
             foreach (var on in On)
             {
-                on.Prepare(Root!, this);
+                await on.PrepareAsync(Root!, this).ConfigureAwait(false);
             }
 
             // Manage the Include/Exclude columns.

@@ -20,7 +20,7 @@ namespace NTangle.Services
         public const string ConfigKey = "FileLockHostedServiceSynchronizePath";
 
         private readonly string _path;
-        private readonly ConcurrentDictionary<Type, FileStream> _dict = new();
+        private readonly ConcurrentDictionary<string, FileStream> _dict = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileLockSynchronizer"/> class.
@@ -37,15 +37,15 @@ namespace NTangle.Services
         }
 
         /// <inheritdoc/>
-        public bool Enter<T>()
+        public bool Enter<T>(string? name = null)
         {
-            var fn = Path.Combine(_path, $"{typeof(T).FullName}.lock");
+            var fn = Path.Combine(_path, $"{typeof(T).FullName}{(name == null ? "" : $".{name}")}.lock");
 
             try
             {
                 // Is exclusive for this invocation only where genuinely creating.
                 bool exclusiveLock = false;
-                _dict.GetOrAdd(typeof(T), _ => { exclusiveLock = true; return File.Create(fn, 1, FileOptions.DeleteOnClose); });
+                _dict.GetOrAdd(GetName<T>(name), _ => { exclusiveLock = true; return File.Create(fn, 1, FileOptions.DeleteOnClose); });
                 return exclusiveLock;
             }
             catch (IOException) { return false; } // Already exists and locked!
@@ -56,13 +56,21 @@ namespace NTangle.Services
         }
 
         /// <inheritdoc/>
-        public void Exit<T>()
+        public void Exit<T>(string? name)
         {
-            if (_dict.TryRemove(typeof(T), out var fs))
+            if (_dict.TryRemove(GetName<T>(name), out var fs))
                 fs.Dispose();
         }
 
         /// <inheritdoc/>
         public void Dispose() => _dict.Values.ForEach(fs => fs.Dispose());
+
+        /// <summary>
+        /// Gets the full name
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private static string GetName<T>(string? name) => $"{typeof(T).FullName}{(name == null ? "" : $".{name}")}";
     }
 }

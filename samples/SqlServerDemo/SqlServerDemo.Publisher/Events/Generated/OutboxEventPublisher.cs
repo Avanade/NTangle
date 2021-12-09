@@ -5,6 +5,7 @@
 #nullable enable
 #pragma warning disable
 
+using DbEx;
 using NTangle.Data;
 using NTangle.Events;
 using System;

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using DbEx;
+using DbEx.SqlServer;
 using Microsoft.Extensions.Logging;
 using NTangle.Data;
 using NTangle.Events;
@@ -456,6 +458,12 @@ namespace NTangle.Cdc
                 Data = value,
                 Source = EventSourceFormatter.Format(EventSource, value, EventSourceFormat)
             };
+
+            if (value is ITenantId ti)
+                ed.TenantId = ti.TenantId;
+
+            if (value is IPartitionKey pk)
+                ed.PartitionKey = pk.PartitionKey;
 
             ed.Type = $"{EventSubject}.{ed.Action}";
             return ed;

@@ -35,6 +35,16 @@ namespace NTangle.Events
         public string? CorrelationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the tenant identifier.
+        /// </summary>
+        public string? TenantId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the partition key.
+        /// </summary>
+        public string? PartitionKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the serialized <see cref="EventData"/> (see <see cref="IEventSerializer"/>).
         /// </summary>
         public BinaryData? EventData { get; set; }

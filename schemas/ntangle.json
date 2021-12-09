@@ -147,6 +147,31 @@
             "NameAndTableKey"
           ]
         },
+        "outbox": {
+          "type": "boolean",
+          "title": "Indicates whether to generate the event outbox SQL and .NET artefacts.",
+          "description": "Defaults to 'false'."
+        },
+        "outboxSchema": {
+          "type": "string",
+          "title": "The schema name of the event outbox table.",
+          "description": "Defaults to 'CdcSchema'."
+        },
+        "outboxTable": {
+          "type": "string",
+          "title": "The name of the event outbox table.",
+          "description": "Defaults to 'EventOutbox' (literal)."
+        },
+        "outboxEnqueueStoredProcedure": {
+          "type": "string",
+          "title": "The stored procedure name for the event outbox enqueue.",
+          "description": "Defaults to 'spEventOutboxEnqueue' (literal)."
+        },
+        "outboxDequeueStoredProcedure": {
+          "type": "string",
+          "title": "The stored procedure name for the event outbox dequeue.",
+          "description": "Defaults to 'spEventOutboxDequeue' (literal)."
+        },
         "pathBase": {
           "type": "string",
           "title": "The base path (directory) prefix for the Database-related artefacts; other 'Path*' properties append to this value when they are not specifically overridden.",
@@ -299,6 +324,13 @@
           "type": "array",
           "title": "The list of 'Column' names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).",
           "description": "Defaults to 'Root.CdcExcludeColumnsFromETag'.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "partitionKeyColumns": {
+          "type": "array",
+          "title": "The list of 'Column' names that represent the partition key.",
           "items": {
             "type": "string"
           }

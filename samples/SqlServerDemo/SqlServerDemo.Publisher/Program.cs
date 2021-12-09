@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NTangle;
-using NTangle.Data;
+using NTangle.Data.SqlServer;
 using NTangle.Events;
 
 namespace SqlServerDemo.Publisher
@@ -20,6 +20,9 @@ namespace SqlServerDemo.Publisher
         /// <param name="args">The console arguments.</param>
         internal static void Main(string[] args) => CreateHostBuilder(args).ConfigureHostConfiguration(c => c.AddEnvironmentVariables(prefix: "SqlServerDemo_")).Build().Run();
 
+        /// <summary>
+        /// Create the <see cref="IHostBuilder"/>.
+        /// </summary>
         internal static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>

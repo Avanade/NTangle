@@ -14,16 +14,16 @@ namespace NTangle.Services
     public interface IServiceSynchronizer : IDisposable
     {
         /// <summary>
-        /// Acquires a lock.
+        /// Acquires a lock on the specified <typeparamref name="T"/> and optional <paramref name="name"/>.
         /// </summary>
         /// <returns><c>true</c> if the lock is aquired; otherwise, <c>false</c>.</returns>
         /// <typeparam name="T">The <see cref="Type"/> to lock.</typeparam>
-        bool Enter<T>();
+        bool Enter<T>(string? name = null);
 
         /// <summary>
-        /// Releases the lock.
+        /// Releases the lock on the specified <typeparamref name="T"/> and optional <paramref name="name"/>.
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to unlock.</typeparam>
-        void Exit<T>();
+        void Exit<T>(string? name = null);
     }
 }

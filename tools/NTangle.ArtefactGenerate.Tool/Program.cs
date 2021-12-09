@@ -19,7 +19,7 @@ namespace NTangle.ArtefactGenerate.Tool
         /// </summary>
         internal static void Main()
         {
-            var di = new DirectoryInfo(CodeGenConsoleBase.GetBaseExeDirectory());
+            var di = new DirectoryInfo(CodeGenConsole.GetBaseExeDirectory());
             var root = di.Parent.Parent;
             if (root.Name != "NTangle")
                 throw new InvalidOperationException($"The inferred root path should be 'NTangle'; inferred '{root.FullName}' incorrectly.");

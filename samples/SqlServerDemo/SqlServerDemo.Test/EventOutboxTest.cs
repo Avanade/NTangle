@@ -53,10 +53,15 @@ namespace SqlServerDemo.Test
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
 
-            // Now execute OutboxDequeuePublisher to get the event.
+            // Now execute OutboxDequeuePublisher to get the event using different partition key.
             var tep = new TestEventPublisher();
             var odp = new OutboxDequeuePublisher(db, tep, UnitTest.GetLogger<OutboxDequeuePublisher>());
-            await odp.DequeueAndPublishAsync(10, CancellationToken.None).ConfigureAwait(false);
+            await odp.DequeueAndPublishAsync(10, "Bananas", CancellationToken.None).ConfigureAwait(false);
+
+            Assert.AreEqual(0, tep.Events.Count);
+
+            // Now execute OutboxDequeuePublisher to get the event using correct partition key.
+            await odp.DequeueAndPublishAsync(10, "Contact", CancellationToken.None).ConfigureAwait(false);
 
             Assert.AreEqual(1, tep.Events.Count);
             UnitTest.AssertEvent("ContactTest-GenerateAllIdentifiers.txt", tep.Events[0], "data.globalId", "data.globalAlternateContactId", "data.address.globalId", "data.address.globalAlternateAddressId");

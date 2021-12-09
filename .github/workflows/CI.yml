@@ -40,8 +40,11 @@ jobs:
     - name: Restart SqlServer
       run: docker container restart sqlserver
 
+    - name: Sleep (allow SqlServer to complete startup)
+      run: sleep 10
+
     - name: Set EnvVar for Test
-      run: echo "SqlServerDemo_ConnectionStrings__SqlDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo;User id=sa;Password=yourStrong(!)Password" >> $GITHUB_ENV
+      run: echo "SqlServerDemo_ConnectionStrings__SqlDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo;User id=sa;Password=yourStrong(!)Password;TrustServerCertificate=true" >> $GITHUB_ENV
 
     - name: Test
       run: dotnet test --no-build --verbosity normal

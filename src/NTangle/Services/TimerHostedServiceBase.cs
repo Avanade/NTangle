@@ -108,7 +108,7 @@ namespace NTangle.Services
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         async Task IHostedService.StartAsync(CancellationToken cancellationToken)
         {
-            Logger.LogInformation($"Service started. Timer first/interval {FirstInterval ?? Interval}/{Interval}.");
+            Logger.LogInformation($"{ServiceName} started. Timer first/interval {FirstInterval ?? Interval}/{Interval}.");
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             await StartingAsync(_cts.Token).ConfigureAwait(false);
             _timer = new Timer(Execute, null, TimeSpan.FromMilliseconds(_random.Next(1, (int)(FirstInterval ?? Interval).TotalMilliseconds)), Interval);
@@ -129,7 +129,7 @@ namespace NTangle.Services
             lock (_lock)
             {
                 _timer!.Change(Timeout.Infinite, Timeout.Infinite);
-                Logger.LogTrace($"Execution triggered by timer.");
+                Logger.LogTrace($"{ServiceName} execution triggered by timer.");
 
                 _executeTask = Task.Run(async () => await ScopedExecuteAsync(_cts!.Token).ConfigureAwait(false));
             }
@@ -148,7 +148,7 @@ namespace NTangle.Services
                 var interval = _oneOffInterval ?? Interval;
                 _oneOffInterval = null;
 
-                Logger.LogTrace($"Execution completed. Retry in {interval}.");
+                Logger.LogTrace($"{ServiceName} execution completed. Retry in {interval}.");
                 _timer?.Change(interval, interval);
             }
         }
@@ -173,7 +173,7 @@ namespace NTangle.Services
                 if (ex is TaskCanceledException || (ex is AggregateException aex && aex.InnerException is TaskCanceledException))
                     return;
 
-                Logger.LogCritical(ex, $"Execution failure as a result of an unexpected exception: {ex.Message}");
+                Logger.LogCritical(ex, $"{ServiceName} failure as a result of an unexpected exception: {ex.Message}");
                 throw;
             }
         }
@@ -193,7 +193,7 @@ namespace NTangle.Services
         /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
         async Task IHostedService.StopAsync(CancellationToken cancellationToken)
         {
-            Logger.LogInformation($"Service stop requested.");
+            Logger.LogInformation($"{ServiceName} stop requested.");
             _timer!.Change(Timeout.Infinite, Timeout.Infinite);
 
             try
@@ -206,7 +206,7 @@ namespace NTangle.Services
             }
 
             await StoppingAsync(cancellationToken).ConfigureAwait(false);
-            Logger.LogInformation($"Service stopped.");
+            Logger.LogInformation($"{ServiceName} stopped.");
         }
 
         /// <summary>

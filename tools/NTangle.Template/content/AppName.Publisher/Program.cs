@@ -6,7 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NTangle;
-using NTangle.Data;
+#if (implement_dbprovider_sqlserver)
+using NTangle.Data.SqlServer;
+#endif
 using NTangle.Events;
 
 namespace AppName.Publisher
@@ -38,7 +40,7 @@ namespace AppName.Publisher
                             .AddGeneratedOutboxEventPublishing()
                             .AddGeneratedOrchestratorServices()
                             .AddGeneratedHostedServices(hostContext.Configuration)
-                            .AddGeneratedOutboxDequeueHostedService<LoggerEventPublisher>(hostContext.Configuration);
+                            .AddOutboxDequeueHostedService<LoggerEventPublisher>(hostContext.Configuration);
                 });
     }
 }
