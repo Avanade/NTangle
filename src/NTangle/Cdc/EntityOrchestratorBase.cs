@@ -459,6 +459,12 @@ namespace NTangle.Cdc
                 Source = EventSourceFormatter.Format(EventSource, value, EventSourceFormat)
             };
 
+            if (value is ITenantId ti)
+                ed.TenantId = ti.TenantId;
+
+            if (value is IPartitionKey pk)
+                ed.PartitionKey = pk.PartitionKey;
+
             ed.Type = $"{EventSubject}.{ed.Action}";
             return ed;
         }

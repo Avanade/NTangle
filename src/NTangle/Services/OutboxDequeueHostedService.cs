@@ -15,12 +15,13 @@ namespace NTangle.Services
     /// <summary>
     /// Provides the base <see cref="EventOutbox"/> dequeue and publish <see cref="TimerHostedServiceBase"/> capabilities.
     /// </summary>
-    /// <remarks>This will instantiate an <see cref="IOutboxDequeuePublisher"/> and invoke <see cref="IOutboxDequeuePublisher.DequeueAndPublishAsync(int, CancellationToken)"/>.</remarks>
+    /// <remarks>This will instantiate an <see cref="IOutboxDequeuePublisher"/> and invoke <see cref="IOutboxDequeuePublisher.DequeueAndPublishAsync(int, string?, CancellationToken)"/>.</remarks>
     public sealed class OutboxDequeueHostedService : TimerHostedServiceBase
     {
         private readonly IServiceSynchronizer _synchronizer;
         private TimeSpan? _interval;
         private int? _maxQuerySize;
+        private string? _name;
 
         /// <summary>
         /// The configuration name for <see cref="Interval"/>.
@@ -44,8 +45,22 @@ namespace NTangle.Services
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="config">The <see cref="IConfiguration"/>.</param>
         /// <param name="synchronizer">The <see cref="IServiceSynchronizer"/>.</param>
-        public OutboxDequeueHostedService(IServiceProvider serviceProvider, ILogger<OutboxDequeueHostedService> logger, IConfiguration config, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, config)
-            => _synchronizer = synchronizer ?? throw new ArgumentNullException(nameof(synchronizer));
+        /// <param name="partitionKey">The optional partition key.</param>
+        public OutboxDequeueHostedService(IServiceProvider serviceProvider, ILogger<OutboxDequeueHostedService> logger, IConfiguration config, IServiceSynchronizer synchronizer, string? partitionKey = null) : base(serviceProvider, logger, config)
+        {
+            _synchronizer = synchronizer ?? throw new ArgumentNullException(nameof(synchronizer));
+            PartitionKey = partitionKey;
+        }
+
+        /// <summary>
+        /// Gets the partition key.
+        /// </summary>
+        public string? PartitionKey { get; }
+
+        /// <summary>
+        /// Gets the service name (used for the likes of configuration and logging).
+        /// </summary>
+        public override string ServiceName => _name ??= $"{GetType().Name}{(PartitionKey == null ? "" : $".{PartitionKey}")}";
 
         /// <summary>
         /// Gets or sets the interval between each execution.
@@ -76,18 +91,18 @@ namespace NTangle.Services
         protected override async Task ExecuteAsync(IServiceProvider scopedServiceProvider, CancellationToken cancellationToken)
         {
             // Ensure we have synchronized control; if not exit immediately.
-            if (!_synchronizer.Enter<OutboxDequeueHostedService>())
+            if (!_synchronizer.Enter<OutboxDequeueHostedService>(PartitionKey))
                 return;
 
             // Instantiate the configured IOutboxDequeuePublisher and execute.
             try
             {
-                var dp = (scopedServiceProvider ?? throw new ArgumentNullException(nameof(scopedServiceProvider))).GetRequiredService<IOutboxDequeuePublisher>();
-                await dp.DequeueAndPublishAsync(MaxDequeueSize, cancellationToken).ConfigureAwait(false);
+                var odp = (scopedServiceProvider ?? throw new ArgumentNullException(nameof(scopedServiceProvider))).GetRequiredService<IOutboxDequeuePublisher>();
+                await odp.DequeueAndPublishAsync(MaxDequeueSize, PartitionKey, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                _synchronizer.Exit<OutboxDequeueHostedService>();
+                _synchronizer.Exit<OutboxDequeueHostedService>(PartitionKey);
             }
         }
     }

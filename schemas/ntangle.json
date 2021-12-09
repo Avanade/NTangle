@@ -328,6 +328,13 @@
             "type": "string"
           }
         },
+        "partitionKeyColumns": {
+          "type": "array",
+          "title": "The list of 'Column' names that represent the partition key.",
+          "items": {
+            "type": "string"
+          }
+        },
         "eventSource": {
           "type": "string",
           "title": "The Event Source.",

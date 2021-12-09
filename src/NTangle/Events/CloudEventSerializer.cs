@@ -31,6 +31,7 @@ namespace NTangle.Events
             SetExtensionAttribute(ce, "subject", @event.Subject?.ToLowerInvariant());
             SetExtensionAttribute(ce, "action", @event.Action?.ToLowerInvariant());
             SetExtensionAttribute(ce, "correlationid", @event.CorrelationId);
+            SetExtensionAttribute(ce, "partitionkey", @event.PartitionKey);
 
             OnSerialize(@event, ce);
 

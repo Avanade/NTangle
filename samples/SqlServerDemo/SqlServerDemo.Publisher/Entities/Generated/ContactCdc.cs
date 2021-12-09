@@ -18,7 +18,7 @@ namespace SqlServerDemo.Publisher.Entities
     /// Represents the CDC model for the root (parent) database table '[Legacy].[Contact]'.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public partial class ContactCdc : IEntity, IGlobalIdentifier<string>, ILinkIdentifierMapping<string>
+    public partial class ContactCdc : IEntity, IPartitionKey, IGlobalIdentifier<string>, ILinkIdentifierMapping<string>
     {
         /// <inheritdoc/>
         [JsonProperty("globalId", DefaultValueHandling = DefaultValueHandling.Ignore)]
@@ -94,6 +94,9 @@ namespace SqlServerDemo.Publisher.Entities
 
         /// <inheritdoc/>
         public CompositeKey PrimaryKey => new CompositeKey(GlobalId);
+
+        /// <inheritdoc/>
+        public string? PartitionKey => "Contact";
 
         /// <inheritdoc/>
         public CompositeKey TableKey => new CompositeKey(CID);

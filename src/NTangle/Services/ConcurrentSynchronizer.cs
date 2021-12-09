@@ -12,10 +12,10 @@ namespace NTangle.Services
     public sealed class ConcurrentSynchronizer : IServiceSynchronizer
     {
         /// <inheritdoc/>
-        public bool Enter<T>() => true;
+        public bool Enter<T>(string? name = null) => true;
 
         /// <inheritdoc/>
-        public void Exit<T>() { }
+        public void Exit<T>(string? name) { }
 
         /// <inheritdoc/>
         public void Dispose() { }

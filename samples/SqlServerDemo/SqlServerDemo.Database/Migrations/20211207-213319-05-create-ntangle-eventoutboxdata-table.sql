@@ -5,5 +5,7 @@ CREATE TABLE [NTangle].[EventOutboxData] (
   [Source] NVARCHAR(1024) NULL,
   [Timestamp] DATETIMEOFFSET,
   [CorrelationId] NVARCHAR(128),
+  [TenantId] NVARCHAR(128),
+  [PartitionKey] NVARCHAR(128),
   [EventData] VARBINARY(MAX) NULL
 );

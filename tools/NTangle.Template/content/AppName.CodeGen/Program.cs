@@ -16,7 +16,7 @@ namespace AppName.CodeGen
         /// <remarks>The specified connection string is for default development purposes only, this should be overriden using a command line argument ('<c>-cs|--connection-string</c>' or '<c>-cv|--connection-varname</c>') 
         /// or environment variable ('<c>SqlServerDemo_ConnectionString</c>'). Note: any '<c>.</c>' characters in the environment variable name must be replaced with an '<c>_</c>'.</remarks>
         public static async Task Main(string[] args) 
-            => await new CodeGenConsole("Data Source=.;Initial Catalog=AppName;Integrated Security=True")
+            => await new CodeGenConsole("Data Source=.;Initial Catalog=AppName;Integrated Security=True;TrustServerCertificate=true")
                 .UseDbProvider(SqlServerDeployment.DbProject)
                 .RunAsync(args).ConfigureAwait(false);
     }

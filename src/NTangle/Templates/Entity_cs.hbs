@@ -25,7 +25,7 @@ namespace {{Root.NamespacePublisher}}.Entities
 {{#ifeq Root.JsonSerializer 'Newtonsoft'}}
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
 {{/ifeq}}
-    public partial class {{Model}}Cdc : IEntity{{#ifval ColumnConfigIsDeleted}}, ILogicallyDeleted{{/ifval}}{{#if IdentifierMapping}}, IGlobalIdentifier<{{Root.IdentifierMappingDotNetType}}>{{/if}}{{#if UsesGlobalIdentifier}}, ILinkIdentifierMapping<{{Root.IdentifierMappingDotNetType}}>{{/if}}
+    public partial class {{Model}}Cdc : IEntity{{#ifval ColumnConfigIsDeleted}}, ILogicallyDeleted{{/ifval}}{{#ifne SelectedTenantIdColumns.Count 0}}, ITenantId{{/ifne}}{{#if HasPartitionKey}}, IPartitionKey{{/if}}{{#if IdentifierMapping}}, IGlobalIdentifier<{{Root.IdentifierMappingDotNetType}}>{{/if}}{{#if UsesGlobalIdentifier}}, ILinkIdentifierMapping<{{Root.IdentifierMappingDotNetType}}>{{/if}}
     {
 {{#if IdentifierMapping}}
         /// <inheritdoc/>
@@ -117,6 +117,17 @@ namespace {{Root.NamespacePublisher}}.Entities
   {{/ifval}}
         /// <inheritdoc/>
         public CompositeKey PrimaryKey => new CompositeKey({{#if UsesGlobalIdentifier}}GlobalId{{else}}{{#each PrimaryKeyColumns}}{{#unless @first}}, {{/unless}}{{pascal NameAlias}}{{/each}}{{/if}});
+{{#ifne SelectedTenantIdColumns.Count 0}}
+
+        /// <inheritdoc/>
+        [JsonProperty("tenantId", DefaultValueHandling = {{#if SerializationEmitDefault}}DefaultValueHandling.Include{{else}}DefaultValueHandling.Ignore{{/if}})]
+        public string? TenantId => new CompositeKey({{#each SelectedTenantIdColumns}}{{pascal NameAlias}}{{#unless @last}}, {{/unless}}{{/each}}).ToString();
+{{/ifne}}
+{{#if HasPartitionKey}}
+
+        /// <inheritdoc/>
+        public string? PartitionKey => {{#if PartitionKey}}"{{PartitionKey}}"{{else}}new CompositeKey({{#each SelectedPartitionKeyColumns}}{{#ifeq Name '*'}}"{{Parent.Schema}}.{{Parent.Name}}"{{else}}{{pascal NameAlias}}{{/ifeq}}{{#unless @last}}, {{/unless}}{{/each}}).ToString(){{/if}};
+{{/if}}
 {{#if UsesGlobalIdentifier}}
 
         /// <inheritdoc/>

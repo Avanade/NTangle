@@ -185,6 +185,29 @@ namespace NTangle.Config
             Description = "Defaults to `Root.CdcExcludeColumnsFromETag`.")]
         public List<string>? ExcludeColumnsFromETag { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list of `Column` names that represent the tenant id.
+        /// </summary>
+        [JsonProperty("tenantIdColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that represent the tenant identifier.")]
+        public List<string>? TenantIdColumns { get; set; }
+
+        /// <summary>
+        /// Gets or sets the partition key.
+        /// </summary>
+        [JsonProperty("partitionKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty(".NET", Title = "The partition key.",
+            Description = "A partition key can be specified using either `PartitionKey` or `PartitionKeyColumns`.")]
+        public string? PartitionKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of `Column` names that represent the partition key.
+        /// </summary>
+        [JsonProperty("partitionKeyColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that represent the partition key.",
+            Description = "A partition key can be specified using either `PartitionKey` or `PartitionKeyColumns`.")]
+        public List<string>? PartitionKeyColumns { get; set; }
+
         #endregion
 
         #region Event
@@ -234,14 +257,6 @@ namespace NTangle.Config
             + " Defaults to `Root.IdentifierMapping`.")]
         public bool? IdentifierMapping { get; set; }
 
-        ///// <summary>
-        ///// Gets or sets the list of `Column` with related `Schema`/`Table` values (all split by a `^` lookup character) to enable column one-to-one identifier mapping.
-        ///// </summary>
-        //[JsonProperty("identifierMappingColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        //[CodeGenPropertyCollection("IdentifierMapping", Title = "The list of `Column` with related `Schema`/`Table` values (all split by a `^` lookup character) to enable column one-to-one identifier mapping.", IsImportant = true,
-        //    Description = "By default the primary key columns will be automatically selected. Each value is formatted as `Column` + `^` + `Schema` + `^` + `Table` where the schema is optional; e.g. `ContactId^dbo^Contact` or `ContactId^Contact`.")]
-        //public List<string>? IdentifierMappingColumns { get; set; }
-
         #endregion
 
         #region Infer
@@ -278,7 +293,7 @@ namespace NTangle.Config
         #region Non-Config
 
         /// <summary>
-        /// Gets the SQL formatted selected columns.
+        /// Gets the selected columns.
         /// </summary>
         public List<ColumnConfig> SelectedColumns { get; } = new List<ColumnConfig>();
 
@@ -288,12 +303,12 @@ namespace NTangle.Config
         public List<ColumnConfig> PrimaryKeyColumns { get; } = new List<ColumnConfig>();
 
         /// <summary>
-        /// Gets the SQL formatted selected columns excluding the <see cref="PrimaryKeyColumns"/>.
+        /// Gets the selected columns excluding the <see cref="PrimaryKeyColumns"/>.
         /// </summary>
         public List<ColumnConfig> SelectedColumnsExcludingPrimaryKey => SelectedColumns.Where(x => !(x.DbColumn!.DbTable == DbTable && x.DbColumn.IsPrimaryKey)).ToList();
 
         /// <summary>
-        /// Gets the SQL formatted selected columns for the .NET Entity (sans IsDeleted).
+        /// Gets the selected columns for the .NET Entity (sans IsDeleted).
         /// </summary>
         public List<ColumnConfig> SelectedEntityColumns => SelectedColumns.Where(x => !x.IsIsDeletedColumn).ToList();
 
@@ -362,6 +377,21 @@ namespace NTangle.Config
         /// </summary>
         public List<string> ExcludePropertiesFromETag { get; set; } = new List<string>();
 
+        /// <summary>
+        /// Gets the selected tenant identitifer columns.
+        /// </summary>
+        public List<ColumnConfig> SelectedTenantIdColumns { get; } = new List<ColumnConfig>();
+
+        /// <summary>
+        /// Gets the selected partition key columns.
+        /// </summary>
+        public List<ColumnConfig> SelectedPartitionKeyColumns { get; } = new List<ColumnConfig>();
+
+        /// <summary>
+        /// Indicates whether the partition key has been specified.
+        /// </summary>
+        public bool HasPartitionKey { get; set; }
+
         #endregion
 
         /// <inheritdoc/>
@@ -426,7 +456,7 @@ namespace NTangle.Config
                         var cm = Mappings.SingleOrDefault(x => x.Name == cc.Name);
                         if (cm != null)
                         {
-                            cc.IdentifierMappingAlias = $"_im{(Mappings.IndexOf(cm) + 1)}";
+                            cc.IdentifierMappingAlias = $"_im{Mappings.IndexOf(cm) + 1}";
                             cc.IdentifierMappingSchema = cm.Schema;
                             cc.IdentifierMappingTable = cm.Table;
                         }
@@ -485,6 +515,36 @@ namespace NTangle.Config
             SetUpExcludePropertiesFromETag();
 
             ColumnConfigIsDeleted = await GetSpecialColumn(IsDeletedColumn).ConfigureAwait(false);
+
+            if (TenantIdColumns != null)
+            {
+                foreach (var cn in TenantIdColumns)
+                {
+                    var col = SelectedColumns.Where(x => x.Name == cn).FirstOrDefault();
+                    if (col == null)
+                        throw new CodeGenException(this, nameof(TenantIdColumns), $"TenantId column '[{cn}]' must be a _selected_ column within table '[{Schema}].[{Name}]'.");
+
+                    SelectedTenantIdColumns.Add(col);
+                }
+            }
+
+            if (PartitionKey != null && PartitionKeyColumns != null && PartitionKeyColumns.Count > 0)
+                throw new CodeGenException(this, nameof(PartitionKey), $"PartitionKey and PartitionKeyColumns can not both be specified at the same time.");
+
+            if (PartitionKey != null)
+                HasPartitionKey = true;
+            else if (PartitionKeyColumns != null)
+            {
+                foreach (var cn in PartitionKeyColumns)
+                {
+                    var col = SelectedColumns.Where(x => x.Name == cn).FirstOrDefault();
+                    if (col == null)
+                        throw new CodeGenException(this, nameof(PartitionKeyColumns), $"PartitionKey column '[{cn}]' must be a _selected_ column within table '[{Schema}].[{Name}]'.");
+
+                    SelectedPartitionKeyColumns.Add(col);
+                    HasPartitionKey = true;
+                }
+            }
         }
 
         /// <summary>

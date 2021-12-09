@@ -42,8 +42,9 @@ namespace NTangle.Data
         /// Performs the dequeue of the events from the database outbox and then publishes.
         /// </summary>
         /// <param name="maxDequeueSize">The maximum dequeue size.</param>
+        /// <param name="partitionKey">The partition key.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        public async Task DequeueAndPublishAsync(int maxDequeueSize, CancellationToken cancellationToken)
+        public async Task DequeueAndPublishAsync(int maxDequeueSize, string? partitionKey, CancellationToken cancellationToken)
         {
             Stopwatch sw;
             maxDequeueSize = maxDequeueSize > 0 ? maxDequeueSize : 1;
@@ -59,10 +60,10 @@ namespace NTangle.Data
                 using var txn = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
                 // Dequeue the events; where there are none to publish, then simply exit and try again later.
-                _logger.LogTrace("Dequeue events. [MaxDequeueSize={MaxDequeueSize}]", maxDequeueSize);
+                _logger.LogTrace("Dequeue events. [MaxDequeueSize={MaxDequeueSize}, PartitionKey={PartitionKey}]", maxDequeueSize, partitionKey);
 
                 sw = Stopwatch.StartNew();
-                var events = await _mapper.DequeueAsync(_db, maxDequeueSize).ConfigureAwait(false);
+                var events = await _mapper.DequeueAsync(_db, maxDequeueSize, partitionKey).ConfigureAwait(false);
                 sw.Stop();
 
                 if (events == null || !events.Any())

@@ -7,7 +7,6 @@ using NTangle.Data.SqlServer;
 using NTangle.Test;
 using NUnit.Framework;
 using SqlServerDemo.Database;
-using System;
 using System.Threading.Tasks;
 
 namespace SqlServerDemo.Test
@@ -25,7 +24,6 @@ namespace SqlServerDemo.Test
         public static IDatabase GetDatabase()
         {
             var cs = UnitTest.GetConfig("SqlServerDemo_").GetConnectionString("SqlDb");
-            Console.WriteLine($"ConnectionString: {cs}");
             return new SqlServerDatabase(() => new SqlConnection(cs));
         }
 
@@ -34,9 +32,14 @@ namespace SqlServerDemo.Test
         /// </summary>
         [OneTimeSetUp]
         public static async Task SetUpDatabase()
-            => await SqlServerMigratorConsole
+        {
+            var result = await SqlServerMigratorConsole
                 .Create<Program>(UnitTest.GetConfig("SqlServerDemo_").GetConnectionString("SqlDb"))
                 .ConsoleArgs(a => a.AddAssembly(typeof(Program).Assembly))
                 .RunAsync(MigrationCommand.DropAndAll).ConfigureAwait(false);
+
+            if (result != 0)
+                Assert.Fail("Database migration failed.");
+        }
     }
 }

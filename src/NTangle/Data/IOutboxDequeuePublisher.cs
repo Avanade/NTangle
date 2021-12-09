@@ -15,7 +15,8 @@ namespace NTangle.Data
         /// Performs the dequeue of the events from the database outbox and then publishes.
         /// </summary>
         /// <param name="maxDequeueSize">The maximum dequeue size.</param>
+        /// <param name="partitionKey">The partition key.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        Task DequeueAndPublishAsync(int maxDequeueSize, CancellationToken cancellationToken);
+        Task DequeueAndPublishAsync(int maxDequeueSize, string? partitionKey, CancellationToken cancellationToken);
     }
 }

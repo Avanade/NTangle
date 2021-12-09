@@ -7,7 +7,7 @@ namespace NTangle.Events
     /// <summary>
     /// Represents the core event data.
     /// </summary>
-    public class EventData
+    public class EventData : IPrimaryKey, ITenantId, IPartitionKey
     {
         /// <summary>
         /// Gets or sets the event subject.
@@ -46,9 +46,19 @@ namespace NTangle.Events
         public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
 
         /// <summary>
-        /// Gets or sets the event data.
+        /// Gets or sets the event correlation identifier.
         /// </summary>
-        public object? Data { get; set; }
+        public string? CorrelationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tenant identifier.
+        /// </summary>
+        public string? TenantId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the partition key.
+        /// </summary>
+        public string? PartitionKey { get; set; }
 
         /// <summary>
         /// Gets or sets the primary key.
@@ -56,8 +66,8 @@ namespace NTangle.Events
         public CompositeKey PrimaryKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the event correlation identifier.
+        /// Gets or sets the event data.
         /// </summary>
-        public string? CorrelationId { get; set; }
+        public object? Data { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿{{! Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle }}
 CREATE PROCEDURE [{{OutboxSchema}}].[sp{{OutboxTable}}Dequeue]
-  @MaxDequeueSize INT = 10  -- Maximum number of events to dequeue
+  @MaxDequeueSize INT = 10,  -- Maximum number of events to dequeue.
+  @PartitionKey NVARCHAR(128) NULL = NULL  -- Partition key; null indicates all.
 AS
 BEGIN
   /*
@@ -17,11 +18,12 @@ BEGIN
     DECLARE @dequeuedId TABLE([{{OutboxTable}}Id] BIGINT);
 
     -- Dequeue event -> ROWLOCK+UPDLOCK maintain singular access for ordering and concurrency
-    WITH cte([{{OutboxTable}}Id], [DequeuedDate]) AS 
+    WITH cte([{{OutboxTable}}Id], [PartitionKey], [DequeuedDate]) AS 
     (
-       SELECT TOP(@MaxDequeueSize) [{{OutboxTable}}Id], [DequeuedDate]
+       SELECT TOP(@MaxDequeueSize) [{{OutboxTable}}Id], [PartitionKey], [DequeuedDate]
          FROM [{{OutboxSchema}}].[{{OutboxTable}}] WITH (ROWLOCK, UPDLOCK)
-         WHERE [DequeuedDate] IS NULL
+         WHERE [DequeuedDate] IS NULL 
+           AND (@PartitionKey IS NULL OR [PartitionKey] = @PartitionKey)
          ORDER BY [{{OutboxTable}}Id]
     ) 
     UPDATE Cte
@@ -32,10 +34,12 @@ BEGIN
     SELECT
         [{{OutboxTable}}DataId] as [{{OutboxTable}}Id],
         [EventId],
-        [Type], 
-        [Source], 
-        [Timestamp], 
-        [CorrelationId], 
+        [Type],
+        [Source],
+        [Timestamp],
+        [CorrelationId],
+        [TenantId],
+        [PartitionKey],
         [EventData]
       FROM [{{OutboxSchema}}].[{{OutboxTable}}Data]
       WHERE [{{OutboxTable}}DataId] IN (SELECT [{{OutboxTable}}Id] FROM @dequeuedId)

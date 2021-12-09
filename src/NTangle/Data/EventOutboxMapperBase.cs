@@ -40,6 +40,12 @@ namespace NTangle.Data
         public abstract string DequeueStoredProcedure { get; }
 
         /// <summary>
+        /// Gets or sets the default partition key.
+        /// </summary>
+        /// <remarks>Defaults to '<c>default</c>'. This will ensure that there is always a value recorded in the database.</remarks>
+        public string DefaultPartitionKey { get; set; } = "default";
+
+        /// <summary>
         /// Enqueues the <see cref="EventOutbox"/> list.
         /// </summary>
         /// <param name="db">The <see cref="IDatabase"/>.</param>
@@ -60,10 +66,12 @@ namespace NTangle.Data
         /// </summary>
         /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="maxDequeueSize">The maximum number of events to dequeue.</param>
+        /// <param name="partitionKey">The partition key.</param>
         /// <returns>The dequeued <see cref="EventOutbox"/> list.</returns>
         /// <remarks>This should be invoked within the context of a <see cref="IDbTransaction"/> and only committed where the underlying processing of the resulting events has occured successfully to guarantee no message loss.</remarks>
-        public async Task<IEnumerable<EventOutbox>> DequeueAsync(IDatabase db, int maxDequeueSize = 10)
-            => await (db ?? throw new ArgumentNullException(nameof(db))).StoredProcedure(DequeueStoredProcedure, p => p.AddParameter("@MaxDequeueSize", maxDequeueSize <= 0 ? 10 : maxDequeueSize)).SelectAsync(this).ConfigureAwait(false);
+        public async Task<IEnumerable<EventOutbox>> DequeueAsync(IDatabase db, int maxDequeueSize = 10, string? partitionKey = null) => await (db ?? throw new ArgumentNullException(nameof(db)))
+            .StoredProcedure(DequeueStoredProcedure, p => p.Param("@MaxDequeueSize", maxDequeueSize <= 0 ? 10 : maxDequeueSize).Param("@PartitionKey", partitionKey))
+            .SelectAsync(this).ConfigureAwait(false);
 
         /// <inheritdoc/>
         public EventOutbox MapFromDb(DatabaseRecord record) => new()
@@ -73,6 +81,8 @@ namespace NTangle.Data
             Source = record.GetValue<string?>(nameof(EventOutbox.Source)),
             Timestamp = record.GetValue<DateTimeOffset>(nameof(EventOutbox.Timestamp)),
             CorrelationId = record.GetValue<string?>(nameof(EventOutbox.CorrelationId)),
+            TenantId = record.GetValue<string?>(nameof(EventOutbox.TenantId)),
+            PartitionKey = record.GetValue<string?>(nameof(EventOutbox.PartitionKey)),
             EventData = new BinaryData(record.GetValue<byte[]>(nameof(EventOutbox.EventData)))
         };
 
@@ -85,12 +95,14 @@ namespace NTangle.Data
             dt.Columns.Add(nameof(EventOutbox.Source), typeof(string));
             dt.Columns.Add(nameof(EventOutbox.Timestamp), typeof(DateTimeOffset));
             dt.Columns.Add(nameof(EventOutbox.CorrelationId), typeof(string));
+            dt.Columns.Add(nameof(EventOutbox.TenantId), typeof(string));
+            dt.Columns.Add(nameof(EventOutbox.PartitionKey), typeof(string));
             dt.Columns.Add(nameof(EventOutbox.EventData), typeof(byte[]));
 
             var tvp = new TableValuedParameter(DbTypeName, dt);
             foreach (var item in list)
             {
-                tvp.AddRow(item.Id, item.Type, item.Source, item.Timestamp, item.CorrelationId, item.EventData?.ToArray());
+                tvp.AddRow(item.Id, item.Type, item.Source, item.Timestamp, item.CorrelationId, item.TenantId, item.PartitionKey ?? DefaultPartitionKey, item.EventData?.ToArray());
             }
 
             return tvp;
