@@ -58,12 +58,12 @@ END
 
 GO
 
--- Enable CDC for table: [Legacy].[Customer]
-IF (SELECT TOP 1 is_tracked_by_cdc FROM sys.tables WHERE [OBJECT_ID] = OBJECT_ID(N'Legacy.Customer')) = 0
+-- Enable CDC for table: [Legacy].[Cust]
+IF (SELECT TOP 1 is_tracked_by_cdc FROM sys.tables WHERE [OBJECT_ID] = OBJECT_ID(N'Legacy.Cust')) = 0
 BEGIN
   EXEC sys.sp_cdc_enable_table  
     @source_schema = N'Legacy',  
-    @source_name = N'Customer',  
+    @source_name = N'Cust',  
     @role_name = NULL,
     @supports_net_changes = 0
 END

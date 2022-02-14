@@ -20,10 +20,10 @@ namespace SqlServerDemo.Publisher.Entities
     public partial class CustomerCdc : IEntity, ILogicallyDeleted
     {
         /// <summary>
-        /// Gets or sets the Customer Id '[Legacy].[Customer].[CustomerId]' column value.
+        /// Gets or sets the Id '[Legacy].[Customer].[CustId]' column value.
         /// </summary>
-        [JsonProperty("customerId", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public int CustomerId { get; set; }
+        [JsonProperty("id", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public int Id { get; set; }
 
         /// <summary>
         /// Gets or sets the Name '[Legacy].[Customer].[Name]' column value.
@@ -66,7 +66,7 @@ namespace SqlServerDemo.Publisher.Entities
         }
 
         /// <inheritdoc/>
-        public CompositeKey PrimaryKey => new CompositeKey(CustomerId);
+        public CompositeKey PrimaryKey => new CompositeKey(Id);
     }
 }
 

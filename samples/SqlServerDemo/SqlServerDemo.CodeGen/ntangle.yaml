@@ -79,8 +79,8 @@ tables:
     ]
   }
 
-  # Set up CDC for primary table Legacy.Customer.
+  # Set up CDC for primary table Legacy.Cust; however, reference as Customer.
   # Override the default column name to light-up the IsDeleted capability.
   # Exclude the secret column to ensure not sent.
   # RowVersion column will be excluded as per root config.
-- { name: Customer, isDeletedColumn: is-deleted, excludeColumns: [ internal-secret ] }
+- { name: Customer, table: Cust, aliasColumns: [ CustId^Id ], isDeletedColumn: is-deleted, excludeColumns: [ internal-secret ] }

@@ -41,7 +41,7 @@ namespace NTangle.Config
         /// </summary>
         [JsonProperty("name", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Key", Title = "The unique name .", IsMandatory = true, IsImportant = true,
-            Description = "A unique name is required where the same `TableName` is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database.")]
+            Description = "A unique name is required where the same `Table` is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database.")]
         public string? Name { get; set; }
 
         /// <summary>

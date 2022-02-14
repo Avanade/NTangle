@@ -108,7 +108,7 @@ BEGIN
 {{#each PrimaryKeyColumns}}
             [_cdc].[{{Name}}] AS [{{Name}}]{{#unless @last}},{{/unless}}
 {{/each}}
-          FROM cdc.fn_cdc_get_all_changes_{{Schema}}_{{Name}}(@{{pascal Name}}MinLsn, @{{pascal Name}}MaxLsn, 'all') AS [_cdc]
+          FROM cdc.fn_cdc_get_all_changes_{{Schema}}_{{Table}}(@{{pascal Name}}MinLsn, @{{pascal Name}}MaxLsn, 'all') AS [_cdc]
           ORDER BY [_cdc].[__$start_lsn]
 
       IF (@@ROWCOUNT <> 0)
