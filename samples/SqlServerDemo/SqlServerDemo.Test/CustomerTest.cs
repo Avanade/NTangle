@@ -19,6 +19,7 @@ namespace SqlServerDemo.Test
             var script =
                 "DELETE FROM [Legacy].[Cust]" + Environment.NewLine +
                 "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (1, 'Bob', 'bob@email.com')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email], [is-private]) VALUES (99, 'Agent', 'ninety-nine@email.com', 1)" + Environment.NewLine +
                 "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (2, 'Jane', 'jane@email.com')";
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);

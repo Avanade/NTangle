@@ -1,4 +1,4 @@
-# 'CdcJoin' object (database-driven)
+# 'Join' object (database-driven)
 
 The `Join` object defines a join to another (or same) table within the logical CDC entity.  The `IncludeColumns` and `ExcludeColumns` provide a shorthand to include or exclude selected columns; with the `AliasColumns` providing a means to rename where required.
 
@@ -26,7 +26,7 @@ Provides the _key_ configuration.
 
 Property | Description
 -|-
-**`name`** | The unique name . [Mandatory]<br/>&dagger; A unique name is required where the same `TableName` is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database.
+**`name`** | The unique name. [Mandatory]<br/>&dagger; A unique name is required where the same `Table` is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database.
 `schema` | The schema name of the table to join.<br/>&dagger; Defaults to `Cdc.Schema`; i.e. same schema.
 `table` | The name of the table to join.<br/>&dagger; Defaults to `Name`. This is used to specify the actual underlying database table name (required where the `Name` has been changed to enable uniqueness).
 `alias` | The `Schema` and `Table` alias name.<br/>&dagger; Will automatically default where not specified.

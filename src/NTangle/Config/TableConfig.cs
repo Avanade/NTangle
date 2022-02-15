@@ -290,6 +290,14 @@ namespace NTangle.Config
         public List<JoinConfig>? Joins { get; set; }
 
         /// <summary>
+        /// Gets or sets the corresponding <see cref="WhereConfig"/> collection.
+        /// </summary>
+        [JsonProperty("where", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenPropertyCollection("Collections", Title = "The corresponding `Where` collection.", IsImportant = true,
+            Description = "A `Where` object provides the configuration for a table where clause.")]
+        public List<WhereConfig>? Where { get; set; }
+
+        /// <summary>
         /// Gets or sets the corresponding <see cref="TableIdentifierMappingColumnConfig"/> collection.
         /// </summary>
         [JsonProperty("mappings", DefaultValueHandling = DefaultValueHandling.Ignore)]
@@ -430,6 +438,7 @@ namespace NTangle.Config
             if (IsTrue(CdcEnable))
                 Root.AddCdcEnabled(Schema!, Table!);
 
+            Where = await PrepareCollectionAsync(Where).ConfigureAwait(false);
             Mappings = await PrepareCollectionAsync(Mappings).ConfigureAwait(false);
 
             foreach (var c in DbTable.Columns)

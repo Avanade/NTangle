@@ -81,6 +81,7 @@ BEGIN
             [_cdc].[__$operation] AS [_Op],
             [_cdc].[CustId] AS [CustId]
           FROM cdc.fn_cdc_get_all_changes_Legacy_Cust(@CustomerMinLsn, @CustomerMaxLsn, 'all') AS [_cdc]
+          WHERE ([_cdc].[is-private] IS NULL OR [_cdc].[is-private] = 0)
           ORDER BY [_cdc].[__$start_lsn]
 
       IF (@@ROWCOUNT <> 0)

@@ -122,6 +122,7 @@ BEGIN
       [Name] NVARCHAR (200) NULL,
       [Email] VARCHAR (200) NULL,
       [is-deleted] BIT NULL,
+      [is-private] BIT NULL,
       [internal-secret] NVARCHAR(100) NULL,
       [RowVersion] ROWVERSION
       CONSTRAINT [PK_Cust] PRIMARY KEY CLUSTERED ([CustId] ASC)
