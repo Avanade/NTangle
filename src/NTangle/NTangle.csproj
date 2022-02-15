@@ -7,7 +7,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>
-    <Description>NTangle Code Generator.</Description>
+    <Description>NTangle Change-Data-Capture tooling and framework.</Description>
     <LangVersion>9.0</LangVersion>
     <Copyright>Avanade (c)</Copyright>
     <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
@@ -21,7 +21,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Title>NTangle Code Generator.</Title>
+    <Title>NTangle Change-Data-Capture.</Title>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PackageTags>ntangle cdc change-data-capture</PackageTags>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
