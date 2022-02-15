@@ -138,7 +138,7 @@ namespace NTangle.Cdc
         /// Gets or sets the delegate to perform additional processing on the consolidated set of entities.
         /// </summary>
         /// <remarks>This is invoked directly after consolidation, and prior to versioning and completion.</remarks>
-        protected Func<TEntityEnvelopeColl, Task>? AdditionalEnvelopeProcessing { get; set; }
+        protected Func<TEntityEnvelopeColl, Task>? AdditionalEnvelopeProcessingAsync { get; set; }
 
         /// <summary>
         /// Completes an existing batch updating the corresponding <paramref name="versionTracking"/> where appropriate.
@@ -294,8 +294,8 @@ namespace NTangle.Cdc
             }
 
             // Where additional envelope processing is required then execute.
-            if (AdditionalEnvelopeProcessing != null)
-                await AdditionalEnvelopeProcessing(coll).ConfigureAwait(false);
+            if (AdditionalEnvelopeProcessingAsync != null)
+                await AdditionalEnvelopeProcessingAsync(coll).ConfigureAwait(false);
 
             // Determine whether anything may have been sent before (version tracking) and exclude (i.e. do not send again).
             var coll2 = new TEntityEnvelopeColl();

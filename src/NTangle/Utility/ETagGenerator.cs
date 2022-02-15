@@ -17,7 +17,7 @@ namespace NTangle.Utility
         public const char DividerCharacter = '|';
 
         /// <summary>
-        /// Generates an ETag for a value by serializing to JSON and performing an <see cref="System.Security.Cryptography.MD5"/> hash.
+        /// Generates an ETag for a value by serializing to JSON and performing an <see cref="System.Security.Cryptography.SHA256"/> hash.
         /// </summary>
         /// <typeparam name="T">The <paramref name="value"/> <see cref="Type"/>.</typeparam>
         /// <param name="value">The value.</param>
@@ -44,7 +44,7 @@ namespace NTangle.Utility
                 txt = sb.ToString();
             }
 
-            return GenerateHash(txt);
+            return $"\"{GenerateHash(txt)}\"";
         }
 
         /// <summary>
