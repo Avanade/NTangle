@@ -70,7 +70,7 @@ namespace NTangle.Cdc
             IdentifierMappingStoredProcedureName = identifierMappingStoredProcedureName ?? throw new ArgumentNullException(nameof(identifierMappingStoredProcedureName));
             IdentifierGenerator = identifierGenerator ?? throw new ArgumentNullException(nameof(identifierGenerator));
             IdentifierMappingMapper = identifierMappingMapper ?? throw new ArgumentNullException(nameof(identifierMappingMapper));
-            AdditionalEnvelopeProcessing = AssignIdentityMappingAsync;
+            AdditionalEnvelopeProcessingAsync = AssignIdentityMappingAsync;
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace NTangle.Cdc
         {
             // Find all the instances where there is currently no global identifier assigned.
             var vimc = new ValueIdentifierMappingCollection<TGlobalIdentifer>();
-            coll.OfType<ILinkIdentifierMapping<TGlobalIdentifer>>().ForEach(async item => await item.LinkIdentifierMappingsAsync(vimc, IdentifierGenerator!).ConfigureAwait(false));
+            await coll.OfType<ILinkIdentifierMapping<TGlobalIdentifer>>().ForEachAsync(async item => await item.LinkIdentifierMappingsAsync(vimc, IdentifierGenerator!).ConfigureAwait(false)).ConfigureAwait(false);
             if (vimc.Count == 0)
                 return;
 
@@ -106,10 +106,7 @@ namespace NTangle.Cdc
             var tvp = IdentifierMappingMapper!.CreateTableValuedParameter(imcd.Values);
 
             // Execute the stored procedure and get the updated list.
-            var imc = await Db.StoredProcedure(IdentifierMappingStoredProcedureName!, p => p.AddTableValuedParameter(IdentifierListParamName, tvp))
-                .SelectAsync(IdentifierMappingMapper)
-                .ConfigureAwait(false);
-
+            var imc = await Db.StoredProcedure(IdentifierMappingStoredProcedureName!, p => p.AddTableValuedParameter(IdentifierListParamName, tvp)).SelectAsync(IdentifierMappingMapper).ConfigureAwait(false);
             if (imc.Count() != imcd.Count)
                 throw new InvalidOperationException($"Stored procedure '{IdentifierMappingStoredProcedureName}' returned an unexpected result.");
 

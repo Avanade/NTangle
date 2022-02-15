@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>NTangle</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>
-    <Description>NTangle Code Generator.</Description>
+    <Description>NTangle Change-Data-Capture tooling and framework.</Description>
     <LangVersion>9.0</LangVersion>
     <Copyright>Avanade (c)</Copyright>
     <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
@@ -21,7 +21,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Title>NTangle Code Generator.</Title>
+    <Title>NTangle Change-Data-Capture.</Title>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PackageTags>ntangle cdc change-data-capture</PackageTags>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
@@ -104,6 +104,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.21" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.21" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.21" />
+    <PackageReference Include="OnRamp" Version="1.0.4" />
     <PackageReference Include="System.Memory.Data" Version="1.0.2" />
   </ItemGroup>
 

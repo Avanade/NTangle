@@ -113,17 +113,18 @@ END
 
 GO
 
--- Customer (w/ logical delete and row version)
+-- Cust (aka Customer) w/ logical delete and row version
 
-IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE [OBJECT_ID] = OBJECT_ID(N'Legacy.Customer'))
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE [OBJECT_ID] = OBJECT_ID(N'Legacy.Cust'))
 BEGIN
-    CREATE TABLE [Legacy].[Customer] (
-      [CustomerId] INT NOT NULL,
+    CREATE TABLE [Legacy].[Cust] (
+      [CustId] INT NOT NULL,
       [Name] NVARCHAR (200) NULL,
       [Email] VARCHAR (200) NULL,
       [is-deleted] BIT NULL,
+      [is-private] BIT NULL,
       [internal-secret] NVARCHAR(100) NULL,
       [RowVersion] ROWVERSION
-      CONSTRAINT [PK_Customer] PRIMARY KEY CLUSTERED ([CustomerId] ASC)
+      CONSTRAINT [PK_Cust] PRIMARY KEY CLUSTERED ([CustId] ASC)
     );
 END

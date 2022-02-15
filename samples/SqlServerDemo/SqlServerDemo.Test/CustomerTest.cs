@@ -17,9 +17,10 @@ namespace SqlServerDemo.Test
 
             // Create some data.
             var script =
-                "DELETE FROM [Legacy].[Customer]" + Environment.NewLine +
-                "INSERT INTO [Legacy].[Customer] ([CustomerId], [Name], [Email]) VALUES (1, 'Bob', 'bob@email.com')" + Environment.NewLine +
-                "INSERT INTO [Legacy].[Customer] ([CustomerId], [Name], [Email]) VALUES (2, 'Jane', 'jane@email.com')";
+                "DELETE FROM [Legacy].[Cust]" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (1, 'Bob', 'bob@email.com')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email], [is-private]) VALUES (99, 'Agent', 'ninety-nine@email.com', 1)" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (2, 'Jane', 'jane@email.com')";
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
             await UnitTest.Delay().ConfigureAwait(false);
@@ -44,8 +45,8 @@ namespace SqlServerDemo.Test
 
             // Update customer 1 and deleted customer 2.
             var script =
-                "UPDATE [Legacy].[Customer] SET [is-deleted] = 1 WHERE [CustomerId] = 2" + Environment.NewLine +
-                "UPDATE [Legacy].[Customer] SET [Email] = 'bob@domain.com' WHERE [CustomerId] = 1";
+                "UPDATE [Legacy].[Cust] SET [is-deleted] = 1 WHERE [CustId] = 2" + Environment.NewLine +
+                "UPDATE [Legacy].[Cust] SET [Email] = 'bob@domain.com' WHERE [CustId] = 1";
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
             await UnitTest.Delay().ConfigureAwait(false);
@@ -81,7 +82,7 @@ namespace SqlServerDemo.Test
             var logger = UnitTest.GetLogger<CustomerCdcOrchestrator>();
 
             // Update customer 1.
-            var script = "UPDATE [Legacy].[Customer] SET [Email] = 'bob@domain.com' WHERE [CustomerId] = 1";
+            var script = "UPDATE [Legacy].[Cust] SET [Email] = 'bob@domain.com' WHERE [CustId] = 1";
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
             await UnitTest.Delay().ConfigureAwait(false);
@@ -107,7 +108,7 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(1, tep.Events.Count);
 
             // Update excluded property; should not pick up even though RowVersion column would have been updated as version (ETag) excludes.
-            script = "UPDATE [Legacy].[Customer] SET [internal-secret] = 'shhh' WHERE [CustomerId] = 1";
+            script = "UPDATE [Legacy].[Cust] SET [internal-secret] = 'shhh' WHERE [CustId] = 1";
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
             await UnitTest.Delay().ConfigureAwait(false);
@@ -139,13 +140,13 @@ namespace SqlServerDemo.Test
             var logger = UnitTest.GetLogger<CustomerCdcOrchestrator>();
 
             var script =
-                "INSERT INTO [Legacy].[Customer] ([CustomerId], [Name], [Email]) VALUES (11, 'eleven', 'eleven@email.com')" + Environment.NewLine +
-                "INSERT INTO [Legacy].[Customer] ([CustomerId], [Name], [Email]) VALUES (12, 'twelve', 'twelve@email.com')" + Environment.NewLine +
-                "INSERT INTO [Legacy].[Customer] ([CustomerId], [Name], [Email]) VALUES (13, 'thirteen', 'thirteen@email.com')" + Environment.NewLine +
-                "INSERT INTO [Legacy].[Customer] ([CustomerId], [Name], [Email]) VALUES (14, 'fourteen', 'fourteen@email.com')" + Environment.NewLine +
-                "INSERT INTO [Legacy].[Customer] ([CustomerId], [Name], [Email]) VALUES (15, 'fifteen', 'fifteen@email.com')" + Environment.NewLine +
-                "INSERT INTO [Legacy].[Customer] ([CustomerId], [Name], [Email]) VALUES (16, 'sixteen', 'sixteen@email.com')" + Environment.NewLine +
-                "INSERT INTO [Legacy].[Customer] ([CustomerId], [Name], [Email]) VALUES (17, 'seventeen', 'seventeen@email.com')";
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (11, 'eleven', 'eleven@email.com')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (12, 'twelve', 'twelve@email.com')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (13, 'thirteen', 'thirteen@email.com')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (14, 'fourteen', 'fourteen@email.com')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (15, 'fifteen', 'fifteen@email.com')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (16, 'sixteen', 'sixteen@email.com')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (17, 'seventeen', 'seventeen@email.com')";
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
             await UnitTest.Delay().ConfigureAwait(false);

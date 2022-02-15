@@ -44,10 +44,10 @@ namespace NTangle.Config
         public string? ToColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the SQL statement for the join on bypassing the corresponding `Column` specification.
+        /// Gets or sets the SQL statement for the join on bypassing the corresponding `ToColumn` specification.
         /// </summary>
         [JsonProperty("toStatement", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Key", Title = "The SQL statement for the join on bypassing the corresponding `Column` specification.")]
+        [CodeGenProperty("Key", Title = "The SQL statement for the join on bypassing the corresponding `ToColumn` specification.")]
         public string? ToStatement { get; set; }
 
         #endregion

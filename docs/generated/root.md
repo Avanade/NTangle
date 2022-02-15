@@ -1,6 +1,6 @@
-# The 'Root' object (database-driven)
+# The `Root` object (database-driven)
 
-The `CdcRootConfig` object defines the global properties that are used to drive the underlying database-driven CDC-oriented code-generation.
+The `RootConfig` object defines the global properties that are used to drive the underlying database-driven CDC-oriented code-generation.
 
 <br/>
 

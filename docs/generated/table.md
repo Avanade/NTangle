@@ -29,6 +29,7 @@ Property | Description
 -|-
 **`name`** | The name of the primary table. [Mandatory]
 `schema` | The default schema name used where not otherwise explicitly specified.<br/>&dagger; Defaults to `Root.Schema`.
+`table` | The name of the primary table.<br/>&dagger; Defaults to `Name`. This is used to specify the actual underlying database table name (required where the `Name` has been changed to enable uniqueness).
 `alias` | The table alias name (must be unique).<br/>&dagger; Will automatically default where not specified; for example a table named `Person` will default to `p`.
 
 <br/>
@@ -67,7 +68,9 @@ Property | Description
 `database` | The .NET database `IDatabase` Type name used in the constructor for Dependency Injection (DI).<br/>&dagger; Defaults to `IDatabase`.
 `includeColumnsOnDelete` | The list of `Column` names that should be included (in addition to the primary key) for a logical delete.<br/>&dagger; Where a column is not specified in this list its corresponding .NET property will be automatically cleared by the `CdcDataOrchestrator` as the data is technically considered as non-existing.
 `excludeColumnsFromETag` | The list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).<br/>&dagger; Defaults to `Root.CdcExcludeColumnsFromETag`.
-`partitionKeyColumns` | The list of `Column` names that represent the partition key.
+`tenantIdColumns` | The list of `Column` names that represent the tenant identifier.
+`partitionKey` | The partition key.<br/>&dagger; A partition key can be specified using either `PartitionKey` or `PartitionKeyColumns`.
+`partitionKeyColumns` | The list of `Column` names that represent the partition key.<br/>&dagger; A partition key can be specified using either `PartitionKey` or `PartitionKeyColumns`.
 
 <br/>
 
@@ -107,5 +110,6 @@ Provides related child (hierarchical) configuration.
 Property | Description
 -|-
 **`joins`** | The corresponding [`Join`](join.md) collection.<br/>&dagger; A `Join` object provides the configuration for a table join.
+**`where`** | The corresponding [`Where`](where.md) collection.<br/>&dagger; A `Where` object provides the configuration for a table where clause.
 `mappings` | The corresponding [`TableMapping`](tablemapping.md) collection.
 

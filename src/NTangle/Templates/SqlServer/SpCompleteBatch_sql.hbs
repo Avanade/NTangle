@@ -40,7 +40,7 @@ BEGIN
       WHERE BatchTrackingId = @BatchTrackingId 
 
     MERGE INTO [{{Root.CdcSchema}}].[{{Root.VersionTrackingTable}}] WITH (HOLDLOCK) AS [_ct]
-      USING @VersionTrackingList AS [_list] ON ([_ct].[Schema] = '{{Schema}}' AND [_ct].[Table] = '{{Table}}' AND [_ct].[Key] = [_list].[Key])
+      USING @VersionTrackingList AS [_list] ON ([_ct].[Schema] = '{{Schema}}' AND [_ct].[Table] = '{{Name}}' AND [_ct].[Key] = [_list].[Key])
       WHEN MATCHED AND EXISTS (
           SELECT [_list].[Key], [_list].[Hash]
           EXCEPT
@@ -48,7 +48,7 @@ BEGIN
         THEN UPDATE SET [_ct].[Hash] = [_list].[Hash], [_ct].[BatchTrackingId] = @BatchTrackingId
       WHEN NOT MATCHED BY TARGET
         THEN INSERT ([Schema], [Table], [Key], [Hash], [BatchTrackingId])
-          VALUES ('{{Schema}}', '{{Table}}', [_list].[Key], [_list].[Hash], @BatchTrackingId);
+          VALUES ('{{Schema}}', '{{Name}}', [_list].[Key], [_list].[Hash], @BatchTrackingId);
 
     SELECT [_batch].[BatchTrackingId], [_batch].[CreatedDate], [_batch].[IsComplete], [_batch].[CompletedDate], [_batch].[CorrelationId], [_batch].[HasDataLoss]
       FROM [{{CdcSchema}}].[{{BatchTrackingTable}}] AS [_batch]

@@ -42,7 +42,7 @@ namespace NTangle.Config
         /// Gets or sets the name of the primary table.
         /// </summary>
         [JsonProperty("name", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Key", Title = "The name of the primary table.", IsMandatory = true, IsImportant = true)]
+        [CodeGenProperty("Key", Title = "The name of the primary table.",  IsMandatory = true, IsImportant = true, IsUnique = true)]
         public string? Name { get; set; }
 
         /// <summary>
@@ -52,6 +52,14 @@ namespace NTangle.Config
         [CodeGenProperty("Key", Title = "The default schema name used where not otherwise explicitly specified.",
             Description = "Defaults to `Root.Schema`.")]
         public string? Schema { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the primary table.
+        /// </summary>
+        [JsonProperty("table", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Key", Title = "The name of the primary table.",
+            Description = "Defaults to `Name`. This is used to specify the actual underlying database table name (required where the `Name` has been changed to enable uniqueness).")]
+        public string? Table { get; set; }
 
         /// <summary>
         /// Gets or sets the table alias name.
@@ -282,6 +290,14 @@ namespace NTangle.Config
         public List<JoinConfig>? Joins { get; set; }
 
         /// <summary>
+        /// Gets or sets the corresponding <see cref="WhereConfig"/> collection.
+        /// </summary>
+        [JsonProperty("where", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenPropertyCollection("Collections", Title = "The corresponding `Where` collection.", IsImportant = true,
+            Description = "A `Where` object provides the configuration for a table where clause.")]
+        public List<WhereConfig>? Where { get; set; }
+
+        /// <summary>
         /// Gets or sets the corresponding <see cref="TableIdentifierMappingColumnConfig"/> collection.
         /// </summary>
         [JsonProperty("mappings", DefaultValueHandling = DefaultValueHandling.Ignore)]
@@ -343,11 +359,6 @@ namespace NTangle.Config
         public List<CtorParameterConfig> OrchestratorCtorParameters { get; } = new List<CtorParameterConfig>();
 
         /// <summary>
-        /// Gets the table name.
-        /// </summary>
-        public string? Table => Name;
-
-        /// <summary>
         /// Gets the corresponding (actual) database table configuration.
         /// </summary>
         public DbTableSchema? DbTable { get; private set; }
@@ -398,12 +409,13 @@ namespace NTangle.Config
         protected override async Task PrepareAsync()
         {
             Schema = DefaultWhereNull(Schema, () => Root!.Schema);
-            DbTable = Root!.DbTables!.Where(x => x.Name == Name && x.Schema == Schema).SingleOrDefault();
+            Table = DefaultWhereNull(Table, () => Name);
+            DbTable = Root!.DbTables!.Where(x => x.Name == Table && x.Schema == Schema).SingleOrDefault();
             if (DbTable == null)
-                throw new CodeGenException(this, nameof(Name), $"Specified table '[{Schema}].[{Name}]' not found in database.");
+                throw new CodeGenException(this, nameof(Table), $"Specified table '[{Schema}].[{Table}]' not found in database.");
 
             if (DbTable.IsAView)
-                throw new CodeGenException(this, nameof(Name), $"Specified table '[{Schema}].[{Name}]' cannot be a view.");
+                throw new CodeGenException(this, nameof(Table), $"Specified table '[{Schema}].[{Table}]' cannot be a view.");
 
             Alias = DefaultWhereNull(Alias, () => DbTable.Alias);
 
@@ -426,6 +438,7 @@ namespace NTangle.Config
             if (IsTrue(CdcEnable))
                 Root.AddCdcEnabled(Schema!, Table!);
 
+            Where = await PrepareCollectionAsync(Where).ConfigureAwait(false);
             Mappings = await PrepareCollectionAsync(Mappings).ConfigureAwait(false);
 
             foreach (var c in DbTable.Columns)

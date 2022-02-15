@@ -33,7 +33,7 @@ BEGIN
     END
 
     -- Get the latest 'base' minimum.
-    SET @CustomerBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Customer');
+    SET @CustomerBaseMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Cust');
 
     -- Where there is no incomplete batch then the next should be created/processed.
     IF (@BatchTrackingId IS NULL)
@@ -67,10 +67,10 @@ BEGIN
     -- The minimum should _not_ be less than the base otherwise we have lost data; either continue with this data loss, or error and stop.
     DECLARE @hasDataLoss BIT = 0
 
-    IF (@CustomerMinLsn < @CustomerBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @CustomerMinLsn = @CustomerBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Customer''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@CustomerMinLsn < @CustomerBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @CustomerMinLsn = @CustomerBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Cust''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
 
-    -- Find changes on the root table: '[Legacy].[Customer]' - this determines overall operation type: 'create', 'update' or 'delete'.
-    CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, [CustomerId] INT)
+    -- Find changes on the root table: '[Legacy].[Cust]' - this determines overall operation type: 'create', 'update' or 'delete'.
+    CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, [CustId] INT)
     DECLARE @hasChanges BIT = 0
 
     IF (@CustomerMinLsn <= @CustomerMaxLsn)
@@ -79,8 +79,9 @@ BEGIN
         SELECT TOP (@MaxQuerySize)
             [_cdc].[__$start_lsn] AS [_Lsn],
             [_cdc].[__$operation] AS [_Op],
-            [_cdc].[CustomerId] AS [CustomerId]
-          FROM cdc.fn_cdc_get_all_changes_Legacy_Customer(@CustomerMinLsn, @CustomerMaxLsn, 'all') AS [_cdc]
+            [_cdc].[CustId] AS [CustId]
+          FROM cdc.fn_cdc_get_all_changes_Legacy_Cust(@CustomerMinLsn, @CustomerMaxLsn, 'all') AS [_cdc]
+          WHERE ([_cdc].[is-private] IS NULL OR [_cdc].[is-private] = 0)
           ORDER BY [_cdc].[__$start_lsn]
 
       IF (@@ROWCOUNT <> 0)
@@ -137,20 +138,20 @@ BEGIN
       RETURN 0
     END
 
-    -- Root table: '[Legacy].[Customer]' - uses LEFT OUTER JOIN's to get the deleted records, as well as any previous 'TrackingHash' value.
+    -- Root table: '[Legacy].[Cust]' - uses LEFT OUTER JOIN's to get the deleted records, as well as any previous 'TrackingHash' value.
     SELECT
         [_chg].[_Op] AS [_OperationType],
         [_chg].[_Lsn] AS [_Lsn],
         [_ct].[Hash] AS [_TrackingHash],
-        [_chg].[CustomerId] AS [CustomerId],
-        [c].[CustomerId] AS [TableKey_CustomerId],
+        [_chg].[CustId] AS [Id],
+        [c].[CustId] AS [TableKey_Id],
         [c].[Name] AS [Name],
         [c].[Email] AS [Email],
         [c].[is-deleted] AS [IsDeleted],
         [c].[RowVersion] AS [RowVersion]
       FROM #_changes AS [_chg]
-      LEFT OUTER JOIN [Legacy].[Customer] AS [c] ON ([c].[CustomerId] = [_chg].[CustomerId])
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_ct] ON ([_ct].[Schema] = 'Legacy' AND [_ct].[Table] = 'Customer' AND [_ct].[Key] = CAST([_chg].[CustomerId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [Legacy].[Cust] AS [c] ON ([c].[CustId] = [_chg].[CustId])
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_ct] ON ([_ct].[Schema] = 'Legacy' AND [_ct].[Table] = 'Customer' AND [_ct].[Key] = CAST([_chg].[CustId] AS NVARCHAR(128)))
       ORDER BY [_Lsn] ASC
 
     -- Commit the transaction.

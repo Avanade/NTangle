@@ -20,8 +20,8 @@ namespace NTangle.Config
     /// Represents the global database code-generation configuration.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    [CodeGenClass("Root", Title = "The 'Root' object (database-driven)",
-        Description = "The `CdcRootConfig` object defines the global properties that are used to drive the underlying database-driven CDC-oriented code-generation.",
+    [CodeGenClass("Root", Title = "The `Root` object (database-driven)",
+        Description = "The `RootConfig` object defines the global properties that are used to drive the underlying database-driven CDC-oriented code-generation.",
         ExampleMarkdown = @"A YAML configuration example is as follows:
 ``` yaml
 ```")]

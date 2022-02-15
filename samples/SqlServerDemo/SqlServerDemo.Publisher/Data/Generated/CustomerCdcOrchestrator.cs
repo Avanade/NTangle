@@ -48,7 +48,7 @@ namespace SqlServerDemo.Publisher.Data
             var cColl = new CustomerCdcEnvelopeCollection();
 
             var result = await SelectQueryMultiSetAsync(
-                // Root table: '[Legacy].[Customer]'
+                // Root table: '[Legacy].[Cust]'
                 new MultiSetCollArgs<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>(_customerCdcMapper, r => cColl = r, stopOnNull: true)).ConfigureAwait(false);
 
             result.Result.AddRange(cColl);
@@ -65,7 +65,7 @@ namespace SqlServerDemo.Publisher.Data
         protected override EventActionFormat EventActionFormat => EventActionFormat.PastTense;
 
         /// <inheritdoc/>
-        protected override Uri? EventSource => new Uri("/database/cdc/legacy/customer", UriKind.Relative);
+        protected override Uri? EventSource => new Uri("/database/cdc/legacy/cust", UriKind.Relative);
 
         /// <inheritdoc/>
         protected override EventSourceFormat EventSourceFormat { get; } = EventSourceFormat.NameAndTableKey;
@@ -101,7 +101,7 @@ namespace SqlServerDemo.Publisher.Data
             /// <inheritdoc/>
             public CustomerCdcEnvelope MapFromDb(DatabaseRecord record) => new CustomerCdcEnvelope
             {
-                CustomerId = record.GetValue<int>("CustomerId"),
+                Id = record.GetValue<int>("Id"),
                 Name = record.GetValue<string?>("Name"),
                 Email = record.GetValue<string?>("Email"),
                 IsDeleted = record.GetValue<bool?>("IsDeleted"),

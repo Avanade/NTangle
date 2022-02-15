@@ -16,7 +16,7 @@ namespace NTangle.Config
     /// Represents the table join configuration.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    [CodeGenClass("Join", Title = "'CdcJoin' object (database-driven)",
+    [CodeGenClass("Join", Title = "'Join' object (database-driven)",
         Description = "The `Join` object defines a join to another (or same) table within the logical CDC entity. "
             + " The `IncludeColumns` and `ExcludeColumns` provide a shorthand to include or exclude selected columns; with the `AliasColumns` providing a means to rename where required.",
         ExampleMarkdown = @"A YAML configuration example is as follows:
@@ -40,8 +40,8 @@ namespace NTangle.Config
         /// Gets or sets the unqiue name.
         /// </summary>
         [JsonProperty("name", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Key", Title = "The unique name .", IsMandatory = true, IsImportant = true,
-            Description = "A unique name is required where the same `TableName` is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database.")]
+        [CodeGenProperty("Key", Title = "The unique name.", IsMandatory = true, IsImportant = true,
+            Description = "A unique name is required where the same `Table` is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database.")]
         public string? Name { get; set; }
 
         /// <summary>

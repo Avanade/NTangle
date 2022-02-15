@@ -5,6 +5,6 @@ CREATE TABLE [NTangle].[CustomerBatchTracking] (
   [CompletedDate] DATETIME2 NULL,
   [CorrelationId] NVARCHAR(128) NULL,
   [HasDataLoss] BIT NOT NULL,
-  [CustomerMinLsn] BINARY(10) NULL,  -- Primary table: '[Legacy].[Customer]'
+  [CustomerMinLsn] BINARY(10) NULL,  -- Primary table: '[Legacy].[Cust]'
   [CustomerMaxLsn] BINARY(10) NULL,
 );

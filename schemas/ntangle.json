@@ -5,7 +5,7 @@
     "Root": {
       "type": "object",
       "title": "The 'Root' object (database-driven)",
-      "description": "The 'CdcRootConfig' object defines the global properties that are used to drive the underlying database-driven CDC-oriented code-generation.",
+      "description": "The 'RootConfig' object defines the global properties that are used to drive the underlying database-driven CDC-oriented code-generation.",
       "properties": {
         "schema": {
           "type": "string",
@@ -231,6 +231,11 @@
           "title": "The default schema name used where not otherwise explicitly specified.",
           "description": "Defaults to 'Root.Schema'."
         },
+        "table": {
+          "type": "string",
+          "title": "The name of the primary table.",
+          "description": "Defaults to 'Name'. This is used to specify the actual underlying database table name (required where the 'Name' has been changed to enable uniqueness)."
+        },
         "alias": {
           "type": "string",
           "title": "The table alias name (must be unique).",
@@ -328,9 +333,22 @@
             "type": "string"
           }
         },
+        "tenantIdColumns": {
+          "type": "array",
+          "title": "The list of 'Column' names that represent the tenant identifier.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "partitionKey": {
+          "type": "string",
+          "title": "The partition key.",
+          "description": "A partition key can be specified using either 'PartitionKey' or 'PartitionKeyColumns'."
+        },
         "partitionKeyColumns": {
           "type": "array",
           "title": "The list of 'Column' names that represent the partition key.",
+          "description": "A partition key can be specified using either 'PartitionKey' or 'PartitionKeyColumns'.",
           "items": {
             "type": "string"
           }
@@ -383,6 +401,14 @@
             "$ref": "#/definitions/Join"
           }
         },
+        "where": {
+          "type": "array",
+          "title": "The corresponding 'Where' collection.",
+          "description": "A 'Where' object provides the configuration for a table where clause.",
+          "items": {
+            "$ref": "#/definitions/Where"
+          }
+        },
         "mappings": {
           "type": "array",
           "title": "The corresponding 'TableMapping' collection.",
@@ -397,13 +423,13 @@
     },
     "Join": {
       "type": "object",
-      "title": "'CdcJoin' object (database-driven)",
+      "title": "'Join' object (database-driven)",
       "description": "The 'Join' object defines a join to another (or same) table within the logical CDC entity.  The 'IncludeColumns' and 'ExcludeColumns' provide a shorthand to include or exclude selected columns; with the 'AliasColumns' providing a means to rename where required.",
       "properties": {
         "name": {
           "type": "string",
-          "title": "The unique name .",
-          "description": "A unique name is required where the same 'TableName' is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database."
+          "title": "The unique name.",
+          "description": "A unique name is required where the same 'Table' is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database."
         },
         "schema": {
           "type": "string",
@@ -551,7 +577,7 @@
         },
         "toStatement": {
           "type": "string",
-          "title": "The SQL statement for the join on bypassing the corresponding 'Column' specification."
+          "title": "The SQL statement for the join on bypassing the corresponding 'ToColumn' specification."
         }
       },
       "required": [
@@ -580,6 +606,49 @@
       "required": [
         "name",
         "table"
+      ]
+    },
+    "Where": {
+      "type": "object",
+      "title": "'Where' object (database-driven)",
+      "description": "This should only be used where the column value is largely immutable; otherwise, unintended side-effects may occur. _NTangle_ uses the condition explictily and does not attempt to handle value change to infer creation or deletion of data as a result of the underlying change; as such, this should be used cautiously. Note that the 'where' is applied when querying the 'cdc.fn_cdc_get_all_changes_...' function, not the underlying table itself.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The column name.",
+          "description": "The column name."
+        },
+        "nullable": {
+          "type": "string",
+          "title": "The where nullability clause operator",
+          "description": "This enables statements such as 'WHERE (COL IS NULL)' or 'WHERE (COL IS NULL OR COL = VALUE)' (where .",
+          "enum": [
+            "ISNULL",
+            "ISNOTNULL"
+          ]
+        },
+        "operator": {
+          "type": "string",
+          "title": "The where clause equality operator",
+          "description": "Defaults to 'EQ' where 'Value' is specified.",
+          "enum": [
+            "EQ",
+            "NE",
+            "LT",
+            "LE",
+            "GT",
+            "GE",
+            "LIKE"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "title": "The comparison value",
+          "description": "This must be valid formatted/escaped SQL."
+        }
+      },
+      "required": [
+        "name"
       ]
     },
     "TableMapping": {
