@@ -78,12 +78,11 @@ namespace NTangle.Data
                 var list = new List<EventData>();
                 foreach (var @event in events)
                 {
-                    if (@event.EventData == null)
-                        continue;
+                    var ed = new EventData(@event);
+                    if (@event.Data != null)
+                        ed.Data = JsonConvert.DeserializeObject(@event.Data.ToString());
 
-                    var ed = JsonConvert.DeserializeObject<EventData>(@event.EventData.ToString());
-                    if (ed != null)
-                        list.Add(ed);
+                    list.Add(ed);
                 }
 
                 // Publish the events.

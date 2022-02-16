@@ -5,7 +5,7 @@ BEGIN
   /*
    * This is automatically generated; any changes will be lost.
    */
- 
+
   SET NOCOUNT ON;
 
   BEGIN TRY
@@ -23,27 +23,29 @@ BEGIN
 
     -- Cursor output variables.
     DECLARE @eventId NVARCHAR(128),
+            @subject NVARCHAR(512),
+            @action NVARCHAR(256),
             @type NVARCHAR(1024),
             @source NVARCHAR(1024),
             @timestamp DATETIMEOFFSET,
             @correlationId NVARCHAR(128),
             @tenantId NVARCHAR(128),
             @partitionKey NVARCHAR(128),
-            @eventData VARBINARY(MAX)
+            @data VARBINARY(MAX)
 
     -- Declare, open, and fetch first event from cursor.
-    DECLARE c CURSOR FORWARD_ONLY 
-      FOR SELECT [EventId], [Type], [Source], [Timestamp], [CorrelationId], [TenantId], [PartitionKey], [EventData] FROM @EventList
+    DECLARE c CURSOR FORWARD_ONLY
+      FOR SELECT [EventId], [Subject], [Action], [Type], [Source], [Timestamp], [CorrelationId], [TenantId], [PartitionKey], [Data] FROM @EventList
 
     OPEN c
-    FETCH NEXT FROM c INTO @eventId, @type, @source, @timestamp, @correlationId, @tenantId, @partitionKey, @eventdata
+    FETCH NEXT FROM c INTO @eventId, @subject, @action, @type, @source, @timestamp, @correlationId, @tenantId, @partitionKey, @data
 
     -- Iterate the event(s).
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        -- Enqueue event into outbox 
+        -- Enqueue event into outbox
         INSERT INTO [NTangle].[EventOutbox] ([EnqueuedDate], [PartitionKey])
-          OUTPUT inserted.EventOutboxId INTO @enqueuedId 
+          OUTPUT inserted.EventOutboxId INTO @enqueuedId
           VALUES (@enqueuedDate, @partitionKey)
 
         SELECT @eventOutboxId = [EventOutboxId] FROM @enqueuedId
@@ -52,28 +54,32 @@ BEGIN
         INSERT INTO [NTangle].[EventOutboxData] (
           [EventOutboxDataId],
           [EventId],
+          [Subject],
+          [Action],
           [Type],
           [Source],
           [Timestamp],
           [CorrelationId],
           [TenantId],
           [PartitionKey],
-          [EventData]
-        ) 
+          [Data]
+        )
         VALUES (
           @eventOutboxId,
           @eventId,
+          @subject,
+          @action,
           @type,
           @source,
           @timestamp,
           @correlationId,
           @tenantId,
           @partitionKey,
-          @eventdata
+          @data
         )
 
         -- Fetch the next event from the cursor.
-        FETCH NEXT FROM c INTO @eventId, @type, @source, @timestamp, @correlationId, @tenantId, @partitionKey, @eventdata
+        FETCH NEXT FROM c INTO @eventId, @subject, @action, @type, @source, @timestamp, @correlationId, @tenantId, @partitionKey, @data
     END
 
     -- Close the cursor.

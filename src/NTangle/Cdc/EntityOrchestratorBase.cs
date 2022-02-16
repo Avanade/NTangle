@@ -170,6 +170,11 @@ namespace NTangle.Cdc
                     p.AddTableValuedParameter(VersionTrackingListParamName, _versionTrackerMapper.CreateTableValuedParameter(versionTracking));
                 }).SelectMultiSetAsync(msa).ConfigureAwait(false);
             }
+            catch (DatabaseErrorException deex)
+            {
+                result.Exception = deex;
+                Logger.LogError("{Message}", result.Exception?.Message);
+            }
             catch (Exception ex)
             {
                 if (ex is TaskCanceledException || (ex is AggregateException aex && aex.InnerException is TaskCanceledException))
@@ -179,11 +184,7 @@ namespace NTangle.Cdc
                 }
 
                 result.Exception = ex;
-
-                if (ex is DatabaseErrorException)
-                    Logger.LogError(result.Exception.Message);
-                else
-                    Logger.LogCritical($"Unexpected Exception encountered: {result.Exception.Message}");
+                Logger.LogCritical(ex, "Unexpected Exception encountered: {Message}", result.Exception.Message);
             }
 
             await Task.CompletedTask;
@@ -449,11 +450,10 @@ namespace NTangle.Cdc
         /// <returns>The <see cref="EventData"/>.</returns>
         protected virtual EventData CreateEvent<T>(T value, OperationType operationType, string? correlationId) where T : IPrimaryKey
         {
-            var ed = new EventData
+            var ed = new EventData<T>
             {
                 Subject = EventSubjectFormatter.Format(EventSubject, value, EventSubjectFormat),
                 Action = EventActionFormatter.Format(operationType, EventActionFormat),
-                PrimaryKey = value.PrimaryKey,
                 CorrelationId = correlationId,
                 Data = value,
                 Source = EventSourceFormatter.Format(EventSource, value, EventSourceFormat)

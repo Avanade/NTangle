@@ -25,7 +25,7 @@ namespace {{Root.NamespacePublisher}}.Entities
 {{#ifeq Root.JsonSerializer 'Newtonsoft'}}
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
 {{/ifeq}}
-    public partial class {{Model}}Cdc : IEntity{{#ifval ColumnConfigIsDeleted}}, ILogicallyDeleted{{/ifval}}{{#ifne SelectedTenantIdColumns.Count 0}}, ITenantId{{/ifne}}{{#if HasPartitionKey}}, IPartitionKey{{/if}}{{#if IdentifierMapping}}, IGlobalIdentifier<{{Root.IdentifierMappingDotNetType}}>{{/if}}{{#if UsesGlobalIdentifier}}, ILinkIdentifierMapping<{{Root.IdentifierMappingDotNetType}}>{{/if}}
+    public partial class {{Model}}Cdc : IEntity{{#ifval IdentifierColumn}}, IIdentifier<{{IdentifierColumn.DotNetType}}{{#if IdentifierColumn.IsDotNetNullable}}?{{/if}}>{{/ifval}}{{#ifval ColumnConfigIsDeleted}}, ILogicallyDeleted{{/ifval}}{{#ifne SelectedTenantIdColumns.Count 0}}, ITenantId{{/ifne}}{{#if HasPartitionKey}}, IPartitionKey{{/if}}{{#if IdentifierMapping}}, IGlobalIdentifier<{{Root.IdentifierMappingDotNetType}}>{{/if}}{{#if UsesGlobalIdentifier}}, ILinkIdentifierMapping<{{Root.IdentifierMappingDotNetType}}>{{/if}}
     {
 {{#if IdentifierMapping}}
         /// <inheritdoc/>

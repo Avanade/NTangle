@@ -34,13 +34,15 @@ BEGIN
     SELECT
         [{{OutboxTable}}DataId] as [{{OutboxTable}}Id],
         [EventId],
+        [Subject],
+        [Action],
         [Type],
         [Source],
         [Timestamp],
         [CorrelationId],
         [TenantId],
         [PartitionKey],
-        [EventData]
+        [Data]
       FROM [{{OutboxSchema}}].[{{OutboxTable}}Data]
       WHERE [{{OutboxTable}}DataId] IN (SELECT [{{OutboxTable}}Id] FROM @dequeuedId)
 

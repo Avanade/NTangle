@@ -7,7 +7,7 @@ namespace NTangle
     /// <summary>
     /// Enables the generation of a new identifier value.
     /// </summary>
-    /// <typeparam name="T">The global identifier <see cref="System.Type"/>.</typeparam>
+    /// <typeparam name="T">The identifier <see cref="System.Type"/>.</typeparam>
     public interface IIdentifierGenerator<T>
     {
         /// <summary>

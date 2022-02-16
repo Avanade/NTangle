@@ -179,7 +179,7 @@ BEGIN
     SELECT
         [_chg].[_Op] AS [_OperationType],
         [_chg].[_Lsn] AS [_Lsn],
-        [_ct].[Hash] AS [_TrackingHash],
+        [_vt].[Hash] AS [_TrackingHash],
         [_im].[GlobalId] AS [GlobalId],
         [_chg].[ContactId] AS [CID],
         [c].[ContactId] AS [TableKey_CID],
@@ -197,7 +197,7 @@ BEGIN
       LEFT OUTER JOIN [Legacy].[ContactMapping] AS [cm] ON ([cm].[ContactId] = [c].[ContactId])
       LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im] ON ([_im].[Schema] = 'Legacy' AND [_im].[Table] = 'Contact' AND [_im].[Key] = CAST([_chg].[ContactId] AS NVARCHAR(128)))
       LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im1] ON ([_im1].[Schema] = 'Legacy' AND [_im1].[Table] = 'Contact' AND [_im1].[Key] = CAST([c].[AlternateContactId] AS NVARCHAR(128))) 
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_ct] ON ([_ct].[Schema] = 'Legacy' AND [_ct].[Table] = 'Contact' AND [_ct].[Key] = _im.GlobalId)
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Object] = 'Legacy_Contact' AND [_vt].[Key] = _im.GlobalId)
       ORDER BY [_Lsn] ASC
 
     -- Related table: '[Legacy].[Address]' - unique name 'Address' - only use INNER JOINS to get what is actually there right now (where applicable).

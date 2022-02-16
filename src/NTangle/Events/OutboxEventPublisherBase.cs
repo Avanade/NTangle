@@ -13,7 +13,7 @@ namespace NTangle.Events
     /// Enables the <see cref="EventOutbox"/> <see cref="IEventPublisher"/>.
     /// </summary>
     /// <typeparam name="TMapper">The <see cref="EventOutboxMapperBase"/> <see cref="Type"/>.</typeparam>
-    /// <remarks>This serializes the <see cref="EventData"/> directly to JSON and converts to <see cref="BinaryData"/>; versus, using an <see cref="IEventSerializer"/>. This is so that it be easily deserialized when dequeueing and
+    /// <remarks>This serializes the <see cref="EventData.Data"/> directly to JSON and converts to <see cref="BinaryData"/>; versus, using an <see cref="IEventSerializer"/>. This is so that it be easily deserialized when dequeueing and
     /// and a further <see cref="IEventPublisher"/> used to send which may then in turn leverage an <see cref="IEventSerializer"/>.</remarks>
     public abstract class OutboxEventPublisherBase<TMapper> : IEventPublisher where TMapper : EventOutboxMapperBase, new()
     {
@@ -32,16 +32,9 @@ namespace NTangle.Events
             var list = new List<EventOutbox>();
             foreach (var @event in events)
             {
-                list.Add(new EventOutbox
+                list.Add(new EventOutbox(@event)
                 {
-                    Id = @event.Id,
-                    Type = @event.Type,
-                    Source = @event.Source?.ToString(),
-                    Timestamp = @event.Timestamp,
-                    CorrelationId = @event.CorrelationId,
-                    TenantId = @event.TenantId,
-                    PartitionKey = @event.PartitionKey,
-                    EventData = new BinaryData(JsonConvert.SerializeObject(@event))
+                    Data = @event.Data == null ? null : new BinaryData(JsonConvert.SerializeObject(@event.Data))
                 });
             }
 

@@ -213,7 +213,7 @@ BEGIN
     SELECT
         [_chg].[_Op] AS [_OperationType],
         [_chg].[_Lsn] AS [_Lsn],
-        [_ct].[Hash] AS [_TrackingHash],
+        [_vt].[Hash] AS [_TrackingHash],
 {{#if IdentifierMapping}}
         [_im].[GlobalId] AS [GlobalId],
 {{/if}}
@@ -244,7 +244,7 @@ BEGIN
       LEFT OUTER JOIN [{{Root.CdcSchema}}].[{{Root.IdentifierMappingTable}}] AS [{{IdentifierMappingAlias}}] ON ([{{IdentifierMappingAlias}}].[Schema] = '{{IdentifierMappingSchema}}' AND [{{IdentifierMappingAlias}}].[Table] = '{{IdentifierMappingTable}}' AND [{{IdentifierMappingAlias}}].[Key] = CAST([{{IdentifierMappingParent.Parent.Alias}}].[{{IdentifierMappingParent.Name}}] AS NVARCHAR(128))) 
   {{/ifval}}
 {{/each}}
-      LEFT OUTER JOIN [{{Root.CdcSchema}}].[{{Root.VersionTrackingTable}}] AS [_ct] ON ([_ct].[Schema] = '{{Schema}}' AND [_ct].[Table] = '{{Name}}' AND [_ct].[Key] = {{#if IdentifierMapping}}_im.GlobalId){{else}}{{#ifeq PrimaryKeyColumns.Count 1}}{{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{/each}}{{else}}CONCAT({{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{#unless @last}}, ',', {{/unless}}{{/each}}){{/ifeq}}{{/if}}
+      LEFT OUTER JOIN [{{Root.CdcSchema}}].[{{Root.VersionTrackingTable}}] AS [_vt] ON ([_vt].[Object] = '{{Schema}}_{{Name}}' AND [_vt].[Key] = {{#if IdentifierMapping}}_im.GlobalId){{else}}{{#ifeq PrimaryKeyColumns.Count 1}}{{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{/each}}{{else}}CONCAT({{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{#unless @last}}, ',', {{/unless}}{{/each}}){{/ifeq}}{{/if}}
       ORDER BY [_Lsn] ASC
 
 {{#each CdcJoins}}

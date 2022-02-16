@@ -5,6 +5,6 @@ CREATE TYPE [NTangle].[udtIdentifierMappingList] AS TABLE (
 
   [Schema] VARCHAR(50) NOT NULL,
   [Table] VARCHAR(128) NOT NULL,
-  [Key] NVARCHAR(128) NOT NULL,
+  [Key] NVARCHAR(256) NOT NULL,
   [GlobalId] NVARCHAR(128) NOT NULL
 )

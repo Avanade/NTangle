@@ -253,14 +253,14 @@ BEGIN
     SELECT
         [_chg].[_Op] AS [_OperationType],
         [_chg].[_Lsn] AS [_Lsn],
-        [_ct].[Hash] AS [_TrackingHash],
+        [_vt].[Hash] AS [_TrackingHash],
         [_chg].[PostsId] AS [PostsId],
         [p].[PostsId] AS [TableKey_PostsId],
         [p].[Text] AS [Text],
         [p].[Date] AS [Date]
       FROM #_changes AS [_chg]
       LEFT OUTER JOIN [Legacy].[Posts] AS [p] ON ([p].[PostsId] = [_chg].[PostsId])
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_ct] ON ([_ct].[Schema] = 'Legacy' AND [_ct].[Table] = 'Posts' AND [_ct].[Key] = CAST([_chg].[PostsId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Object] = 'Legacy_Posts' AND [_vt].[Key] = CAST([_chg].[PostsId] AS NVARCHAR(128)))
       ORDER BY [_Lsn] ASC
 
     -- Related table: '[Legacy].[Comments]' - unique name 'Comments' - only use INNER JOINS to get what is actually there right now (where applicable).

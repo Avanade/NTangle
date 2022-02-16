@@ -3,6 +3,6 @@ CREATE TYPE [NTangle].[udtVersionTrackingList] AS TABLE (
    * This is automatically generated; any changes will be lost.
    */
 
-  [Key] NVARCHAR(128) NOT NULL,
+  [Key] NVARCHAR(256) NOT NULL,
   [Hash] NVARCHAR(128) NOT NULL
 )

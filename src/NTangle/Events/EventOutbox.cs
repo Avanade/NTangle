@@ -5,48 +5,23 @@ using System;
 namespace NTangle.Events
 {
     /// <summary>
-    /// Represents the <see cref="EventData"/> formatted for an event outbox.
+    /// Represents the <see cref="Events.EventData"/> formatted for an event outbox.
     /// </summary>
-    public class EventOutbox
+    public class EventOutbox : EventData
     {
         /// <summary>
-        /// Gets or sets the unique event identifier (<see cref="EventData.Id"/>).
+        /// Initializes a new instance of the <see cref="EventOutbox"/> class.
         /// </summary>
-        public string? Id { get; set; }
+        public EventOutbox() { }
 
         /// <summary>
-        /// Gets or sets the event type (<see cref="EventData.Type"/>).
+        /// Initializes a new instance of the <see cref="EventOutbox"/> class copying from another <paramref name="event"/> excluding the underlying <see cref="Data"/>.
         /// </summary>
-        public string? Type { get; set; }
+        public EventOutbox(EventData @event) : base(@event) { }
 
         /// <summary>
-        /// Gets or sets the event source (<see cref="EventData.Source"/>).
+        /// Gets or sets the serialized <see cref="EventData.Data"/>.
         /// </summary>
-        public string? Source { get; set; }
-
-        /// <summary>
-        /// Gets or sets the event timestamp (<see cref="EventData.Timestamp"/>).
-        /// </summary>
-        public DateTimeOffset? Timestamp { get; set; }
-
-        /// <summary>
-        /// Gets or sets the correlation identifier (<see cref="EventData.CorrelationId"/>).
-        /// </summary>
-        public string? CorrelationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the tenant identifier.
-        /// </summary>
-        public string? TenantId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the partition key.
-        /// </summary>
-        public string? PartitionKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the serialized <see cref="EventData"/> (see <see cref="IEventSerializer"/>).
-        /// </summary>
-        public BinaryData? EventData { get; set; }
+        public new BinaryData? Data { get => (BinaryData?)base.Data!; set => base.Data = value; }
     }
 }

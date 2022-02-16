@@ -33,13 +33,15 @@ BEGIN
     SELECT
         [EventOutboxDataId] as [EventOutboxId],
         [EventId],
+        [Subject],
+        [Action],
         [Type],
         [Source],
         [Timestamp],
         [CorrelationId],
         [TenantId],
         [PartitionKey],
-        [EventData]
+        [Data]
       FROM [NTangle].[EventOutboxData]
       WHERE [EventOutboxDataId] IN (SELECT [EventOutboxId] FROM @dequeuedId)
 

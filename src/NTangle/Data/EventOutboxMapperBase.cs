@@ -65,44 +65,53 @@ namespace NTangle.Data
         /// Dequeues the <see cref="EventOutbox"/> list.
         /// </summary>
         /// <param name="db">The <see cref="IDatabase"/>.</param>
-        /// <param name="maxDequeueSize">The maximum number of events to dequeue.</param>
+        /// <param name="maxDequeueSize">The maximum number of events to dequeue; defaults to 50.</param>
         /// <param name="partitionKey">The partition key.</param>
         /// <returns>The dequeued <see cref="EventOutbox"/> list.</returns>
         /// <remarks>This should be invoked within the context of a <see cref="IDbTransaction"/> and only committed where the underlying processing of the resulting events has occured successfully to guarantee no message loss.</remarks>
-        public async Task<IEnumerable<EventOutbox>> DequeueAsync(IDatabase db, int maxDequeueSize = 10, string? partitionKey = null) => await (db ?? throw new ArgumentNullException(nameof(db)))
-            .StoredProcedure(DequeueStoredProcedure, p => p.Param("@MaxDequeueSize", maxDequeueSize <= 0 ? 10 : maxDequeueSize).Param("@PartitionKey", partitionKey))
+        public async Task<IEnumerable<EventOutbox>> DequeueAsync(IDatabase db, int maxDequeueSize = 50, string? partitionKey = null) => await (db ?? throw new ArgumentNullException(nameof(db)))
+            .StoredProcedure(DequeueStoredProcedure, p => p.Param("@MaxDequeueSize", maxDequeueSize <= 0 ? 50 : maxDequeueSize).Param("@PartitionKey", partitionKey))
             .SelectAsync(this).ConfigureAwait(false);
 
         /// <inheritdoc/>
-        public EventOutbox MapFromDb(DatabaseRecord record) => new()
+        public EventOutbox MapFromDb(DatabaseRecord record)
         {
-            Id = record.GetValue<string?>(eventIdName),
-            Type = record.GetValue<string?>(nameof(EventOutbox.Type)),
-            Source = record.GetValue<string?>(nameof(EventOutbox.Source)),
-            Timestamp = record.GetValue<DateTimeOffset>(nameof(EventOutbox.Timestamp)),
-            CorrelationId = record.GetValue<string?>(nameof(EventOutbox.CorrelationId)),
-            TenantId = record.GetValue<string?>(nameof(EventOutbox.TenantId)),
-            PartitionKey = record.GetValue<string?>(nameof(EventOutbox.PartitionKey)),
-            EventData = new BinaryData(record.GetValue<byte[]>(nameof(EventOutbox.EventData)))
-        };
+            var source = record.GetValue<string?>(nameof(EventData.Source));
+
+            return new()
+            {
+                Id = record.GetValue<string?>(eventIdName),
+                Subject = record.GetValue<string?>(nameof(EventData.Subject)),
+                Action = record.GetValue<string?>(nameof(EventData.Action)),
+                Type = record.GetValue<string?>(nameof(EventData.Type)),
+                Source = string.IsNullOrEmpty(source) ? null : new Uri(source, UriKind.RelativeOrAbsolute),
+                Timestamp = record.GetValue<DateTimeOffset>(nameof(EventData.Timestamp)),
+                CorrelationId = record.GetValue<string?>(nameof(EventData.CorrelationId)),
+                TenantId = record.GetValue<string?>(nameof(EventData.TenantId)),
+                PartitionKey = record.GetValue<string?>(nameof(EventData.PartitionKey)),
+                Data = new BinaryData(record.GetValue<byte[]>(nameof(EventData.Data)))
+            };
+        }
 
         /// <inheritdoc/>
         public TableValuedParameter CreateTableValuedParameter(IEnumerable<EventOutbox> list)
         {
             var dt = new DataTable();
             dt.Columns.Add(eventIdName, typeof(string));
-            dt.Columns.Add(nameof(EventOutbox.Type), typeof(string));
-            dt.Columns.Add(nameof(EventOutbox.Source), typeof(string));
-            dt.Columns.Add(nameof(EventOutbox.Timestamp), typeof(DateTimeOffset));
-            dt.Columns.Add(nameof(EventOutbox.CorrelationId), typeof(string));
-            dt.Columns.Add(nameof(EventOutbox.TenantId), typeof(string));
-            dt.Columns.Add(nameof(EventOutbox.PartitionKey), typeof(string));
-            dt.Columns.Add(nameof(EventOutbox.EventData), typeof(byte[]));
+            dt.Columns.Add(nameof(EventData.Subject), typeof(string));
+            dt.Columns.Add(nameof(EventData.Action), typeof(string));
+            dt.Columns.Add(nameof(EventData.Type), typeof(string));
+            dt.Columns.Add(nameof(EventData.Source), typeof(string));
+            dt.Columns.Add(nameof(EventData.Timestamp), typeof(DateTimeOffset));
+            dt.Columns.Add(nameof(EventData.CorrelationId), typeof(string));
+            dt.Columns.Add(nameof(EventData.TenantId), typeof(string));
+            dt.Columns.Add(nameof(EventData.PartitionKey), typeof(string));
+            dt.Columns.Add(nameof(EventData.Data), typeof(byte[]));
 
             var tvp = new TableValuedParameter(DbTypeName, dt);
             foreach (var item in list)
             {
-                tvp.AddRow(item.Id, item.Type, item.Source, item.Timestamp, item.CorrelationId, item.TenantId, item.PartitionKey ?? DefaultPartitionKey, item.EventData?.ToArray());
+                tvp.AddRow(item.Id, item.Subject, item.Action, item.Type, item.Source, item.Timestamp, item.CorrelationId, item.TenantId, item.PartitionKey ?? DefaultPartitionKey, item.Data?.ToArray());
             }
 
             return tvp;

@@ -4,11 +4,13 @@ CREATE TYPE [NTangle].[udtEventOutboxList] AS TABLE (
    */
 
   [EventId] NVARCHAR(128),
+  [Subject] NVARCHAR(512) NULL,
+  [Action] NVARCHAR(256) NULL,
   [Type] NVARCHAR(1024) NULL,
   [Source] NVARCHAR(1024) NULL,
   [Timestamp] DATETIMEOFFSET,
   [CorrelationId] NVARCHAR(128),
   [TenantId] NVARCHAR(128),
   [PartitionKey] NVARCHAR(128),
-  [EventData] VARBINARY(MAX) NULL
+  [Data] VARBINARY(MAX) NULL
 )
