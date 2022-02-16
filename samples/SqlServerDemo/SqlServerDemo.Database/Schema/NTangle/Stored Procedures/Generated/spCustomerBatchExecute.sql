@@ -142,7 +142,7 @@ BEGIN
     SELECT
         [_chg].[_Op] AS [_OperationType],
         [_chg].[_Lsn] AS [_Lsn],
-        [_ct].[Hash] AS [_TrackingHash],
+        [_vt].[Hash] AS [_TrackingHash],
         [_chg].[CustId] AS [Id],
         [c].[CustId] AS [TableKey_Id],
         [c].[Name] AS [Name],
@@ -151,7 +151,7 @@ BEGIN
         [c].[RowVersion] AS [RowVersion]
       FROM #_changes AS [_chg]
       LEFT OUTER JOIN [Legacy].[Cust] AS [c] ON ([c].[CustId] = [_chg].[CustId])
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_ct] ON ([_ct].[Schema] = 'Legacy' AND [_ct].[Table] = 'Customer' AND [_ct].[Key] = CAST([_chg].[CustId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Object] = 'Legacy_Customer' AND [_vt].[Key] = CAST([_chg].[CustId] AS NVARCHAR(128)))
       ORDER BY [_Lsn] ASC
 
     -- Commit the transaction.

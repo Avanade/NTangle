@@ -7,8 +7,35 @@ namespace NTangle.Events
     /// <summary>
     /// Represents the core event data.
     /// </summary>
-    public class EventData : IPrimaryKey, ITenantId, IPartitionKey
+    public class EventData : IIdentifier<string?>, ITenantId, IPartitionKey
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventData"/> class.
+        /// </summary>
+        public EventData() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventData"/> class copying from another <paramref name="event"/> excluding the underlying <see cref="Data"/> (which must be set explicitly).
+        /// </summary>
+        public EventData(EventData @event)
+        {
+            Id = (@event ?? throw new ArgumentNullException(nameof(@event))).Id;
+            Subject = @event.Subject;
+            Action = @event.Action;
+            Type = @event.Type;
+            Source = @event.Source;
+            Timestamp = @event.Timestamp;
+            CorrelationId = @event.CorrelationId;
+            TenantId = @event.TenantId;
+            PartitionKey = @event.PartitionKey; 
+        }
+
+        /// <summary>
+        /// Gets or sets the unique event identifier.
+        /// </summary>
+        /// <remarks>Defaults to the <see cref="string"/> representation of a <see cref="Guid.NewGuid"/>.</remarks>
+        public string? Id { get; set; } = Guid.NewGuid().ToString();
+
         /// <summary>
         /// Gets or sets the event subject.
         /// </summary>
@@ -34,12 +61,6 @@ namespace NTangle.Events
         public Uri? Source { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique event identifier.
-        /// </summary>
-        /// <remarks>Defaults to the <see cref="string"/> representation of a <see cref="Guid.NewGuid"/>.</remarks>
-        public string? Id { get; set; } = Guid.NewGuid().ToString();
-
-        /// <summary>
         /// Gets or sets the event timestamp.
         /// </summary>
         /// <remarks>Defaults to <see cref="DateTimeOffset.UtcNow"/>.</remarks>
@@ -61,13 +82,20 @@ namespace NTangle.Events
         public string? PartitionKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary key.
+        /// Gets or sets the underlying data.
         /// </summary>
-        public CompositeKey PrimaryKey { get; set; }
+        public object? Data { get; set; }
+    }
 
+    /// <summary>
+    /// Represents the typed event data.
+    /// </summary>
+    /// <typeparam name="T">The <see cref="Data"/> <see cref="Type"/>.</typeparam>
+    public class EventData<T> : EventData
+    {
         /// <summary>
         /// Gets or sets the event data.
         /// </summary>
-        public object? Data { get; set; }
+        public new T Data { get => (T)base.Data!; set => base.Data = value; }
     }
 }

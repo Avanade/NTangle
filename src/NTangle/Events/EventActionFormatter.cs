@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
 using OnRamp.Utility;
-using System;
 
 namespace NTangle.Events
 {

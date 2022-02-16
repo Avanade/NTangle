@@ -384,6 +384,11 @@ namespace NTangle.Config
         public bool UsesGlobalIdentifier { get; private set; }
 
         /// <summary>
+        /// Gets the identifier column - single primary key column with alias of 'ID'.
+        /// </summary>
+        public ColumnConfig? IdentifierColumn { get; private set; }
+
+        /// <summary>
         /// Gets the list of properties to exlcude from the ETag.
         /// </summary>
         public List<string> ExcludePropertiesFromETag { get; set; } = new List<string>();
@@ -523,6 +528,9 @@ namespace NTangle.Config
 
             await PrepareCtorParams();
             await PrepareJoins();
+
+            if (PrimaryKeyColumns.Count == 1 && PrimaryKeyColumns[0].NameAlias == "Id")
+                IdentifierColumn = PrimaryKeyColumns[0];
 
             UsesGlobalIdentifier = IdentifierMapping == true || Mappings!.Count > 0 || Joins.Any(x => x.IdentifierMapping == true || (x.Mappings!.Count > 0));
             SetUpExcludePropertiesFromETag();
