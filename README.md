@@ -156,7 +156,7 @@ Sample | Description
 
 ## License
 
-_OnRamp_ is open source under the [MIT license](./LICENSE) and is free for commercial use.
+_nTangle_ is open source under the [MIT license](./LICENSE) and is free for commercial use.
 
 <br/>
 
