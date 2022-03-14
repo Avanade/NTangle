@@ -49,7 +49,7 @@ jobs:
     - name: Test
       run: dotnet test /p:CollectCoverage=true /p:Exclude="[SqlServerDemo]*" /p:CoverletOutputFormat=lcov /p:CoverletOutput=./coverage/lcov.info --no-build --verbosity normal
 
-    ∂- name: Coveralls
+    - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
