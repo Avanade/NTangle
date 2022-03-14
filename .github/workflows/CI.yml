@@ -47,7 +47,7 @@ jobs:
       run: echo "SqlServerDemo_ConnectionStrings__SqlDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo;User id=sa;Password=yourStrong(!)Password;TrustServerCertificate=true" >> $GITHUB_ENV
 
     - name: Test
-      run: dotnet test /p:CollectCoverage=true /p:Exclude="[SqlServerDemo]*" /p:CoverletOutputFormat=lcov /p:CoverletOutput=./coverage/lcov.info --no-build --verbosity normal
+      run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./coverage/lcov.info --no-build --verbosity normal
 
     - name: Coveralls
       uses: coverallsapp/github-action@master
