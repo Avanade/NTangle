@@ -50,7 +50,7 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: /samples/SqlServerDemo/SqlServerDemo.Test/coverage/lcov.info
+        path-to-lcov: ./samples/SqlServerDemo/SqlServerDemo.Test/coverage/lcov.info
 
     - name: Run code-gen for samples (expect no changes)
       run: ./samples/SqlServerDemo/SqlServerDemo.CodeGen/bin/Debug/netcoreapp3.1/SqlServerDemo.CodeGen -cv SqlServerDemo_ConnectionStrings__SqlDb -c ./samples/SqlServerDemo/SqlServerDemo.CodeGen/ntangle.yaml -o ./samples/SqlServerDemo --expect-no-changes
