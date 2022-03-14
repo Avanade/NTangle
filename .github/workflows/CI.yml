@@ -46,16 +46,11 @@ jobs:
     - name: Test
       run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./coverage/lcov.info --no-build --verbosity normal
 
-    - name: Path
-      run: ls -lR
-
-    - name: Lcov
-      run: find . -name lcov.info
-
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ./tests/NTangle.Test/coverage/lcov.info
 
     - name: Run code-gen for samples (expect no changes)
       run: ./samples/SqlServerDemo/SqlServerDemo.CodeGen/bin/Debug/netcoreapp3.1/SqlServerDemo.CodeGen -cv SqlServerDemo_ConnectionStrings__SqlDb -c ./samples/SqlServerDemo/SqlServerDemo.CodeGen/ntangle.yaml -o ./samples/SqlServerDemo --expect-no-changes
