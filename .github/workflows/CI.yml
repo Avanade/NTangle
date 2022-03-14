@@ -25,9 +25,6 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
 
-    - name: Path
-      run: ls -lR
-
     - name: Pull SqlServer
       run: docker pull mcr.microsoft.com/mssql/server
       
@@ -48,6 +45,12 @@ jobs:
 
     - name: Test
       run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./coverage/lcov.info --no-build --verbosity normal
+
+    - name: Path
+      run: ls -lR
+
+    - name: Lcov
+      run: find . -name lcov.info
 
     - name: Coveralls
       uses: coverallsapp/github-action@master
