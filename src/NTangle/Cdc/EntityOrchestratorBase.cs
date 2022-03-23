@@ -261,8 +261,8 @@ namespace NTangle.Cdc
             foreach (var grp in result.Result.GroupBy(x => new { x.PrimaryKey }))
             {
                 // Find delete and use.
-                var item = grp.Where(x => x.DatabaseOperationType == OperationType.Delete).FirstOrDefault();
-                if (item != null && grp.Any(x => x.DatabaseOperationType == OperationType.Create))
+                var item = grp.Where(x => x.DatabaseOperationType == CdcOperationType.Delete).FirstOrDefault();
+                if (item != null && grp.Any(x => x.DatabaseOperationType == CdcOperationType.Create))
                     continue;  // Created and deleted in quick succession; no need to publish.
 
                 // Where there is no delete then just use the first.
@@ -278,7 +278,7 @@ namespace NTangle.Cdc
                 // Where supports logical delete and IsDeleted, then override DatabaseOperationType.
                 if (item is ILogicallyDeleted ld && ld.IsDeleted.HasValue && ld.IsDeleted.Value)
                 {
-                    item.DatabaseOperationType = OperationType.Delete;
+                    item.DatabaseOperationType = CdcOperationType.Delete;
                     ld.ClearWhereDeleted();
                 }
 
@@ -405,8 +405,8 @@ namespace NTangle.Cdc
 
                 switch (item.DatabaseOperationType)
                 {
-                    case OperationType.Delete:
-                        events.Add(CreateEvent(item, OperationType.Delete, correlationId));
+                    case CdcOperationType.Delete:
+                        events.Add(CreateEvent(item, CdcOperationType.Delete, correlationId));
                         break;
 
                     default:
@@ -445,10 +445,10 @@ namespace NTangle.Cdc
         /// </summary>
         /// <typeparam name="T">The <paramref name="value"/> <see cref="Type"/>.</typeparam>
         /// <param name="value">The value.</param>
-        /// <param name="operationType">The <see cref="OperationType"/> to infer the <see cref="EventData.Action"/>.</param>
+        /// <param name="operationType">The <see cref="CdcOperationType"/> to infer the <see cref="EventData.Action"/>.</param>
         /// <param name="correlationId">The correlarion identifier.</param>
         /// <returns>The <see cref="EventData"/>.</returns>
-        protected virtual EventData CreateEvent<T>(T value, OperationType operationType, string? correlationId) where T : IPrimaryKey
+        protected virtual EventData CreateEvent<T>(T value, CdcOperationType operationType, string? correlationId) where T : IPrimaryKey
         {
             var ed = new EventData<T>
             {

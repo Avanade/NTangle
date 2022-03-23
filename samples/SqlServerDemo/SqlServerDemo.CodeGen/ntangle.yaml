@@ -86,6 +86,6 @@ tables:
   # RowVersion column will be excluded as per root config.
 - { name: Customer, table: Cust, aliasColumns: [ CustId^Id ], isDeletedColumn: is-deleted, excludeColumns: [ internal-secret, is-private ],
     where: [
-      { name: is-private, nullable: ISNULL, value: 0 }
+      { name: is-private, nullable: ISNULL, value: '0' }
     ]
   }

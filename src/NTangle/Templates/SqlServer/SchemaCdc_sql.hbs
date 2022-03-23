@@ -1,2 +1,5 @@
 ﻿{{! Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle }}
-CREATE SCHEMA [{{CdcSchema}}]
+IF NOT EXISTS (SELECT name FROM sys.schemas WHERE name = N'{{CdcSchema}}')
+BEGIN
+  CREATE SCHEMA [{{CdcSchema}}]
+END

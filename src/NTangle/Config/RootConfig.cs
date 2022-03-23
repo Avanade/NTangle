@@ -230,8 +230,16 @@ namespace NTangle.Config
         /// </summary>
         [JsonProperty("outboxSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Outbox", Title = "The schema name of the event outbox table.",
-            Description = "Defaults to `CdcSchema`.")]
+            Description = "Defaults to `Outbox` (literal).")]
         public string? OutboxSchema { get; set; }
+
+        /// <summary>
+        /// Indicates whether to create the `Outbox`-Schema within the database.
+        /// </summary>
+        [JsonProperty("cdcSchemaCreate", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Key", Title = "Indicates whether to create the CDC Schema within the database.",
+            Description = "Defaults to `false`.")]
+        public bool? OutboxSchemaCreate { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the event outbox table.
@@ -406,7 +414,8 @@ namespace NTangle.Config
             EventSourceFormat = DefaultWhereNull(EventSubjectFormat, () => "NameAndTableKey");
             EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => "NameOnly");
             EventActionFormat = DefaultWhereNull(EventActionFormat, () => "PastTense");
-            OutboxSchema = DefaultWhereNull(OutboxSchema, () => CdcSchema);
+            OutboxSchema = DefaultWhereNull(OutboxSchema, () => "Outbox");
+            OutboxSchemaCreate = DefaultWhereNull(OutboxSchemaCreate, () => false);
             OutboxTable = DefaultWhereNull(OutboxTable, () => "EventOutbox");
             OutboxEnqueueStoredProcedure = DefaultWhereNull(OutboxEnqueueStoredProcedure, () => $"sp{OutboxTable}Enqueue");
             OutboxDequeueStoredProcedure = DefaultWhereNull(OutboxDequeueStoredProcedure, () => $"sp{OutboxTable}Dequeue");
@@ -438,8 +447,8 @@ namespace NTangle.Config
             DbTables = await db.SelectSchemaAsync().ConfigureAwait(false);
 
             sw.Stop();
-            CodeGenArgs.Logger?.Log(LogLevel.Information, $"    Database schema query complete [{sw.ElapsedMilliseconds}ms]");
-            CodeGenArgs.Logger?.Log(LogLevel.Information, string.Empty);
+            CodeGenArgs.Logger?.Log(LogLevel.Information, "{Content}", $"    Database schema query complete [{sw.ElapsedMilliseconds}ms]");
+            CodeGenArgs.Logger?.Log(LogLevel.Information, "{Content}", string.Empty);
         }
 
         /// <summary>

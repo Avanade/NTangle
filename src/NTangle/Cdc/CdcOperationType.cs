@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-namespace NTangle
+namespace NTangle.Cdc
 {
     /// <summary>
-    /// Represents the possible operations types.
+    /// Represents the possible CDC operations types.
     /// </summary>
     /// <remarks>The values are as per the SQL Server CDC '<c>__$operation</c>', see <see href="https://docs.microsoft.com/en-us/sql/relational-databases/system-functions/cdc-fn-cdc-get-all-changes-capture-instance-transact-sql"/>.</remarks>
-    public enum OperationType
+    public enum CdcOperationType
     {
         /// <summary>
         /// An unknown/unspecified operation type.

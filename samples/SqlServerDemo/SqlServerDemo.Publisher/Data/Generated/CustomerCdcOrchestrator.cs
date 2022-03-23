@@ -79,7 +79,7 @@ namespace SqlServerDemo.Publisher.Data
         public class CustomerCdcEnvelope : CustomerCdc, IEntityEnvelope
         {
             /// <inheritdoc/>
-            public OperationType DatabaseOperationType { get; set; }
+            public CdcOperationType DatabaseOperationType { get; set; }
 
             /// <inheritdoc/>
             public string? DatabaseTrackingHash { get; set; }
@@ -106,7 +106,7 @@ namespace SqlServerDemo.Publisher.Data
                 Email = record.GetValue<string?>("Email"),
                 IsDeleted = record.GetValue<bool?>("IsDeleted"),
                 RowVersion = record.GetValue<byte[]?>("RowVersion"),
-                DatabaseOperationType = record.GetValue<OperationType>("_OperationType"),
+                DatabaseOperationType = record.GetValue<CdcOperationType>("_OperationType"),
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
             };

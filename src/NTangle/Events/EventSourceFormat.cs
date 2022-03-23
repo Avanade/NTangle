@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx.Events;
+
 namespace NTangle.Events
 {
     /// <summary>
-    /// Defines the <see cref="EventData.Source"/> format.
+    /// Defines the <see cref="EventDataBase.Source"/> format.
     /// </summary>
     public enum EventSourceFormat
     {

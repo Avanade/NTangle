@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>NTangle</RootNamespace>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>
     <Description>NTangle Change-Data-Capture tooling and framework.</Description>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <Copyright>Avanade (c)</Copyright>
     <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Avanade/NTangle</RepositoryUrl>
@@ -45,20 +45,13 @@
     <None Remove="Templates\EntityOrchestrator_cs.hbs" />
     <None Remove="Templates\Entity_cs.hbs" />
     <None Remove="Templates\IdentifierMappingMapper_cs.hb" />
-    <None Remove="Templates\OutboxDequeuePublisher_cs.hbs" />
     <None Remove="Templates\SchemaCdc_sql.hb" />
     <None Remove="Templates\ServiceCollectionExtensions_cs.hbs" />
     <None Remove="Templates\SpCompleteBatch_sql.hb" />
     <None Remove="Templates\SpExecuteBatch_sql.hb" />
     <None Remove="Templates\SpIdentifierMappingCreate_sql.hb" />
     <None Remove="Templates\SqlServer\CdcEnable_sql.hbs" />
-    <None Remove="Templates\SqlServer\EventOutboxMapper_cs.hbs" />
     <None Remove="Templates\SqlServer\OutboxEventPublisher_cs.hb" />
-    <None Remove="Templates\SqlServer\SpOutboxDequeue_sql.hbs" />
-    <None Remove="Templates\SqlServer\SpOutboxEnqueue_sql.hbs" />
-    <None Remove="Templates\SqlServer\TableEventOutboxData_sql.hbs" />
-    <None Remove="Templates\SqlServer\TableEventOutbox_sql.hbs" />
-    <None Remove="Templates\SqlServer\UdtEventOutbox_sql.hbs" />
     <None Remove="Templates\TableBatchTracking_sql.hb" />
     <None Remove="Templates\TableIdentifierMapping_sql.hb" />
     <None Remove="Templates\TableVersionTracking_sql.hb" />
@@ -73,39 +66,26 @@
     <EmbeddedResource Include="Scripts\SqlServerDatabase.yaml" />
     <EmbeddedResource Include="Templates\EntityHostedService_cs.hbs" />
     <EmbeddedResource Include="Templates\EntityOrchestrator_cs.hbs" />
-    <EmbeddedResource Include="Templates\OutboxDequeuePublisher_cs.hbs" />
     <EmbeddedResource Include="Templates\ServiceCollectionExtensions_cs.hbs" />
-    <EmbeddedResource Include="Templates\OutboxEventPublisher_cs.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\SchemaCdc_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\CdcEnable_sql.hbs" />
-    <EmbeddedResource Include="Templates\SqlServer\SpOutboxDequeue_sql.hbs" />
-    <EmbeddedResource Include="Templates\SqlServer\SpOutboxEnqueue_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\TableBatchTracking_sql.hbs" />
-    <EmbeddedResource Include="Templates\SqlServer\TableEventOutboxData_sql.hbs" />
-    <EmbeddedResource Include="Templates\SqlServer\TableEventOutbox_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\TableIdentifierMapping_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\TableVersionTracking_sql.hbs" />
     <EmbeddedResource Include="Templates\Entity_cs.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\SpIdentifierMappingCreate_sql.hbs" />
-    <EmbeddedResource Include="Templates\SqlServer\UdtEventOutbox_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\UdtIdentifierMapping_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\SpCompleteBatch_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\SpExecuteBatch_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\UdtVersionTracking_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\IdentifierMappingMapper_cs.hbs" />
-    <EmbeddedResource Include="Templates\SqlServer\EventOutboxMapper_cs.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\VersionTrackingMapper_cs.hbs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CloudNative.CloudEvents" Version="2.1.1" />
-    <PackageReference Include="CloudNative.CloudEvents.NewtonsoftJson" Version="2.1.1" />
-    <PackageReference Include="DbEx" Version="1.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.21" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.21" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.21" />
-    <PackageReference Include="OnRamp" Version="1.0.4" />
-    <PackageReference Include="System.Memory.Data" Version="1.0.2" />
+    <PackageReference Include="CoreEx" Version="1.0.2" />
+    <PackageReference Include="DbEx" Version="1.0.3" />
+    <PackageReference Include="OnRamp" Version="1.0.5" />
   </ItemGroup>
 
   <ItemGroup>

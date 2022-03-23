@@ -1,9 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CoreEx.Json;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NTangle.Cdc;
-using NTangle.Utility;
 using NUnit.Framework;
 using System;
 using System.IO;
@@ -98,8 +96,9 @@ namespace NTangle.Test
         /// <param name="exclude">The properties to exclude from the comparison.</param>
         public static void AssertEvent(string expected, BinaryData binaryData, params string[] exclude)
         {
-            var jt = JToken.Parse(binaryData.ToString());
-            JsonPropertyFilter.JsonApply(jt, null, new string[] { "id", "time", "correlationid", "data.etag" }.Concat(exclude));
+            new CoreEx.Text.Json.JsonSerializer().Deserialize
+            JsonSerializer.Default.TryApplyFilter(binaryData.ToString(), )
+            JsonPropertyFilter(jt, null, new string[] { "id", "time", "correlationid", "data.etag" }.Concat(exclude));
             var txt = jt.ToString(Formatting.Indented);
 
             var exp = File.ReadAllText(Path.Combine("Expected", expected));

@@ -87,7 +87,7 @@ namespace SqlServerDemo.Publisher.Data
         public class ContactCdcEnvelope : ContactCdc, IEntityEnvelope
         {
             /// <inheritdoc/>
-            public OperationType DatabaseOperationType { get; set; }
+            public CdcOperationType DatabaseOperationType { get; set; }
 
             /// <inheritdoc/>
             public string? DatabaseTrackingHash { get; set; }
@@ -120,7 +120,7 @@ namespace SqlServerDemo.Publisher.Data
                 AlternateContactId = record.GetValue<int?>("AlternateContactId"),
                 GlobalAlternateContactId = record.GetValue<string?>("GlobalAlternateContactId"),
                 UniqueId = record.GetValue<Guid>("UniqueId"),
-                DatabaseOperationType = record.GetValue<OperationType>("_OperationType"),
+                DatabaseOperationType = record.GetValue<CdcOperationType>("_OperationType"),
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
             };

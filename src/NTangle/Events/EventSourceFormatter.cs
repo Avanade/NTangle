@@ -33,6 +33,6 @@ namespace NTangle.Events
         /// <summary>
         /// Create new extended URI.
         /// </summary>
-        private static Uri CreateUri(Uri source, string path) => new Uri($"{source.OriginalString}/{path}", source.IsAbsoluteUri ? UriKind.Absolute : UriKind.Relative);
+        private static Uri CreateUri(Uri source, string path) => new($"{source.OriginalString}/{path}", source.IsAbsoluteUri ? UriKind.Absolute : UriKind.Relative);
     }
 }

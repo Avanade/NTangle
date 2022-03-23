@@ -110,7 +110,7 @@ namespace SqlServerDemo.Publisher.Data
         public class PostCdcEnvelope : PostCdc, IEntityEnvelope
         {
             /// <inheritdoc/>
-            public OperationType DatabaseOperationType { get; set; }
+            public CdcOperationType DatabaseOperationType { get; set; }
 
             /// <inheritdoc/>
             public string? DatabaseTrackingHash { get; set; }
@@ -135,7 +135,7 @@ namespace SqlServerDemo.Publisher.Data
                 PostsId = record.GetValue<int>("PostsId"),
                 Text = record.GetValue<string?>("Text"),
                 Date = record.GetValue<DateTime?>("Date"),
-                DatabaseOperationType = record.GetValue<OperationType>("_OperationType"),
+                DatabaseOperationType = record.GetValue<CdcOperationType>("_OperationType"),
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
             };

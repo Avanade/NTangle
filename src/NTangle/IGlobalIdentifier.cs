@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-#nullable disable
-
+using CoreEx.Entities;
 using System;
 
 namespace NTangle
@@ -32,7 +31,7 @@ namespace NTangle
         /// <summary>
         /// Gets or sets the global identifier.
         /// </summary>
-        object IGlobalIdentifier.GlobalId { get => GlobalId; set => GlobalId = (T)value; }
+        object IGlobalIdentifier.GlobalId { get => GlobalId!; set => GlobalId = (T)value; }
 
         /// <summary>
         /// Gets or sets the global identifier.
@@ -40,5 +39,3 @@ namespace NTangle
         new T GlobalId { get; set; }
     }
 }
-
-#nullable restore
