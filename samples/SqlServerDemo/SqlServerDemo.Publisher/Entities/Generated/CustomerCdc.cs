@@ -5,52 +5,52 @@
 #nullable enable
 #pragma warning disable
 
-using Newtonsoft.Json;
+using CoreEx.Entities;
 using NTangle;
 using NTangle.Cdc;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace SqlServerDemo.Publisher.Entities
 {
     /// <summary>
     /// Represents the CDC model for the root (parent) database table '[Legacy].[Customer]'.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public partial class CustomerCdc : IEntity, IIdentifier<int>, ILogicallyDeleted
+    public partial class CustomerCdc : IEntity, IIdentifier<int>, ILogicallyDeletedExtended
     {
         /// <summary>
         /// Gets or sets the Id '[Legacy].[Customer].[CustId]' column value.
         /// </summary>
-        [JsonProperty("id", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("id")]
         public int Id { get; set; }
 
         /// <summary>
         /// Gets or sets the Name '[Legacy].[Customer].[Name]' column value.
         /// </summary>
-        [JsonProperty("name", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("name")]
         public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the Email '[Legacy].[Customer].[Email]' column value.
         /// </summary>
-        [JsonProperty("email", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("email")]
         public string? Email { get; set; }
 
         /// <summary>
         /// Gets or sets the Is Deleted '[Legacy].[Customer].[is-deleted]' column value.
         /// </summary>
-        [JsonProperty("isDeleted", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("isDeleted")]
         public bool? IsDeleted { get; set; }
 
         /// <summary>
         /// Gets or sets the Row Version '[Legacy].[Customer].[RowVersion]' column value.
         /// </summary>
-        [JsonProperty("rowVersion", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("rowVersion")]
         public byte[]? RowVersion { get; set; }
 
         /// <inheritdoc/>
-        [JsonProperty("etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("etag")]
         public string? ETag { get; set; }
 
         /// <inheritdoc/>
@@ -66,6 +66,7 @@ namespace SqlServerDemo.Publisher.Entities
         }
 
         /// <inheritdoc/>
+        [JsonIgnore]
         public CompositeKey PrimaryKey => new CompositeKey(Id);
     }
 }

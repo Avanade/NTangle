@@ -149,8 +149,8 @@ namespace NTangle.Config
         /// Get or sets the JSON Serializer to use for JSON property attribution.
         /// </summary>
         [JsonProperty("jsonSerializer", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("CDC", Title = "The JSON Serializer to use for JSON property attribution.", Options = new string[] { "Newtonsoft" },
-            Description = "Defaults to `Newtonsoft`.")]
+        [CodeGenProperty("CDC", Title = "The JSON Serializer to use for JSON property attribution.", Options = new string[] { "SystemText", "Newtonsoft" },
+            Description = "Defaults to `SystemText`.")]
         public string? JsonSerializer { get; set; }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace NTangle.Config
         /// <summary>
         /// Indicates whether to create the `Outbox`-Schema within the database.
         /// </summary>
-        [JsonProperty("cdcSchemaCreate", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("outboxSchemaCreate", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Key", Title = "Indicates whether to create the CDC Schema within the database.",
             Description = "Defaults to `false`.")]
         public bool? OutboxSchemaCreate { get; set; }
@@ -329,6 +329,14 @@ namespace NTangle.Config
             Description = "Defaults to `NamespaceBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.")]
         public string? NamespacePublisher { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Namespace (root) for the outbox-related .NET artefacts.
+        /// </summary>
+        [JsonProperty("namespaceOutbox", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Namespace", Title = "The Namespace (root) for the outbox-related publisher .NET artefacts.",
+            Description = "Defaults to `NamespacePublisher`.")]
+        public string? NamespaceOutbox { get; set; }
+
         #endregion
 
         #region Collections
@@ -379,7 +387,7 @@ namespace NTangle.Config
             "Int" => "INT",
             "Long" => "BIGINT",
             "Guid" => "UNIQUEIDENTIFIER",
-            _ => "NVARCHAR(128)"
+            _ => "NVARCHAR(127)"
         };
 
         /// <summary>
@@ -408,7 +416,7 @@ namespace NTangle.Config
             IdentifierMappingStoredProcedure = DefaultWhereNull(IdentifierMappingStoredProcedure, () => "spIdentifierMappingCreate");
             IsDeletedColumn = DefaultWhereNull(IsDeletedColumn, () => "IsDeleted");
             AutoDotNetRename = DefaultWhereNull(AutoDotNetRename, () => "SnakeKebabToPascalCase");
-            JsonSerializer = DefaultWhereNull(JsonSerializer, () => "Newtonsoft");
+            JsonSerializer = DefaultWhereNull(JsonSerializer, () => "SystemText");
             Service = DefaultWhereNull(Service, () => "None");
             EventSourceKind = DefaultWhereNull(EventSubjectFormat, () => "Relative");
             EventSourceFormat = DefaultWhereNull(EventSubjectFormat, () => "NameAndTableKey");
@@ -426,6 +434,7 @@ namespace NTangle.Config
             PathDotNetPublisher = DefaultWhereNull(PathDotNetPublisher, () => $"{PathBase}.Publisher");
             NamespaceBase = DefaultWhereNull(NamespaceBase, () => AppName);
             NamespacePublisher = DefaultWhereNull(NamespacePublisher, () => $"{NamespaceBase}.Publisher");
+            NamespaceOutbox = DefaultWhereNull(NamespaceOutbox, () => NamespacePublisher);
 
             Tables = await PrepareCollectionAsync(Tables).ConfigureAwait(false);
         }

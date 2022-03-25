@@ -1,4 +1,7 @@
-﻿#if (implement_dbprovider_sqlserver)
+﻿using CoreEx.Configuration;
+using CoreEx.Events;
+using DbEx;
+#if (implement_dbprovider_sqlserver)
 using Microsoft.Data.SqlClient;
 #endif
 using Microsoft.Extensions.Configuration;
@@ -9,7 +12,7 @@ using NTangle;
 #if (implement_dbprovider_sqlserver)
 using NTangle.Data.SqlServer;
 #endif
-using NTangle.Events;
+using AppName.Publisher.Data;
 
 namespace AppName.Publisher
 {
@@ -31,16 +34,26 @@ namespace AppName.Publisher
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddLogging(configure => configure.AddConsole())
+                    var settings = new DefaultSettings(hostContext.Configuration);
+
+                    services.AddDefaultSettings()
+                            .AddLogging(configure => configure.AddConsole())
 #if (implement_dbprovider_sqlserver)
                             .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(hostContext.Configuration.GetConnectionString("SqlDb"))))
 #endif
+                            .AddJsonSerializer();
+
+                    // Adds the EventPublisher, which will use the default EventDataFormatter, with CloudEventSerializer and EventOutbox enqueue as sender.
+                    services.AddEventPublisher()
+                            .AddEventDataFormatter()
                             .AddCloudEventSerializer()
-                            .AddFileLockSynchronizer()
-                            .AddGeneratedOutboxEventPublishing()
+                            .AddGeneratedEventOutboxSender();
+
+                    // Adds the CDC-hosted service(s) including orchestrator services, and specified EventOutbox dequeue/send service.
+                    services.AddGeneratedCdcHostedServices(settings)
+                            .AddEventOutboxHostedService(settings, sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), new LoggerEventSender(sp.GetRequiredService<ILogger<LoggerEventSender>>()), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()))
                             .AddGeneratedOrchestratorServices()
-                            .AddGeneratedHostedServices(hostContext.Configuration)
-                            .AddOutboxDequeueHostedService<LoggerEventPublisher>(hostContext.Configuration);
+                            .AddFileLockSynchronizer();
                 });
     }
 }

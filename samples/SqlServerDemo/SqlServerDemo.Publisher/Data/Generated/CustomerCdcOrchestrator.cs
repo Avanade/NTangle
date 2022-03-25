@@ -5,6 +5,10 @@
 #nullable enable
 #pragma warning disable
 
+using CoreEx;
+using CoreEx.Entities;
+using CoreEx.Events;
+using CoreEx.Json;
 using DbEx;
 using Microsoft.Extensions.Logging;
 using NTangle;
@@ -14,6 +18,7 @@ using NTangle.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using SqlServerDemo.Publisher.Entities;
 
@@ -35,10 +40,11 @@ namespace SqlServerDemo.Publisher.Data
         /// Initializes a new instance of the <see cref="CustomerCdcOrchestrator"/> class.
         /// </summary>
         /// <param name="db">The <see cref="IDatabase"/>.</param>
-        /// <param name="evtPub">The <see cref="IEventPublisher"/>.</param>
+        /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
+        /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        public CustomerCdcOrchestrator(IDatabase db, IEventPublisher evtPub, ILogger<CustomerCdcOrchestrator> logger) :
-            base(db, "[NTangle].[spCustomerBatchExecute]", "[NTangle].[spCustomerBatchComplete]", evtPub, logger) => CustomerCdcOrchestratorCtor();
+        public CustomerCdcOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger<CustomerCdcOrchestrator> logger) :
+            base(db, "[NTangle].[spCustomerBatchExecute]", "[NTangle].[spCustomerBatchComplete]", eventPublisher, jsonSerializer, logger) => CustomerCdcOrchestratorCtor();
 
         partial void CustomerCdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
@@ -79,12 +85,15 @@ namespace SqlServerDemo.Publisher.Data
         public class CustomerCdcEnvelope : CustomerCdc, IEntityEnvelope
         {
             /// <inheritdoc/>
+            [JsonIgnore]
             public CdcOperationType DatabaseOperationType { get; set; }
 
             /// <inheritdoc/>
+            [JsonIgnore]
             public string? DatabaseTrackingHash { get; set; }
 
             /// <inheritdoc/>
+            [JsonIgnore]
             public byte[] DatabaseLsn { get; set; }
         }
 

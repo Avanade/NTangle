@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using Microsoft.Extensions.Configuration;
+using CoreEx.Configuration;
+using CoreEx.Hosting;
+using DbEx.SqlServer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NTangle.Cdc;
-using NTangle.Data;
-using NTangle.Events;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,12 +13,11 @@ using System.Threading.Tasks;
 namespace NTangle.Services
 {
     /// <summary>
-    /// Provides the base <see cref="EventOutbox"/> dequeue and publish <see cref="TimerHostedServiceBase"/> capabilities.
+    /// Provides the <see cref="EventOutboxDequeueBase"/> dequeue and publish <see cref="SynchronizedTimerHostedServiceBase{TSync}"/> capabilities.
     /// </summary>
-    /// <remarks>This will instantiate an <see cref="IOutboxDequeuePublisher"/> and invoke <see cref="IOutboxDequeuePublisher.DequeueAndPublishAsync(int, string?, CancellationToken)"/>.</remarks>
-    public sealed class OutboxDequeueHostedService : TimerHostedServiceBase
+    /// <remarks>This will instantiate an <see cref="EventOutboxDequeueBase"/> using the underlying <see cref="ServiceProvider"/> and invoke <see cref="EventOutboxDequeueBase.DequeueAndSendAsync(int, string?, string?, CancellationToken)"/>.</remarks>
+    public sealed class EventOutboxHostedService : SynchronizedTimerHostedServiceBase<EventOutboxHostedService>
     {
-        private readonly IServiceSynchronizer _synchronizer;
         private TimeSpan? _interval;
         private int? _maxQuerySize;
         private string? _name;
@@ -39,23 +38,33 @@ namespace NTangle.Services
         public static TimeSpan DefaultInterval { get; set; } = TimeSpan.FromSeconds(30);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HostedService"/> class.
+        /// Initializes a new instance of the <see cref="EventOutboxHostedService"/> class.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="config">The <see cref="IConfiguration"/>.</param>
+        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <param name="synchronizer">The <see cref="IServiceSynchronizer"/>.</param>
         /// <param name="partitionKey">The optional partition key.</param>
-        public OutboxDequeueHostedService(IServiceProvider serviceProvider, ILogger<OutboxDequeueHostedService> logger, IConfiguration config, IServiceSynchronizer synchronizer, string? partitionKey = null) : base(serviceProvider, logger, config)
+        /// <param name="destination">The optional destination name (i.e. queue or topic).</param>
+        public EventOutboxHostedService(IServiceProvider serviceProvider, ILogger<EventOutboxHostedService> logger, SettingsBase settings, IServiceSynchronizer synchronizer, string? partitionKey = null, string? destination = null) 
+            : base(serviceProvider, logger, settings, synchronizer)
         {
-            _synchronizer = synchronizer ?? throw new ArgumentNullException(nameof(synchronizer));
             PartitionKey = partitionKey;
+            Destination = destination;
+
+            if (partitionKey != null || destination != null)
+                SynchronizationName = $"PartitionKey-{partitionKey ?? string.Empty}-Destination-{destination ?? string.Empty}";
         }
 
         /// <summary>
-        /// Gets the partition key.
+        /// Gets the optional partition key.
         /// </summary>
         public string? PartitionKey { get; }
+
+        /// <summary>
+        /// Gets the optional destination name (i.e. queue or topic).
+        /// </summary>
+        public string? Destination { get; }
 
         /// <summary>
         /// Gets the service name (used for the likes of configuration and logging).
@@ -68,7 +77,7 @@ namespace NTangle.Services
         /// <remarks>Will default to configuration, a) <see cref="TimerHostedServiceBase.ServiceName"/> : <see cref="IntervalName"/>, then b) <see cref="IntervalName"/>, where specified; otherwise, <see cref="DefaultInterval"/>.</remarks>
         public override TimeSpan Interval
         {
-            get => _interval ?? Config.GetValue<TimeSpan?>(IntervalName) ?? DefaultInterval;
+            get => _interval ?? Settings.GetValue<TimeSpan?>(IntervalName) ?? DefaultInterval;
             set => _interval = value;
         }
 
@@ -79,31 +88,27 @@ namespace NTangle.Services
         /// <para>Will default to configuration <see cref="MaxDequeueSizeName"/>, where specified; otherwise, 10.</para></remarks>
         public int MaxDequeueSize
         {
-            get => _maxQuerySize ?? Config.GetValue<int?>(MaxDequeueSizeName) ?? 10;
+            get => _maxQuerySize ?? Settings.GetValue<int?>(MaxDequeueSizeName) ?? 10;
             set => _maxQuerySize = value;
         }
+
+        /// <summary>
+        /// Get or sets the function to create an instance of <see cref="EventOutboxDequeueBase"/>.
+        /// </summary>
+        public Func<IServiceProvider, EventOutboxDequeueBase>? EventOutboxDequeueFactory { get; set; }
 
         /// <summary>
         /// Executes the entity orchestration (<see cref="IEntityOrchestrator.ExecuteAsync(CancellationToken?)"/>) for the next batch and/or last incomplete batch.
         /// </summary>
         /// <param name="scopedServiceProvider"><inheritdoc/></param>
         /// <param name="cancellationToken"><inheritdoc/></param>
-        protected override async Task ExecuteAsync(IServiceProvider scopedServiceProvider, CancellationToken cancellationToken)
+        protected override async Task SynchronizedExecuteAsync(IServiceProvider scopedServiceProvider, CancellationToken cancellationToken)
         {
-            // Ensure we have synchronized control; if not exit immediately.
-            if (!_synchronizer.Enter<OutboxDequeueHostedService>(PartitionKey))
-                return;
+            if (EventOutboxDequeueFactory == null)
+                throw new NotImplementedException($"The {nameof(EventOutboxDequeueFactory)} property must be configured to create an instance of the {nameof(EventOutboxDequeueBase)}.");
 
-            // Instantiate the configured IOutboxDequeuePublisher and execute.
-            try
-            {
-                var odp = (scopedServiceProvider ?? throw new ArgumentNullException(nameof(scopedServiceProvider))).GetRequiredService<IOutboxDequeuePublisher>();
-                await odp.DequeueAndPublishAsync(MaxDequeueSize, PartitionKey, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                _synchronizer.Exit<OutboxDequeueHostedService>(PartitionKey);
-            }
+            var eod = EventOutboxDequeueFactory(scopedServiceProvider) ?? throw new InvalidOperationException($"The {nameof(EventOutboxDequeueFactory)} function must return an instance of {nameof(EventOutboxDequeueBase)}.");
+            while (await eod.DequeueAndSendAsync(MaxDequeueSize, PartitionKey, Destination, cancellationToken).ConfigureAwait(false) > 0) ;
         }
     }
 }

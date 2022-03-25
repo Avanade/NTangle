@@ -108,6 +108,9 @@ namespace NTangle.Test
             // Build and package (nuget) - only local package, no deployment.
             Assert.GreaterOrEqual(0, ExecuteCommand("powershell", "./nuget-publish.ps1 -configuration 'Debug' -IncludeSymbols -IncludeSource", _rootDir.FullName).exitCode, "nuget publish");
 
+            // Uninstall the template solution from local package.
+            ExecuteCommand("dotnet", $"new -u ntangle.template --nuget-source {_nugetDir.FullName}", _rootDir.FullName);
+
             // Install the template solution from local package.
             Assert.GreaterOrEqual(0, ExecuteCommand("dotnet", $"new -i ntangle.template --nuget-source {_nugetDir.FullName}", _rootDir.FullName).exitCode, "install ntangle.template");
         }
@@ -165,7 +168,7 @@ namespace NTangle.Test
             Assert.Zero(ExecuteCommand("dotnet", "run deploy", Path.Combine(dir, $"{appName}.Database")).exitCode, "dotnet run deploy [database]");
 
             // Publisher : Execute publisher and check event sent.
-            await ChangeSomeData(appName);
+            await ChangeSomeData(appName).ConfigureAwait(false);
             var (_, stdOut) = ExecuteCommand("dotnet", "run Interval=00:00:01 OutboxInterval=00:00:02", Path.Combine(dir, $"{appName}.Publisher"), 15000);
             Assert.IsTrue(stdOut.Contains("\"source\": \"/database/cdc/legacy/contact/1\""), "Expected published event content not found in stdout.");
         }

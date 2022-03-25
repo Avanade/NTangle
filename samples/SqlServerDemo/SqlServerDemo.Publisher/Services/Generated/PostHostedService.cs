@@ -5,6 +5,8 @@
 #nullable enable
 #pragma warning disable
 
+using CoreEx.Configuration;
+using CoreEx.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NTangle.Services;
@@ -17,16 +19,16 @@ namespace SqlServerDemo.Publisher.Services
     /// <summary>
     /// Provides the Change Data Capture (CDC) <see cref="PostCdc"/> entity (aggregate root) <see cref="HostedService{T}"/> capabilities (database table '[Legacy].[Posts]').
     /// </summary>
-    public partial class PostHostedService : HostedService<IPostCdcOrchestrator, PostCdc>
+    public partial class PostHostedService : CdcHostedService<IPostCdcOrchestrator, PostCdc>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PostHostedService"/> class.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
-        /// <param name="config">The <see cref="IConfiguration"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <param name="synchronizer"> The <see cref="IServiceSynchronizer"/>.</param>
-        public PostHostedService(IServiceProvider serviceProvider, ILogger<PostHostedService> logger, IConfiguration config, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, config, synchronizer) { }
+        public PostHostedService(IServiceProvider serviceProvider, ILogger<PostHostedService> logger, SettingsBase settings, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, settings, synchronizer) { }
     }
 }
 

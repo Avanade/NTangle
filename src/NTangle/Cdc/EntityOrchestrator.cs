@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx;
+using CoreEx.Entities;
+using CoreEx.Events;
+using CoreEx.Json;
 using DbEx;
 using DbEx.SqlServer;
 using Microsoft.Extensions.Logging;
 using NTangle.Data;
-using NTangle.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,9 +35,10 @@ namespace NTangle.Cdc
         /// <param name="executeStoredProcedureName">The name of the batch execute stored procedure.</param>
         /// <param name="completeStoredProcedureName">The name of the batch complete stored procedure.</param>
         /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
+        /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        protected EntityOrchestrator(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, ILogger logger)
-            : base(db, executeStoredProcedureName, completeStoredProcedureName, eventPublisher, logger) { }
+        protected EntityOrchestrator(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger logger)
+            : base(db, executeStoredProcedureName, completeStoredProcedureName, eventPublisher, jsonSerializer, logger) { }
     }
 
     /// <summary>
@@ -60,12 +64,13 @@ namespace NTangle.Cdc
         /// <param name="executeStoredProcedureName">The name of the batch execute stored procedure.</param>
         /// <param name="completeStoredProcedureName">The name of the batch complete stored procedure.</param>
         /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
+        /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="identifierMappingStoredProcedureName">The name of the optional identifier mapping stored procedure.</param>
         /// <param name="identifierGenerator">The <see cref="IIdentifierGenerator{TCdcIdentifer}"/>.</param>
         /// <param name="identifierMappingMapper">The <see cref="IdentifierMappingMapperBase{TCdcIdentifer}"/>.</param>
-        public EntityOrchestrator(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, ILogger logger, string identifierMappingStoredProcedureName, IIdentifierGenerator<TGlobalIdentifer> identifierGenerator, IdentifierMappingMapperBase<TGlobalIdentifer> identifierMappingMapper)
-            : base(db, executeStoredProcedureName, completeStoredProcedureName, eventPublisher, logger)
+        public EntityOrchestrator(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger logger, string identifierMappingStoredProcedureName, IIdentifierGenerator<TGlobalIdentifer> identifierGenerator, IdentifierMappingMapperBase<TGlobalIdentifer> identifierMappingMapper)
+            : base(db, executeStoredProcedureName, completeStoredProcedureName, eventPublisher, jsonSerializer, logger)
         {
             IdentifierMappingStoredProcedureName = identifierMappingStoredProcedureName ?? throw new ArgumentNullException(nameof(identifierMappingStoredProcedureName));
             IdentifierGenerator = identifierGenerator ?? throw new ArgumentNullException(nameof(identifierGenerator));

@@ -45,8 +45,8 @@
     <None Remove="Templates\EntityOrchestrator_cs.hbs" />
     <None Remove="Templates\Entity_cs.hbs" />
     <None Remove="Templates\IdentifierMappingMapper_cs.hb" />
+    <None Remove="Templates\IServiceCollectionExtensions_cs.hbs" />
     <None Remove="Templates\SchemaCdc_sql.hb" />
-    <None Remove="Templates\ServiceCollectionExtensions_cs.hbs" />
     <None Remove="Templates\SpCompleteBatch_sql.hb" />
     <None Remove="Templates\SpExecuteBatch_sql.hb" />
     <None Remove="Templates\SpIdentifierMappingCreate_sql.hb" />
@@ -66,7 +66,7 @@
     <EmbeddedResource Include="Scripts\SqlServerDatabase.yaml" />
     <EmbeddedResource Include="Templates\EntityHostedService_cs.hbs" />
     <EmbeddedResource Include="Templates\EntityOrchestrator_cs.hbs" />
-    <EmbeddedResource Include="Templates\ServiceCollectionExtensions_cs.hbs" />
+    <EmbeddedResource Include="Templates\IServiceCollectionExtensions_cs.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\SchemaCdc_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\CdcEnable_sql.hbs" />
     <EmbeddedResource Include="Templates\SqlServer\TableBatchTracking_sql.hbs" />
@@ -84,7 +84,7 @@
 
   <ItemGroup>
     <PackageReference Include="CoreEx" Version="1.0.2" />
-    <PackageReference Include="DbEx" Version="1.0.3" />
+    <PackageReference Include="DbEx" Version="1.0.4" />
     <PackageReference Include="OnRamp" Version="1.0.5" />
   </ItemGroup>
 

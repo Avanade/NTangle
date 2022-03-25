@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx.Entities;
+using CoreEx.Events;
+using CoreEx.Json;
+using CoreEx.Utility;
 using DbEx;
 using DbEx.SqlServer;
 using Microsoft.Extensions.Logging;
 using NTangle.Data;
 using NTangle.Events;
-using NTangle.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -46,13 +49,15 @@ namespace NTangle.Cdc
         /// <param name="executeStoredProcedureName">The name of the batch execute stored procedure.</param>
         /// <param name="completeStoredProcedureName">The name of the batch complete stored procedure.</param>
         /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
+        /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        internal EntityOrchestratorBase(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, ILogger logger)
+        internal EntityOrchestratorBase(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger logger)
         {
             Db = db ?? throw new ArgumentNullException(nameof(db));
             ExecuteStoredProcedureName = executeStoredProcedureName ?? throw new ArgumentNullException(nameof(executeStoredProcedureName));
             CompleteStoredProcedureName = completeStoredProcedureName ?? throw new ArgumentNullException(nameof(completeStoredProcedureName));
             EventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
+            JsonSerializer = jsonSerializer ?? throw new ArgumentNullException(nameof(jsonSerializer));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -77,6 +82,11 @@ namespace NTangle.Cdc
         public IEventPublisher EventPublisher { get; }
 
         /// <summary>
+        /// Gets the <see cref="IJsonSerializer"/>.
+        /// </summary>
+        public IJsonSerializer JsonSerializer { get; }
+
+        /// <summary>
         /// Gets the <see cref="ILogger"/>.
         /// </summary>
         public ILogger Logger { get; }
@@ -93,27 +103,27 @@ namespace NTangle.Cdc
         protected virtual string ServiceName => _name ??= GetType().Name;
 
         /// <summary>
-        /// Gets the <see cref="EventData.Subject"/> (to be further formatted as per <see cref="EventSubjectFormat"/>).
+        /// Gets the <see cref="EventDataBase.Subject"/> (to be further formatted as per <see cref="EventSubjectFormat"/>).
         /// </summary>
         protected abstract string EventSubject { get; }
 
         /// <summary>
-        /// Gets the <see cref="EventData.Subject"/> <see cref="Events.EventSubjectFormat"/>.
+        /// Gets the <see cref="EventDataBase.Subject"/> <see cref="Events.EventSubjectFormat"/>.
         /// </summary>
         protected virtual EventSubjectFormat EventSubjectFormat { get; } = EventSubjectFormat.NameAndKey;
 
         /// <summary>
-        /// Gets the <see cref="EventData.Action"/> <see cref="Events.EventActionFormat"/>.
+        /// Gets the <see cref="EventDataBase.Action"/> <see cref="Events.EventActionFormat"/>.
         /// </summary>
         protected virtual EventActionFormat EventActionFormat { get; } = EventActionFormat.None;
 
         /// <summary>
-        /// Gets the <see cref="EventData.Source"/>.
+        /// Gets the <see cref="EventDataBase.Source"/>.
         /// </summary>
         protected virtual Uri? EventSource { get; }
 
         /// <summary>
-        /// Gets the <see cref="EventData.Source"/> <see cref="Events.EventSourceFormat"/>.
+        /// Gets the <see cref="EventDataBase.Source"/> <see cref="Events.EventSourceFormat"/>.
         /// </summary>
         protected virtual EventSourceFormat EventSourceFormat { get; } = EventSourceFormat.NameAndKey;
 
@@ -276,7 +286,7 @@ namespace NTangle.Cdc
                 }
 
                 // Where supports logical delete and IsDeleted, then override DatabaseOperationType.
-                if (item is ILogicallyDeleted ld && ld.IsDeleted.HasValue && ld.IsDeleted.Value)
+                if (item is ILogicallyDeletedExtended ld && ld.IsDeleted.HasValue && ld.IsDeleted.Value)
                 {
                     item.DatabaseOperationType = CdcOperationType.Delete;
                     ld.ClearWhereDeleted();
@@ -307,11 +317,11 @@ namespace NTangle.Cdc
 
                 // Calculate the serialized hash for the ETag.
                 if (ExcludePropertiesFromETag == null || ExcludePropertiesFromETag.Length == 0)
-                    entity.ETag = ETagGenerator.Generate(entity);
+                    entity.ETag = ETagGenerator.Generate(JsonSerializer, entity);
                 else
                 {
-                    var json = JsonPropertyFilter.Apply(entity, null, ExcludePropertiesFromETag);
-                    entity.ETag = ETagGenerator.Generate(json!.ToString(Newtonsoft.Json.Formatting.None));
+                    JsonSerializer.TryApplyFilter(entity, ExcludePropertiesFromETag, out string json, JsonPropertyFilter.Exclude);
+                    entity.ETag = ETagGenerator.GenerateHash(json);
                 }
 
                 // Where the ETag and TrackingHash match then skip (has already been published).
@@ -339,7 +349,7 @@ namespace NTangle.Cdc
             {
                 var events = (await CreateEventsAsync(coll2, result.Batch.CorrelationId, cancellationToken.Value).ConfigureAwait(false)).ToArray();
                 sw = Stopwatch.StartNew();
-                await EventPublisher.SendAsync(events).ConfigureAwait(false);
+                await EventPublisher.Publish(events).SendAsync().ConfigureAwait(false);
                 sw.Stop();
 
                 Logger.LogInformation("Batch '{BatchId}': {EventCount} event(s) were published successfully. [Publisher={Publisher}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
@@ -445,7 +455,7 @@ namespace NTangle.Cdc
         /// </summary>
         /// <typeparam name="T">The <paramref name="value"/> <see cref="Type"/>.</typeparam>
         /// <param name="value">The value.</param>
-        /// <param name="operationType">The <see cref="CdcOperationType"/> to infer the <see cref="EventData.Action"/>.</param>
+        /// <param name="operationType">The <see cref="CdcOperationType"/> to infer the <see cref="EventDataBase.Action"/>.</param>
         /// <param name="correlationId">The correlarion identifier.</param>
         /// <returns>The <see cref="EventData"/>.</returns>
         protected virtual EventData CreateEvent<T>(T value, CdcOperationType operationType, string? correlationId) where T : IPrimaryKey
@@ -454,9 +464,9 @@ namespace NTangle.Cdc
             {
                 Subject = EventSubjectFormatter.Format(EventSubject, value, EventSubjectFormat),
                 Action = EventActionFormatter.Format(operationType, EventActionFormat),
+                Source = EventSourceFormatter.Format(EventSource, value, EventSourceFormat),
                 CorrelationId = correlationId,
-                Data = value,
-                Source = EventSourceFormatter.Format(EventSource, value, EventSourceFormat)
+                Value = value,
             };
 
             if (value is ITenantId ti)

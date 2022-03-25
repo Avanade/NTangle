@@ -1,8 +1,9 @@
-﻿using NTangle;
+﻿using CoreEx.Entities;
+using CoreEx.Events;
+using CoreEx.Json;
 using NTangle.Test;
 using NUnit.Framework;
 using SqlServerDemo.Publisher.Data;
-using SqlServerDemo.Publisher.Events;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,8 +21,8 @@ namespace SqlServerDemo.Test
 
             // Reset the event outbox tables..
             var script =
-                "DELETE FROM [NTangle].[EventOutbox]" + Environment.NewLine +
-                "DELETE FROM [NTangle].[EventOutboxData]";
+                "DELETE FROM [Outbox].[EventOutbox]" + Environment.NewLine +
+                "DELETE FROM [Outbox].[EventOutboxData]";
 
             await SqlServerUnitTest.GetDatabase().SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
         }
@@ -38,8 +39,9 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute should pick up and allocate all new global identifiers.
-            var oep = new OutboxEventPublisher(db);
-            var cdc = new ContactCdcOrchestrator(db, oep, logger, new IdentifierGenerator());
+            var eoe = new EventOutboxEnqueue(db);
+            var ep = new EventPublisher(null, new CoreEx.Text.Json.CloudEventSerializer(), eoe);
+            var cdc = new ContactCdcOrchestrator(db, ep, JsonSerializer.Default, logger, new IdentifierGenerator());
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, null);
 
@@ -54,20 +56,21 @@ namespace SqlServerDemo.Test
             Assert.IsNull(cdcr.Exception);
 
             // Now execute OutboxDequeuePublisher to get the event using different partition key.
-            var tep = new TestEventPublisher();
-            var odp = new OutboxDequeuePublisher(db, tep, UnitTest.GetLogger<OutboxDequeuePublisher>());
-            await odp.DequeueAndPublishAsync(10, "Bananas", CancellationToken.None).ConfigureAwait(false);
+            var ims = new InMemorySender();
+            var eod = new EventOutboxDequeue(db, ims, UnitTest.GetLogger<EventOutboxDequeue>());
+            await eod.DequeueAndSendAsync(10, "Bananas", null, CancellationToken.None).ConfigureAwait(false);
 
-            Assert.AreEqual(0, tep.Events.Count);
+            Assert.AreEqual(0, ims.GetEvents().Length);
 
             // Now execute OutboxDequeuePublisher to get the event using correct partition key.
-            await odp.DequeueAndPublishAsync(10, "Contact", CancellationToken.None).ConfigureAwait(false);
+            await eod.DequeueAndSendAsync(10, "Contact", null, CancellationToken.None).ConfigureAwait(false);
 
-            Assert.AreEqual(1, tep.Events.Count);
-            UnitTest.AssertEvent("ContactTest-GenerateAllIdentifiers.txt", tep.Events[0], "data.globalId", "data.globalAlternateContactId", "data.address.globalId", "data.address.globalAlternateAddressId");
+            var events = ims.GetEvents();
+            Assert.AreEqual(1, events.Length);
+            UnitTest.AssertEvent("EventOutboxTest-OutboxDequeuePublisher.txt", events[0], "data.globalId", "data.globalAlternateContactId", "data.address.globalId", "data.address.globalAlternateAddressId");
 
             // Make sure there are no events left to dequeue.
-            Assert.AreEqual(0, await db.SqlStatement("SELECT COUNT(*) FROM [NTangle].[EventOutbox] WHERE [DequeuedDate] IS NULL").ScalarAsync<int>().ConfigureAwait(false));
+            Assert.AreEqual(0, await db.SqlStatement("SELECT COUNT(*) FROM [Outbox].[EventOutbox] WHERE [DequeuedDate] IS NULL").ScalarAsync<int>().ConfigureAwait(false));
         }
     }
 }

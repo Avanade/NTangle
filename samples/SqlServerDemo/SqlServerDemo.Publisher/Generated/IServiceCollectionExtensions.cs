@@ -5,16 +5,15 @@
 #nullable enable
 #pragma warning disable
 
+using CoreEx.Configuration;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using NTangle;
 using NTangle.Data;
 using NTangle.Events;
 using SqlServerDemo.Publisher.Data;
-using SqlServerDemo.Publisher.Events;
 using SqlServerDemo.Publisher.Services;
 
-namespace SqlServerDemo.Publisher
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Provides <see cref="IServiceCollection"/> extensions.
@@ -32,25 +31,23 @@ namespace SqlServerDemo.Publisher
                        .AddScoped<ICustomerCdcOrchestrator, CustomerCdcOrchestrator>();
 
         /// <summary>
-        /// Adds the generated <see cref="NTangle.Services.HostedService"/> services.
+        /// Adds the generated <see cref="NTangle.Services.CdcHostedService"/> services.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="config">The <see cref="IConfiguration"/>.</param>
+        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddGeneratedHostedServices(this IServiceCollection services, IConfiguration config)
-            => services.AddNTangleHostedService<PostHostedService>(config)
-                       .AddNTangleHostedService<ContactHostedService>(config)
-                       .AddNTangleHostedService<CustomerHostedService>(config);
+        public static IServiceCollection AddGeneratedCdcHostedServices(this IServiceCollection services, SettingsBase settings)
+            => services.AddCdcHostedService<PostHostedService>(settings)
+                       .AddCdcHostedService<ContactHostedService>(settings)
+                       .AddCdcHostedService<CustomerHostedService>(settings);
 
         /// <summary>
-        /// Adds the generated <see cref="OutboxEventPublisher"/> (see <see cref="OutboxEventPublisherBase{TMapper}"/>) as the <see cref="IEventPublisher"/>, and the generated
-        /// <see cref="OutboxDequeuePublisher"/> as the <see cref="IOutboxDequeuePublisher"/>, as scoped services.
+        /// Adds the generated <see cref="EventOutboxEnqueue"/> as a <see cref="CoreEx.Events.IEventSender"/> scoped service.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddGeneratedOutboxEventPublishing(this IServiceCollection services)
-            => services.AddScoped<IEventPublisher, OutboxEventPublisher>()
-                       .AddScoped<IOutboxDequeuePublisher, OutboxDequeuePublisher>();
+        public static IServiceCollection AddGeneratedEventOutboxSender(this IServiceCollection services)
+            => services.AddEventSender<EventOutboxEnqueue>();
     }
 }
 
