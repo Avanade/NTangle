@@ -19,7 +19,7 @@
         },
         "cdcSchemaCreate": {
           "type": "boolean",
-          "title": "Indicates whether to create the CDC Schema within the database.",
+          "title": "Indicates whether to create the 'CdcSchema' within the database.",
           "description": "Defaults to 'false'."
         },
         "versionTrackingTable": {
@@ -83,8 +83,9 @@
         "jsonSerializer": {
           "type": "string",
           "title": "The JSON Serializer to use for JSON property attribution.",
-          "description": "Defaults to 'Newtonsoft'.",
+          "description": "Defaults to 'SystemText'.",
           "enum": [
+            "SystemText",
             "Newtonsoft"
           ]
         },
@@ -155,7 +156,12 @@
         "outboxSchema": {
           "type": "string",
           "title": "The schema name of the event outbox table.",
-          "description": "Defaults to 'CdcSchema'."
+          "description": "Defaults to 'Outbox' (literal)."
+        },
+        "outboxSchemaCreate": {
+          "type": "boolean",
+          "title": "Indicates whether to create the 'OutboxSchema' within the database.",
+          "description": "Defaults to 'false'."
         },
         "outboxTable": {
           "type": "string",
@@ -204,8 +210,13 @@
         },
         "namespacePublisher": {
           "type": "string",
-          "title": "The Namespace (root) for the CDC-related publisher .NET artefacts.",
+          "title": "The Namespace (root) for the CDC-related Publisher .NET artefacts.",
           "description": "Defaults to 'NamespaceBase' + '.Publisher' (literal). For example 'Avanade.Application.Publisher'."
+        },
+        "namespaceOutbox": {
+          "type": "string",
+          "title": "The Namespace (root) for the Outbox-related Publisher .NET artefacts.",
+          "description": "Defaults to 'NamespacePublisher'."
         },
         "tables": {
           "type": "array",

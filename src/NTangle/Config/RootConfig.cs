@@ -58,7 +58,7 @@ namespace NTangle.Config
         /// Indicates whether to create the `Cdc`-Schema within the database.
         /// </summary>
         [JsonProperty("cdcSchemaCreate", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Key", Title = "Indicates whether to create the CDC Schema within the database.",
+        [CodeGenProperty("Key", Title = "Indicates whether to create the `CdcSchema` within the database.",
             Description = "Defaults to `false`.")]
         public bool? CdcSchemaCreate { get; set; }
 
@@ -237,7 +237,7 @@ namespace NTangle.Config
         /// Indicates whether to create the `Outbox`-Schema within the database.
         /// </summary>
         [JsonProperty("outboxSchemaCreate", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Key", Title = "Indicates whether to create the CDC Schema within the database.",
+        [CodeGenProperty("Key", Title = "Indicates whether to create the `OutboxSchema` within the database.",
             Description = "Defaults to `false`.")]
         public bool? OutboxSchemaCreate { get; set; }
 
@@ -325,7 +325,7 @@ namespace NTangle.Config
         /// Gets or sets the Namespace (root) for the CDC-related publisher .NET artefacts.
         /// </summary>
         [JsonProperty("namespacePublisher", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Namespace", Title = "The Namespace (root) for the CDC-related publisher .NET artefacts.",
+        [CodeGenProperty("Namespace", Title = "The Namespace (root) for the CDC-related Publisher .NET artefacts.",
             Description = "Defaults to `NamespaceBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.")]
         public string? NamespacePublisher { get; set; }
 
@@ -333,7 +333,7 @@ namespace NTangle.Config
         /// Gets or sets the Namespace (root) for the outbox-related .NET artefacts.
         /// </summary>
         [JsonProperty("namespaceOutbox", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Namespace", Title = "The Namespace (root) for the outbox-related publisher .NET artefacts.",
+        [CodeGenProperty("Namespace", Title = "The Namespace (root) for the Outbox-related Publisher .NET artefacts.",
             Description = "Defaults to `NamespacePublisher`.")]
         public string? NamespaceOutbox { get; set; }
 
