@@ -118,10 +118,9 @@ The following [`NTangle`](./src/NTangle) namespaces provide runtime capabilties:
 Namespace | Description
 -|-
 [`Cdc`](./src/NTangle/Cdc) | CDC-orchestration capabilities, primarily [`EntityOrchestrator`](./src/NTangle/Cdc/EntityOrchestrator.cs).
-[`Data`](./src/NTangle/Data) | Database access capabilities to support the likes of batch tracking, identifier mapping, outbox and versioning.
-[`Events`](./src/NTangle/Events) | Event capabilities, primarily [`IEventPublisher`](./src/NTangle/Events/IEventPublisher.cs) and [`CloudEventSerializer`](./src/NTangle/Events/CloudEventSerializer.cs).
-[`Services`](./src/NTangle/Services) | Service hosting capabilities, primarily [`HostedService`](./src/NTangle/Services/HostedServiceT.cs) and [`OutboxService`](./src/NTangle/Services/OutboxDequeueHostedService.cs).
-[`Utility`](./src/NTangle/Utility) | Additional utility-style capabilities used internally.
+[`Data`](./src/NTangle/Data) | Database access capabilities to support the likes of batch tracking, identifier mapping and versioning.
+[`Events`](./src/NTangle/Events) | Event capabilities, extending the capabilities enabled by [`CoreEx`](https://github.com/Avanade/CoreEx/tree/main/src/CoreEx/Events).
+[`Services`](./src/NTangle/Services) | Service hosting capabilities, primarily [`HostedService`](./src/NTangle/Services/CdcHostedService.cs) and [`EventOutboxHostedService`](./src/NTangle/Services/EventOutboxHostedService.cs).
 
 <br/>
 
@@ -129,7 +128,7 @@ Namespace | Description
 
 The following are references to additional documentation.
 
-- [Microsoft SQL Server](./docs/SqlServer.md) - deep-dive of Microsoft SQL Server implementation.
+- [Microsoft SQL Server](./docs/SqlServer.md) - deep-dive of the Microsoft SQL Server _nTangle_ architecture and implementation.
 
 <br/>
 
