@@ -44,11 +44,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds the generated <see cref="NTangle.Services.CdcHostedService"/> services.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddGeneratedCdcHostedServices(this IServiceCollection services, SettingsBase settings)
+        public static IServiceCollection AddGeneratedCdcHostedServices(this IServiceCollection services)
   {{#each HostedServices}}
-            {{#if @first}}=> services{{else}}           {{/if}}.AddCdcHostedService<{{Model}}HostedService>(settings){{#if @last}};{{/if}}
+            {{#if @first}}=> services{{else}}           {{/if}}.AddCdcHostedService<{{Model}}HostedService>(){{#if @last}};{{/if}}
   {{/each}}
 {{/ifne}}
 {{#if Outbox}}

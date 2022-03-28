@@ -1,5 +1,4 @@
-﻿using CoreEx.Configuration;
-using CoreEx.Events;
+﻿using CoreEx.Events;
 using DbEx;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -29,10 +28,8 @@ namespace SqlServerDemo.Publisher
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    var settings = new DefaultSettings(hostContext.Configuration);
-
                     services.AddDefaultSettings()
-                            .AddLogging(configure => configure.AddConsole())
+                            .AddLogging(b => b.AddSimpleConsole())
                             .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(hostContext.Configuration.GetConnectionString("SqlDb"))))
                             .AddStringIdentifierGenerator()
                             .AddJsonSerializer();
@@ -44,8 +41,8 @@ namespace SqlServerDemo.Publisher
                             .AddGeneratedEventOutboxSender();
 
                     // Adds the CDC-hosted service(s) including orchestrator services, and specified EventOutbox dequeue/send service.
-                    services.AddGeneratedCdcHostedServices(settings)
-                            .AddEventOutboxHostedService(settings, sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>()), sp.GetService<ILogger<EventOutboxDequeue>>()))
+                    services.AddGeneratedCdcHostedServices()
+                            .AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>()), sp.GetService<ILogger<EventOutboxDequeue>>()))
                             .AddGeneratedOrchestratorServices()
                             .AddFileLockSynchronizer();
                 });

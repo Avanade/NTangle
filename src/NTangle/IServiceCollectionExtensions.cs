@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
 using CoreEx.Configuration;
-using CoreEx.Entities;
-using CoreEx.Events;
 using CoreEx.Hosting;
 using DbEx;
 using DbEx.SqlServer;
@@ -46,16 +44,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="THostedService">The <see cref="ICdcHostedService"/> <see cref="Type"/>.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
-        /// <remarks>Before adding checks whether the <typeparamref name="THostedService"/> has been specified within the comma-separated list of selected services defined in the <paramref name="settings"/> using the <see cref="ServicesKey"/> to confirm.
-        /// Where no selected services have been specified within the <paramref name="settings"/> then the service will always be added.</remarks>
+        /// <remarks>Before adding, checks whether the <typeparamref name="THostedService"/> has been specified within the comma-separated list of selected services defined in <see cref="SettingsBase"/> using the <see cref="ServicesKey"/> to confirm.
+        /// Where no selected services have been specified within the <see cref="SettingsBase"/> then the service will always be added.</remarks>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddCdcHostedService<THostedService>(this IServiceCollection services, SettingsBase settings) where THostedService : class, ICdcHostedService
+        public static IServiceCollection AddCdcHostedService<THostedService>(this IServiceCollection services) where THostedService : class, ICdcHostedService
         {
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
-            var svcs = (settings ?? throw new ArgumentNullException(nameof(settings))).GetValue<string?>(ServicesKey);
+            var svcs = services.BuildServiceProvider().GetRequiredService<SettingsBase>().GetValue<string?>(ServicesKey);
             if (string.IsNullOrEmpty(svcs))
             {
                 services.AddHostedService<THostedService>();
@@ -81,18 +78,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds the <see cref="EventOutboxHostedService"/> using the <see cref="ServiceCollectionHostedServiceExtensions.AddHostedService{THostedService}(IServiceCollection)"/>. 
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <param name="eventOutboxDequeueFactory">The function to create an instance of <see cref="EventOutboxDequeueBase"/> (used to set the underlying <see cref="EventOutboxHostedService.EventOutboxDequeueFactory"/> property).</param>
         /// <param name="partitionKey">The optional partition key.</param>
         /// <param name="destination">The optional destination name (i.e. queue or topic).</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         /// <remarks>To turn off the execution of the <see cref="EventOutboxHostedService"/>(s) at runtime set the '<c>EventOutboxHostedService</c>' configuration setting to <c>false</c>.</remarks>
-        public static IServiceCollection AddEventOutboxHostedService(this IServiceCollection services, SettingsBase settings, Func<IServiceProvider, EventOutboxDequeueBase> eventOutboxDequeueFactory, string? partitionKey = null, string? destination = null)
+        public static IServiceCollection AddEventOutboxHostedService(this IServiceCollection services, Func<IServiceProvider, EventOutboxDequeueBase> eventOutboxDequeueFactory, string? partitionKey = null, string? destination = null)
         {
-            var exe = (settings ?? throw new ArgumentNullException(nameof(settings))).GetValue<bool?>("EventOutboxHostedService");
+            var exe = services.BuildServiceProvider().GetRequiredService<SettingsBase>().GetValue<bool?>("EventOutboxHostedService");
             if (!exe.HasValue || exe.Value)
             {
-                services.AddHostedService(sp => new EventOutboxHostedService(sp, sp.GetRequiredService<ILogger<EventOutboxHostedService>>(), settings, sp.GetRequiredService<IServiceSynchronizer>(), partitionKey, destination)
+                services.AddHostedService(sp => new EventOutboxHostedService(sp, sp.GetRequiredService<ILogger<EventOutboxHostedService>>(), sp.GetRequiredService<SettingsBase>(), sp.GetRequiredService<IServiceSynchronizer>(), partitionKey, destination)
                 {
                     EventOutboxDequeueFactory = eventOutboxDequeueFactory ?? throw new ArgumentNullException(nameof(eventOutboxDequeueFactory))
                 });

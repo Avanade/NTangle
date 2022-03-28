@@ -20,7 +20,7 @@ namespace SqlServerDemo.Publisher.Data
     public sealed class EventOutboxDequeue : EventOutboxDequeueBase
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EventOutboxEnqueue"/> class.
+        /// Initializes a new instance of the <see cref="EventOutboxDequeue"/> class.
         /// </summary>
         /// <param name="database">The <see cref="IDatabase"/>.</param>
         /// <param name="eventSender">The <see cref="IEventSender"/>.</param>

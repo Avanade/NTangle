@@ -34,12 +34,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds the generated <see cref="NTangle.Services.CdcHostedService"/> services.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddGeneratedCdcHostedServices(this IServiceCollection services, SettingsBase settings)
-            => services.AddCdcHostedService<PostHostedService>(settings)
-                       .AddCdcHostedService<ContactHostedService>(settings)
-                       .AddCdcHostedService<CustomerHostedService>(settings);
+        public static IServiceCollection AddGeneratedCdcHostedServices(this IServiceCollection services)
+            => services.AddCdcHostedService<PostHostedService>()
+                       .AddCdcHostedService<ContactHostedService>()
+                       .AddCdcHostedService<CustomerHostedService>();
 
         /// <summary>
         /// Adds the generated <see cref="EventOutboxEnqueue"/> as a <see cref="CoreEx.Events.IEventSender"/> scoped service.
