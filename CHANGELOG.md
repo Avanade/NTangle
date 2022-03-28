@@ -7,6 +7,7 @@ Represents the **NuGet** versions.
 ## v1.0.3
 - *Enhancement:* **Breaking Changes** - Integrated latest `CoreEx` to replace the previous entity capabilities; integrated latest `DbEx` to provide the SQL Server Event Outbox capabilities.
 - *Enhancement:* Template solution now outputs .NET 6.0 projects.
+- [*Issue 10:*](https://github.com/Avanade/NTangle/issues/10) Validation added to `JoinConfig` to ensure hierarchical cicrular references result in an error during code-generation.
 
 ## v1.0.2
 - [*Issue 7:*](https://github.com/Avanade/NTangle/issues/7) The `Table` object `Name` property can now be used to rename a table within an _NTangle_ context and must be unique. The `Table` property which automatically defaults from `Name`, is used to specify the actual database table name where different.
