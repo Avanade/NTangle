@@ -459,11 +459,11 @@ namespace NTangle.Config
             if (jtc != null)
             {
                 jhp = jtc.PartialClone(false, jtc.JoinHierarchy.Count - 1, jhp);
-                JoinHierarchy.Add(jhp);
+                JoinHierarchyAdd(jhp);
                 for (int i = 1; i < jtc.JoinHierarchy.Count; i++)
                 {
                     jhp = jtc.JoinHierarchy[i].PartialClone(false, jtc.JoinHierarchy.Count - i, jhp);
-                    JoinHierarchy.Add(jhp);
+                    JoinHierarchyAdd(jhp);
                 }
             }
 
@@ -473,6 +473,20 @@ namespace NTangle.Config
                 jhr.HierarchyChild = jhp;
                 jhp = jhr;
             }
+        }
+
+        /// <summary>
+        /// Adds the join to the hierarchy.
+        /// </summary>
+        private void JoinHierarchyAdd(JoinConfig jc)
+        {
+            foreach (var jci in JoinHierarchy)
+            {
+                if (jc.Name == jci.Name && jc.Schema == jci.Schema && jc.Table == jci.Table)
+                    throw new CodeGenException(this, nameof(JoinTo), $"Join table '{jc.Name} [{jc.Schema}].[{jc.Table}]' is self-referencing (within hierarchy) and has resulted in a circular reference.");
+            }
+
+            JoinHierarchy.Add(jc);
         }
 
         /// <summary>
