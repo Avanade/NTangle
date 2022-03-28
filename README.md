@@ -19,6 +19,7 @@ This has a key advantage of being an excellent candidate within event-streaming 
 ## Status
 
 [![CI](https://github.com/Avanade/NTangle/actions/workflows/CI.yml/badge.svg)](https://github.com/Avanade/NTangle/actions/workflows/CI.yml) [![NuGet version](https://badge.fury.io/nu/NTangle.svg)](https://badge.fury.io/nu/NTangle)
+[![Coverage Status](https://coveralls.io/repos/github/Avanade/NTangle/badge.svg?branch=main)](https://coveralls.io/github/Avanade/NTangle?branch=main)
 
 The included [change log](CHANGELOG.md) details all key changes per published version.
 
@@ -155,7 +156,7 @@ Sample | Description
 
 ## License
 
-_OnRamp_ is open source under the [MIT license](./LICENSE) and is free for commercial use.
+_nTangle_ is open source under the [MIT license](./LICENSE) and is free for commercial use.
 
 <br/>
 

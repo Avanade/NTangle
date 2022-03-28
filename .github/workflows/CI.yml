@@ -25,9 +25,6 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
 
-    - name: Path
-      run: ls -lR
-
     - name: Pull SqlServer
       run: docker pull mcr.microsoft.com/mssql/server
       
@@ -47,4 +44,15 @@ jobs:
       run: echo "SqlServerDemo_ConnectionStrings__SqlDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo;User id=sa;Password=yourStrong(!)Password;TrustServerCertificate=true" >> $GITHUB_ENV
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./coverage/lcov.info --no-build --verbosity normal
+
+    - name: Merge Code Coverage
+      run: |
+        mkdir ./coverage
+        npx lcov-result-merger '**/lcov.info' './coverage/lcov.info'
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        # path-to-lcov: ./samples/SqlServerDemo/SqlServerDemo.Test/coverage/lcov.info
