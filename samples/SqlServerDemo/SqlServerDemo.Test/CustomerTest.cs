@@ -1,4 +1,6 @@
-﻿using NTangle.Test;
+﻿using CoreEx.Events;
+using CoreEx.Json;
+using NTangle.Test;
 using NUnit.Framework;
 using SqlServerDemo.Publisher.Data;
 using System;
@@ -52,10 +54,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute should pick up the update and delete.
-            var tep = new TestEventPublisher();
-            var cdc = new CustomerCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new CustomerCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -69,10 +71,12 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(2, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(2, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(2, tep.Events.Count);
 
-            UnitTest.AssertEvent("CustomerTest-LogicalDelete-1.txt", tep.Events[0]);
-            UnitTest.AssertEvent("CustomerTest-LogicalDelete-2.txt", tep.Events[1], "data.rowVersion");
+            var events = imp.GetEvents();
+            Assert.AreEqual(2, events.Length);
+
+            UnitTest.AssertEvent("CustomerTest-LogicalDelete-1.txt", events[0]);
+            UnitTest.AssertEvent("CustomerTest-LogicalDelete-2.txt", events[1], "value.rowVersion");
         }
 
         [Test]
@@ -88,10 +92,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute should pick up the update.
-            var tep = new TestEventPublisher();
-            var cdc = new CustomerCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new CustomerCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -105,7 +109,9 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, tep.Events.Count);
+
+            var events = imp.GetEvents();
+            Assert.AreEqual(1, events.Length);
 
             // Update excluded property; should not pick up even though RowVersion column would have been updated as version (ETag) excludes.
             script = "UPDATE [Legacy].[Cust] SET [internal-secret] = 'shhh' WHERE [CustId] = 1";
@@ -114,9 +120,9 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute should pick up the update.
-            tep.Events.Clear();
+            imp.Reset();
             cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -130,7 +136,7 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(0, tep.Events.Count);
+            Assert.AreEqual(0, imp.GetEvents().Length);
         }
 
         [Test]
@@ -152,10 +158,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute should pick up the first 3.
-            var tep = new TestEventPublisher();
-            var cdc = new CustomerCdcOrchestrator(db, tep, logger) { MaxQuerySize = 3 };
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new CustomerCdcOrchestrator(db, imp, JsonSerializer.Default, logger) { MaxQuerySize = 3 };
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -169,12 +175,12 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(3, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(3, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(3, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(3, tep.Events.Count);
+            Assert.AreEqual(3, imp.GetEvents().Length);
 
             // Next Execute should pick up the next 3.
-            tep.Events.Clear();
+            imp.Reset();
             cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -188,12 +194,12 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(3, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(3, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(3, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(3, tep.Events.Count);
+            Assert.AreEqual(3, imp.GetEvents().Length);
 
             // Next Execute should pick up the last 1.
-            tep.Events.Clear();
+            imp.Reset();
             cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -207,7 +213,7 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, tep.Events.Count);
+            Assert.AreEqual(1, imp.GetEvents().Length);
         }
     }
 }

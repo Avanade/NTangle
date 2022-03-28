@@ -6,9 +6,9 @@ CREATE TABLE [{{CdcSchema}}].[{{IdentifierMappingTable}}] (
    */
 
 {{/unless}}
-  [Schema] VARCHAR(64) NOT NULL,
-  [Table] VARCHAR(128) NOT NULL,
-  [Key] NVARCHAR(256) NOT NULL,
+  [Schema] VARCHAR(63) NOT NULL,
+  [Table] VARCHAR(127) NOT NULL,
+  [Key] NVARCHAR(255) NOT NULL,
   [GlobalId] {{IdentifierMappingSqlType}} NOT NULL,
   CONSTRAINT [PK_{{CdcSchema}}_{{IdentifierMappingTable}}_SchemaTableKey] PRIMARY KEY CLUSTERED ([Schema], [Table], [Key]),
   CONSTRAINT [IX_{{CdcSchema}}_{{IdentifierMappingTable}}_SchemaTableGlobalId] UNIQUE ([Schema], [Table], [GlobalId])

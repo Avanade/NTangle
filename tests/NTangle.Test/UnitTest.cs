@@ -1,14 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CoreEx.Events;
+using CoreEx.Json;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NTangle.Cdc;
-using NTangle.Utility;
 using NUnit.Framework;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
+using Stj = System.Text.Json;
 using System.Threading.Tasks;
 using Con = System.Console;
 
@@ -43,11 +42,11 @@ namespace NTangle.Test
         }).CreateLogger<T>();
 
         /// <summary>
-        /// Writes the <see cref="EntityOrchestratorResult"/> and <see cref="TestEventPublisher"/> output to the console.
+        /// Writes the <see cref="EntityOrchestratorResult"/> and <see cref="InMemoryPublisher"/> output to the console.
         /// </summary>
         /// <param name="result">The <see cref="EntityOrchestratorResult"/>.</param>
-        /// <param name="tep">The <see cref="TestEventPublisher"/>.</param>
-        public static void WriteResult(EntityOrchestratorResult result, TestEventPublisher tep)
+        /// <param name="imp">The <see cref="InMemoryPublisher"/>.</param>
+        public static void WriteResult(EntityOrchestratorResult result, InMemoryPublisher imp)
         {
             Con.Out.WriteLine(string.Empty);
             Con.Out.WriteLine("=========================");
@@ -75,15 +74,21 @@ namespace NTangle.Test
                 Con.Out.WriteLine($" CorrelationId = {result.Batch.CorrelationId}");
             }
 
-            Con.Out.WriteLine(string.Empty);
-            Con.Out.WriteLine($"Events: {(tep == null ? "null" : tep.Events.Count.ToString())}");
-            if (tep != null && tep.Events.Count > 0)
+            if (imp == null)
+                Con.Out.WriteLine("Events: null");
+            else
             {
-                foreach (var @event in tep.Events)
+                var events = imp.GetEvents();
+                Con.Out.WriteLine(string.Empty);
+                Con.Out.WriteLine($"Events: {events.Length}");
+                if (imp != null && events.Length > 0)
                 {
-                    var jt = JToken.Parse(Encoding.UTF8.GetString(@event));
-                    Con.Out.WriteLine(jt.ToString(Formatting.Indented));
-                    Con.Out.WriteLine(string.Empty);
+                    foreach (var @event in events)
+                    {
+                        var json = JsonSerializer.Default.Serialize(@event, JsonWriteFormat.Indented);
+                        Con.Out.WriteLine(json);
+                        Con.Out.WriteLine(string.Empty);
+                    }
                 }
             }
 
@@ -94,48 +99,55 @@ namespace NTangle.Test
         /// Assert the event by comparing the JSON content against a text file.
         /// </summary>
         /// <param name="expected">The name of the file in the <c>Expected</c> folder.</param>
-        /// <param name="binaryData">The event <see cref="BinaryData"/>.</param>
+        /// <param name="actual">The <see cref="EventData"/>.</param>
         /// <param name="exclude">The properties to exclude from the comparison.</param>
-        public static void AssertEvent(string expected, BinaryData binaryData, params string[] exclude)
+        public static void AssertEvent(string expected, EventData actual, params string[] exclude)
         {
-            var jt = JToken.Parse(binaryData.ToString());
-            JsonPropertyFilter.JsonApply(jt, null, new string[] { "id", "time", "correlationid", "data.etag" }.Concat(exclude));
-            var txt = jt.ToString(Formatting.Indented);
-
+            JsonSerializer.Default.TryApplyFilter(actual, new string[] { "id", "timestamp", "correlationid", "value.etag" }.Concat(exclude), out string json, JsonPropertyFilter.Exclude);
+            var je = (Stj.JsonElement)JsonSerializer.Default.Deserialize(json);
             var exp = File.ReadAllText(Path.Combine("Expected", expected));
-            Assert.AreEqual(exp, txt);
+            Assert.AreEqual(exp, JsonSerializer.Default.Serialize(je, JsonWriteFormat.Indented));
+        }
+
+        /// <summary>
+        /// Assert the event by comparing the JSON content against a text file.
+        /// </summary>
+        /// <param name="expected">The name of the file in the <c>Expected</c> folder.</param>
+        /// <param name="actual">The <see cref="EventData"/>.</param>
+        /// <param name="exclude">The properties to exclude from the comparison.</param>
+        public static void AssertEvent(string expected, EventSendData actual, params string[] exclude)
+        {
+            var jn = Stj.Nodes.JsonNode.Parse(actual.Data);
+            CoreEx.Text.Json.JsonFilterer.Apply(jn, new string[] { "id", "time", "correlationid", "data.etag" }.Concat(exclude), JsonPropertyFilter.Exclude);
+            var exp = File.ReadAllText(Path.Combine("Expected", expected));
+            Assert.AreEqual(exp, jn.ToJsonString(new Stj.JsonSerializerOptions { WriteIndented = true }));
         }
 
         /// <summary>
         /// Gets the event data deserialized to the requested type.
         /// </summary>
         /// <typeparam name="T">The data <see cref="Type"/>.</typeparam>
-        /// <param name="binaryData">The event <see cref="BinaryData"/>.</param>
+        /// <param name="eventData">The event <see cref="BinaryData"/>.</param>
         /// <returns>The data value.</returns>
-        public static T GetEventData<T>(BinaryData binaryData)
-        {
-            var jt = JToken.Parse(binaryData.ToString());
-            var jd = jt["data"];
-            return jd.ToObject<T>();
-        }
+        public static T GetEventData<T>(EventData eventData) => (T)eventData.GetValue();
 
         /// <summary>
         /// Execute the <see cref="IEntityOrchestrator"/> and ensure no further changes were found.
         /// </summary>
         /// <param name="eo">The <see cref="IEntityOrchestrator"/>.</param>
-        /// <param name="tep">The <see cref="TestEventPublisher"/>.</param>
+        /// <param name="imp">The <see cref="InMemoryPublisher"/>.</param>
         /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-        public static async Task<EntityOrchestratorResult> AssertNoFurtherChanges(IEntityOrchestrator eo, TestEventPublisher tep)
+        public static async Task<EntityOrchestratorResult> AssertNoFurtherChanges(IEntityOrchestrator eo, InMemoryPublisher imp)
         {
-            tep.Events.Clear();
+            imp.Reset();
             var cdcr = await eo.ExecuteAsync(null).ConfigureAwait(false);
-            WriteResult(cdcr, tep);
+            WriteResult(cdcr, imp);
 
             Assert.NotNull(cdcr);
             Assert.IsTrue(cdcr.IsSuccessful);
             Assert.IsNull(cdcr.Batch);
             Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(0, tep.Events.Count);
+            Assert.AreEqual(0, imp.GetEvents().Length);
 
             return cdcr;
         }

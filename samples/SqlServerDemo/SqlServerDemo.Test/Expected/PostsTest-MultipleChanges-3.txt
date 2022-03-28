@@ -1,11 +1,5 @@
 ﻿{
-  "specversion": "1.0",
-  "type": "legacy.post.created",
-  "source": "/database/cdc/legacy/posts",
-  "subject": "legacy.post.4",
-  "action": "created",
-  "datacontenttype": "application/json",
-  "data": {
+  "value": {
     "postsId": 4,
     "text": "Blah 4",
     "date": "2020-01-01T00:00:00",
@@ -16,5 +10,9 @@
         "date": "2020-01-01T00:00:00"
       }
     ]
-  }
+  },
+  "subject": "legacy.post.4",
+  "action": "created",
+  "type": "legacy.post.created",
+  "source": "/database/cdc/legacy/posts"
 }

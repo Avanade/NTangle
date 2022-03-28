@@ -1,4 +1,6 @@
-﻿using NTangle.Test;
+﻿using CoreEx.Events;
+using CoreEx.Json;
+using NTangle.Test;
 using NUnit.Framework;
 using SqlServerDemo.Publisher.Data;
 using System.Threading.Tasks;
@@ -18,10 +20,10 @@ namespace SqlServerDemo.Test
             var logger = UnitTest.GetLogger<CustomerCdcOrchestrator>();
 
             // Execute should pick up the update and delete.
-            var tep = new TestEventPublisher();
-            var cdc = new CustomerCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new CustomerCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -31,7 +33,7 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(0, cdcr.ExecuteStatus.InitialCount);
             Assert.IsNull(cdcr.ExecuteStatus.ConsolidatedCount);
             Assert.IsNull(cdcr.ExecuteStatus.PublishCount);
-            Assert.AreEqual(0, tep.Events.Count);
+            Assert.AreEqual(0, imp.GetEvents().Length);
         }
     }
 }

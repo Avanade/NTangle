@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx.Configuration;
+using CoreEx.Hosting;
 using DbEx;
+using DbEx.SqlServer;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NTangle.Events;
 using NTangle.Services;
 using System;
 using System.Diagnostics;
 using System.Linq;
 
-namespace NTangle
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Adds <see cref="IServiceCollection"/> extension methods.
@@ -39,29 +40,28 @@ namespace NTangle
         private static IServiceCollection CheckServices(IServiceCollection services) => services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
-        /// Adds the <typeparamref name="T"/> <see cref="HostedService"/> using the <see cref="ServiceCollectionHostedServiceExtensions.AddHostedService{THostedService}(IServiceCollection)"/>. 
+        /// Adds the <typeparamref name="THostedService"/> <see cref="ICdcHostedService"/> using the <see cref="ServiceCollectionHostedServiceExtensions.AddHostedService{THostedService}(IServiceCollection)"/>. 
         /// </summary>
-        /// <typeparam name="T">The <see cref="HostedService"/> <see cref="Type"/>.</typeparam>
+        /// <typeparam name="THostedService">The <see cref="ICdcHostedService"/> <see cref="Type"/>.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="config">The <see cref="IConfiguration"/>.</param>
-        /// <remarks>Before adding checks whether the <typeparamref name="T"/> has been specified within the comma-separated list of selected services defined in the <paramref name="config"/> using the <see cref="ServicesKey"/> to confirm.
-        /// Where no selected services have been specified within the <paramref name="config"/> then the service will always be added.</remarks>
+        /// <remarks>Before adding, checks whether the <typeparamref name="THostedService"/> has been specified within the comma-separated list of selected services defined in <see cref="SettingsBase"/> using the <see cref="ServicesKey"/> to confirm.
+        /// Where no selected services have been specified within the <see cref="SettingsBase"/> then the service will always be added.</remarks>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddNTangleHostedService<T>(this IServiceCollection services, IConfiguration config) where T : HostedService
+        public static IServiceCollection AddCdcHostedService<THostedService>(this IServiceCollection services) where THostedService : class, ICdcHostedService
         {
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
-            var svcs = (config ?? throw new ArgumentNullException(nameof(config))).GetValue<string?>(ServicesKey);
+            var svcs = services.BuildServiceProvider().GetRequiredService<SettingsBase>().GetValue<string?>(ServicesKey);
             if (string.IsNullOrEmpty(svcs))
             {
-                services.AddHostedService<T>();
+                services.AddHostedService<THostedService>();
                 return services;
             }
 
             var svcsList = svcs.Split(",", StringSplitOptions.RemoveEmptyEntries);
-            if (svcsList.Contains(typeof(T).Name, StringComparer.OrdinalIgnoreCase) || (typeof(T).Name.EndsWith(HostedServiceSuffix) && svcsList.Contains(typeof(T).Name[..^HostedServiceSuffix.Length], StringComparer.OrdinalIgnoreCase)))
-                services.AddHostedService<T>();
+            if (svcsList.Contains(typeof(THostedService).Name, StringComparer.OrdinalIgnoreCase) || (typeof(THostedService).Name.EndsWith(HostedServiceSuffix) && svcsList.Contains(typeof(THostedService).Name[..^HostedServiceSuffix.Length], StringComparer.OrdinalIgnoreCase)))
+                services.AddHostedService<THostedService>();
 
             return services;
         }
@@ -75,62 +75,23 @@ namespace NTangle
         public static IServiceCollection AddDatabase(this IServiceCollection services, Func<IServiceProvider, IDatabase> create) => CheckServices(services).AddScoped(create ?? throw new ArgumentNullException(nameof(create)));
 
         /// <summary>
-        /// Adds the <see cref="IdentifierGenerator"/> as the <see cref="string"/> <see cref="IIdentifierGenerator{T}"/> singleton service.
+        /// Adds the <see cref="EventOutboxHostedService"/> using the <see cref="ServiceCollectionHostedServiceExtensions.AddHostedService{THostedService}(IServiceCollection)"/>. 
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="eventOutboxDequeueFactory">The function to create an instance of <see cref="EventOutboxDequeueBase"/> (used to set the underlying <see cref="EventOutboxHostedService.EventOutboxDequeueFactory"/> property).</param>
+        /// <param name="partitionKey">The optional partition key.</param>
+        /// <param name="destination">The optional destination name (i.e. queue or topic).</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddStringIdentifierGenerator(this IServiceCollection services) => CheckServices(services).AddSingleton<IIdentifierGenerator<string>, IdentifierGenerator>();
-
-        /// <summary>
-        /// Adds the <see cref="IdentifierGenerator"/> as the <see cref="Guid"/> <see cref="IIdentifierGenerator{T}"/> singleton service.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddGuidIdentifierGenerator(this IServiceCollection services) => CheckServices(services).AddSingleton<IIdentifierGenerator<Guid>, IdentifierGenerator>();
-
-        /// <summary>
-        /// Adds the <see cref="CloudEventSerializer"/> as the <see cref="IEventSerializer"/> scoped service.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddCloudEventSerializer(this IServiceCollection services) => CheckServices(services).AddScoped<IEventSerializer, CloudEventSerializer>();
-
-        /// <summary>
-        /// Adds the <see cref="LoggerEventPublisher"/> as the <see cref="IEventPublisher"/> scoped service.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddLoggerEventPublisher(this IServiceCollection services) => CheckServices(services).AddScoped<IEventPublisher, LoggerEventPublisher>();
-
-        /// <summary>
-        /// Adds the <see cref="FileLockSynchronizer"/> as the <see cref="IServiceSynchronizer"/> scoped service.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddFileLockSynchronizer(this IServiceCollection services) => CheckServices(services).AddScoped<IServiceSynchronizer, FileLockSynchronizer>();
-
-        /// <summary>
-        /// Adds the <see cref="OutboxDequeueHostedService"/>(s) (see <see cref="HostedService"/>) whilst also adding the corresponding <typeparamref name="TPublisher"/> as the <see cref="IOutboxEventPublisher"/> scoped service.
-        /// </summary>
-        /// <typeparam name="TPublisher">The <see cref="IOutboxEventPublisher"/> <see cref="Type"/>.</typeparam>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="config">The <see cref="IConfiguration"/>.</param>
-        /// <param name="partitionKeys">The optional list of partition keys; one <see cref="OutboxDequeueHostedService"/> instance will be started per specified key.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        /// <remarks>To turn off the execution of the hosted service at runtime set the '<c>OutboxDequeue</c>' configuration setting to <c>false</c>.</remarks>
-        public static IServiceCollection AddOutboxDequeueHostedService<TPublisher>(this IServiceCollection services, IConfiguration config, params string?[] partitionKeys) where TPublisher : class, IOutboxEventPublisher
+        /// <remarks>To turn off the execution of the <see cref="EventOutboxHostedService"/>(s) at runtime set the '<c>EventOutboxHostedService</c>' configuration setting to <c>false</c>.</remarks>
+        public static IServiceCollection AddEventOutboxHostedService(this IServiceCollection services, Func<IServiceProvider, EventOutboxDequeueBase> eventOutboxDequeueFactory, string? partitionKey = null, string? destination = null)
         {
-            var exe = (config ?? throw new System.ArgumentNullException(nameof(config))).GetValue<bool?>("OutboxDequeue");
+            var exe = services.BuildServiceProvider().GetRequiredService<SettingsBase>().GetValue<bool?>("EventOutboxHostedService");
             if (!exe.HasValue || exe.Value)
             {
-                services.AddScoped<IOutboxEventPublisher, TPublisher>();
-                if (partitionKeys == null || partitionKeys.Length == 0)
-                    partitionKeys = new string?[] { null };
-
-                foreach (var pk in partitionKeys.Distinct())
+                services.AddHostedService(sp => new EventOutboxHostedService(sp, sp.GetRequiredService<ILogger<EventOutboxHostedService>>(), sp.GetRequiredService<SettingsBase>(), sp.GetRequiredService<IServiceSynchronizer>(), partitionKey, destination)
                 {
-                    services.AddHostedService(sp => new OutboxDequeueHostedService(sp, sp.GetRequiredService<ILogger<OutboxDequeueHostedService>>(), config, sp.GetRequiredService<IServiceSynchronizer>(), pk));
-                }
+                    EventOutboxDequeueFactory = eventOutboxDequeueFactory ?? throw new ArgumentNullException(nameof(eventOutboxDequeueFactory))
+                });
             }
 
             return services;

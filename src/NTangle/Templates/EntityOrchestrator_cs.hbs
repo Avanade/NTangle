@@ -6,8 +6,15 @@
 #nullable enable
 #pragma warning disable
 
+using CoreEx;
+using CoreEx.Entities;
+using CoreEx.Events;
+using CoreEx.Json;
 using DbEx;
 using Microsoft.Extensions.Logging;
+{{#ifeq Root.JsonSerializer 'Newtonsoft'}}
+using Newtonsoft.Json;
+{{/ifeq}}
 using NTangle;
 using NTangle.Cdc;
 using NTangle.Data;
@@ -15,6 +22,9 @@ using NTangle.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+{{#ifeq Root.JsonSerializer 'SystemText'}}
+using System.Text.Json.Serialization;
+{{/ifeq}}
 using System.Threading.Tasks;
 using {{Root.NamespacePublisher}}.Entities;
 
@@ -45,7 +55,8 @@ namespace {{Root.NamespacePublisher}}.Data
         /// Initializes a new instance of the <see cref="{{Model}}CdcOrchestrator"/> class.
         /// </summary>
         /// <param name="db">The <see cref="{{Database}}"/>.</param>
-        /// <param name="evtPub">The <see cref="IEventPublisher"/>.</param>
+        /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
+        /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
 {{#if UsesGlobalIdentifier}}
         /// <param name="idGen">The <see cref="IIdentifierGenerator{T}"/>.</param>
@@ -53,8 +64,8 @@ namespace {{Root.NamespacePublisher}}.Data
 {{#each OrchestratorCtorParameters}}
         /// <param name="{{ArgumentName}}">{{{Text}}}</param>
 {{/each}}
-        public {{Model}}CdcOrchestrator({{Database}} db, IEventPublisher evtPub, ILogger<{{Model}}CdcOrchestrator> logger{{#if UsesGlobalIdentifier}}, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen{{/if}}{{#each OrchestratorCtorParameters}}, {{Type}} {{ArgumentName}}{{/each}}) :
-            base(db, "[{{CdcSchema}}].[{{ExecuteStoredProcedure}}]", "[{{CdcSchema}}].[{{CompleteStoredProcedure}}]", evtPub, logger{{#if UsesGlobalIdentifier}}, "[{{Root.CdcSchema}}].[{{Root.IdentifierMappingStoredProcedure}}]", idGen, new IdentifierMappingMapper<{{Root.IdentifierMappingDotNetType}}>(){{/if}}){{#ifeq OrchestratorCtorParameters.Count 0}} => {{Model}}CdcOrchestratorCtor();{{/ifeq}}
+        public {{Model}}CdcOrchestrator({{Database}} db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger<{{Model}}CdcOrchestrator> logger{{#if UsesGlobalIdentifier}}, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen{{/if}}{{#each OrchestratorCtorParameters}}, {{Type}} {{ArgumentName}}{{/each}}) :
+            base(db, "[{{CdcSchema}}].[{{ExecuteStoredProcedure}}]", "[{{CdcSchema}}].[{{CompleteStoredProcedure}}]", eventPublisher, jsonSerializer, logger{{#if UsesGlobalIdentifier}}, "[{{Root.CdcSchema}}].[{{Root.IdentifierMappingStoredProcedure}}]", idGen, new IdentifierMappingMapper<{{Root.IdentifierMappingDotNetType}}>(){{/if}}){{#ifeq OrchestratorCtorParameters.Count 0}} => {{Model}}CdcOrchestratorCtor();{{/ifeq}}
 {{#ifne OrchestratorCtorParameters.Count 0}}
         {
   {{#each OrchestratorCtorParameters}}
@@ -126,12 +137,15 @@ namespace {{Root.NamespacePublisher}}.Data
         public class {{Model}}CdcEnvelope : {{Model}}Cdc, IEntityEnvelope
         {
             /// <inheritdoc/>
-            public OperationType DatabaseOperationType { get; set; }
+            [JsonIgnore]
+            public CdcOperationType DatabaseOperationType { get; set; }
 
             /// <inheritdoc/>
+            [JsonIgnore]
             public string? DatabaseTrackingHash { get; set; }
 
             /// <inheritdoc/>
+            [JsonIgnore]
             public byte[] DatabaseLsn { get; set; }
         }
 
@@ -159,7 +173,7 @@ namespace {{Root.NamespacePublisher}}.Data
                 {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"),
   {{/each}}
 {{/each}}
-                DatabaseOperationType = record.GetValue<OperationType>("_OperationType"),
+                DatabaseOperationType = record.GetValue<CdcOperationType>("_OperationType"),
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
             };

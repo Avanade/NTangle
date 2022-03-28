@@ -58,7 +58,7 @@ namespace NTangle.Config
         /// Indicates whether to create the `Cdc`-Schema within the database.
         /// </summary>
         [JsonProperty("cdcSchemaCreate", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Key", Title = "Indicates whether to create the CDC Schema within the database.",
+        [CodeGenProperty("Key", Title = "Indicates whether to create the `CdcSchema` within the database.",
             Description = "Defaults to `false`.")]
         public bool? CdcSchemaCreate { get; set; }
 
@@ -149,8 +149,8 @@ namespace NTangle.Config
         /// Get or sets the JSON Serializer to use for JSON property attribution.
         /// </summary>
         [JsonProperty("jsonSerializer", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("CDC", Title = "The JSON Serializer to use for JSON property attribution.", Options = new string[] { "Newtonsoft" },
-            Description = "Defaults to `Newtonsoft`.")]
+        [CodeGenProperty("CDC", Title = "The JSON Serializer to use for JSON property attribution.", Options = new string[] { "SystemText", "Newtonsoft" },
+            Description = "Defaults to `SystemText`.")]
         public string? JsonSerializer { get; set; }
 
         /// <summary>
@@ -230,8 +230,16 @@ namespace NTangle.Config
         /// </summary>
         [JsonProperty("outboxSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Outbox", Title = "The schema name of the event outbox table.",
-            Description = "Defaults to `CdcSchema`.")]
+            Description = "Defaults to `Outbox` (literal).")]
         public string? OutboxSchema { get; set; }
+
+        /// <summary>
+        /// Indicates whether to create the `Outbox`-Schema within the database.
+        /// </summary>
+        [JsonProperty("outboxSchemaCreate", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Key", Title = "Indicates whether to create the `OutboxSchema` within the database.",
+            Description = "Defaults to `false`.")]
+        public bool? OutboxSchemaCreate { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the event outbox table.
@@ -317,9 +325,17 @@ namespace NTangle.Config
         /// Gets or sets the Namespace (root) for the CDC-related publisher .NET artefacts.
         /// </summary>
         [JsonProperty("namespacePublisher", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Namespace", Title = "The Namespace (root) for the CDC-related publisher .NET artefacts.",
+        [CodeGenProperty("Namespace", Title = "The Namespace (root) for the CDC-related Publisher .NET artefacts.",
             Description = "Defaults to `NamespaceBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.")]
         public string? NamespacePublisher { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Namespace (root) for the outbox-related .NET artefacts.
+        /// </summary>
+        [JsonProperty("namespaceOutbox", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Namespace", Title = "The Namespace (root) for the Outbox-related Publisher .NET artefacts.",
+            Description = "Defaults to `NamespacePublisher`.")]
+        public string? NamespaceOutbox { get; set; }
 
         #endregion
 
@@ -371,7 +387,7 @@ namespace NTangle.Config
             "Int" => "INT",
             "Long" => "BIGINT",
             "Guid" => "UNIQUEIDENTIFIER",
-            _ => "NVARCHAR(128)"
+            _ => "NVARCHAR(127)"
         };
 
         /// <summary>
@@ -400,13 +416,14 @@ namespace NTangle.Config
             IdentifierMappingStoredProcedure = DefaultWhereNull(IdentifierMappingStoredProcedure, () => "spIdentifierMappingCreate");
             IsDeletedColumn = DefaultWhereNull(IsDeletedColumn, () => "IsDeleted");
             AutoDotNetRename = DefaultWhereNull(AutoDotNetRename, () => "SnakeKebabToPascalCase");
-            JsonSerializer = DefaultWhereNull(JsonSerializer, () => "Newtonsoft");
+            JsonSerializer = DefaultWhereNull(JsonSerializer, () => "SystemText");
             Service = DefaultWhereNull(Service, () => "None");
             EventSourceKind = DefaultWhereNull(EventSubjectFormat, () => "Relative");
             EventSourceFormat = DefaultWhereNull(EventSubjectFormat, () => "NameAndTableKey");
             EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => "NameOnly");
             EventActionFormat = DefaultWhereNull(EventActionFormat, () => "PastTense");
-            OutboxSchema = DefaultWhereNull(OutboxSchema, () => CdcSchema);
+            OutboxSchema = DefaultWhereNull(OutboxSchema, () => "Outbox");
+            OutboxSchemaCreate = DefaultWhereNull(OutboxSchemaCreate, () => false);
             OutboxTable = DefaultWhereNull(OutboxTable, () => "EventOutbox");
             OutboxEnqueueStoredProcedure = DefaultWhereNull(OutboxEnqueueStoredProcedure, () => $"sp{OutboxTable}Enqueue");
             OutboxDequeueStoredProcedure = DefaultWhereNull(OutboxDequeueStoredProcedure, () => $"sp{OutboxTable}Dequeue");
@@ -417,6 +434,7 @@ namespace NTangle.Config
             PathDotNetPublisher = DefaultWhereNull(PathDotNetPublisher, () => $"{PathBase}.Publisher");
             NamespaceBase = DefaultWhereNull(NamespaceBase, () => AppName);
             NamespacePublisher = DefaultWhereNull(NamespacePublisher, () => $"{NamespaceBase}.Publisher");
+            NamespaceOutbox = DefaultWhereNull(NamespaceOutbox, () => NamespacePublisher);
 
             Tables = await PrepareCollectionAsync(Tables).ConfigureAwait(false);
         }
@@ -438,8 +456,8 @@ namespace NTangle.Config
             DbTables = await db.SelectSchemaAsync().ConfigureAwait(false);
 
             sw.Stop();
-            CodeGenArgs.Logger?.Log(LogLevel.Information, $"    Database schema query complete [{sw.ElapsedMilliseconds}ms]");
-            CodeGenArgs.Logger?.Log(LogLevel.Information, string.Empty);
+            CodeGenArgs.Logger?.Log(LogLevel.Information, "{Content}", $"    Database schema query complete [{sw.ElapsedMilliseconds}ms]");
+            CodeGenArgs.Logger?.Log(LogLevel.Information, "{Content}", string.Empty);
         }
 
         /// <summary>

@@ -1,11 +1,9 @@
 ﻿{
-  "specversion": "1.0",
-  "type": "legacy.post.deleted",
-  "source": "/database/cdc/legacy/posts",
+  "value": {
+    "postsId": 1
+  },
   "subject": "legacy.post.1",
   "action": "deleted",
-  "datacontenttype": "application/json",
-  "data": {
-    "postsId": 1
-  }
+  "type": "legacy.post.deleted",
+  "source": "/database/cdc/legacy/posts"
 }

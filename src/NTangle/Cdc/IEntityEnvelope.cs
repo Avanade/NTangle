@@ -8,9 +8,9 @@ namespace NTangle.Cdc
     public interface IEntityEnvelope : IEntity
     {
         /// <summary>
-        /// Gets or sets the database CDC <see cref="OperationType"/>.
+        /// Gets or sets the database CDC <see cref="CdcOperationType"/>.
         /// </summary>
-        OperationType DatabaseOperationType { get; set; }
+        CdcOperationType DatabaseOperationType { get; set; }
 
         /// <summary>
         /// Gets or sets the database tracking hash code.

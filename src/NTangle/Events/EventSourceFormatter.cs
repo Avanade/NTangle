@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx.Entities;
 using System;
 
 namespace NTangle.Events
@@ -33,6 +34,6 @@ namespace NTangle.Events
         /// <summary>
         /// Create new extended URI.
         /// </summary>
-        private static Uri CreateUri(Uri source, string path) => new Uri($"{source.OriginalString}/{path}", source.IsAbsoluteUri ? UriKind.Absolute : UriKind.Relative);
+        private static Uri CreateUri(Uri source, string path) => new($"{source.OriginalString}/{path}", source.IsAbsoluteUri ? UriKind.Absolute : UriKind.Relative);
     }
 }

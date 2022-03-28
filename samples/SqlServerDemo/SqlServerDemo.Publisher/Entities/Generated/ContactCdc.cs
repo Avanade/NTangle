@@ -5,11 +5,12 @@
 #nullable enable
 #pragma warning disable
 
-using Newtonsoft.Json;
+using CoreEx.Entities;
 using NTangle;
 using NTangle.Cdc;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SqlServerDemo.Publisher.Entities
@@ -17,88 +18,92 @@ namespace SqlServerDemo.Publisher.Entities
     /// <summary>
     /// Represents the CDC model for the root (parent) database table '[Legacy].[Contact]'.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public partial class ContactCdc : IEntity, IPartitionKey, IGlobalIdentifier<string>, ILinkIdentifierMapping<string>
     {
         /// <inheritdoc/>
-        [JsonProperty("globalId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("globalId")]
         public string? GlobalId { get; set; }
 
         /// <summary>
         /// Gets or sets the CID '[Legacy].[Contact].[ContactId]' column value.
         /// </summary>
+        [JsonIgnore]
         public int CID { get; set; }
 
         /// <summary>
         /// Gets or sets the Name '[Legacy].[Contact].[Name]' column value.
         /// </summary>
-        [JsonProperty("name", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("name")]
         public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the Phone '[Legacy].[Contact].[Phone]' column value.
         /// </summary>
-        [JsonProperty("phone", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("phone")]
         public string? Phone { get; set; }
 
         /// <summary>
         /// Gets or sets the Email '[Legacy].[Contact].[Email]' column value.
         /// </summary>
-        [JsonProperty("email", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("email")]
         public string? Email { get; set; }
 
         /// <summary>
         /// Gets or sets the Active '[Legacy].[Contact].[Active]' column value.
         /// </summary>
-        [JsonProperty("active", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("active")]
         public bool? Active { get; set; }
 
         /// <summary>
         /// Gets or sets the Dont Call List '[Legacy].[Contact].[DontCallList]' column value.
         /// </summary>
-        [JsonProperty("dontCallList", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("dontCallList")]
         public bool? DontCallList { get; set; }
 
         /// <summary>
         /// Gets or sets the Address Id '[Legacy].[Contact].[AddressId]' column value.
         /// </summary>
-        [JsonProperty("addressId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("addressId")]
         public int? AddressId { get; set; }
 
         /// <summary>
         /// Gets or sets the Alternate Contact Id '[Legacy].[Contact].[AlternateContactId]' column value.
         /// </summary>
+        [JsonIgnore]
         public int? AlternateContactId { get; set; }
 
         /// <summary>
         /// Gets or sets the Global Alternate Contact Id '[Legacy].[Contact].[AlternateContactId]' mapped identifier value.
         /// </summary>
-        [JsonProperty("globalAlternateContactId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("globalAlternateContactId")]
         public string? GlobalAlternateContactId { get; set; }
 
         /// <summary>
         /// Gets or sets the Unique Id column value (left join table '[Legacy].[ContactMapping].[UniqueId]').
         /// </summary>
-        [JsonProperty("uniqueId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("uniqueId")]
         public Guid UniqueId { get; set; }
 
         /// <summary>
         /// Gets or sets the related (one-to-one) <see cref="ContactCdc.Address"/> (database table '[Legacy].[Address]').
         /// </summary>
-        [JsonProperty("address", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("address")]
         public ContactCdc.AddressCdc? Address { get; set; }
 
         /// <inheritdoc/>
-        [JsonProperty("etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("etag")]
         public string? ETag { get; set; }
 
         /// <inheritdoc/>
+        [JsonIgnore]
         public CompositeKey PrimaryKey => new CompositeKey(GlobalId);
 
         /// <inheritdoc/>
+        [JsonIgnore]
         public string? PartitionKey => "Contact";
 
         /// <inheritdoc/>
+        [JsonIgnore]
         public CompositeKey TableKey => new CompositeKey(CID);
 
         /// <inheritdoc/>
@@ -122,45 +127,48 @@ namespace SqlServerDemo.Publisher.Entities
         /// <summary>
         /// Represents the CDC model for the related (child) database table '[Legacy].[Address]' (known uniquely as 'Address').
         /// </summary>
-        [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
         public partial class AddressCdc : IPrimaryKey, IGlobalIdentifier<string>, ILinkIdentifierMapping<string>
         {
             /// <inheritdoc/>
-            [JsonProperty("globalId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            [JsonPropertyName("globalId")]
             public string? GlobalId { get; set; }
 
             /// <summary>
             /// Gets or sets the Address Id '[Legacy].[Address].[AddressId]' column value. This column is used within the join.
             /// </summary>
+            [JsonIgnore]
             public int AddressId { get; set; }
 
             /// <summary>
             /// Gets or sets the Street1 '[Legacy].[Address].[Street1]' column value.
             /// </summary>
-            [JsonProperty("street1", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            [JsonPropertyName("street1")]
             public string? Street1 { get; set; }
 
             /// <summary>
             /// Gets or sets the Street2 '[Legacy].[Address].[Street2]' column value.
             /// </summary>
-            [JsonProperty("street2", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            [JsonPropertyName("street2")]
             public string? Street2 { get; set; }
 
             /// <summary>
             /// Gets or sets the Alternate Address Id '[Legacy].[Address].[AlternateAddressId]' column value.
             /// </summary>
+            [JsonIgnore]
             public int? AlternateAddressId { get; set; }
 
             /// <summary>
             /// Gets or sets the Global Alternate Address Id '[Legacy].[Address].[AlternateAddressId]' mapped identifier value.
             /// </summary>
-            [JsonProperty("globalAlternateAddressId", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            [JsonPropertyName("globalAlternateAddressId")]
             public string? GlobalAlternateAddressId { get; set; }
 
             /// <inheritdoc/>
+            [JsonIgnore]
             public CompositeKey PrimaryKey => new CompositeKey(AddressId);
 
             /// <inheritdoc/>
+            [JsonIgnore]
             public CompositeKey TableKey => new CompositeKey(AddressId);
 
             /// <inheritdoc/>

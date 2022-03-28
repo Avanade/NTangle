@@ -1,3 +1,5 @@
+using CoreEx.Events;
+using CoreEx.Json;
 using NTangle.Data;
 using NTangle.Test;
 using NUnit.Framework;
@@ -61,10 +63,10 @@ namespace SqlServerDemo.Test
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
 
-            var tep = new TestEventPublisher();
-            var cdc = new PostCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -82,9 +84,9 @@ namespace SqlServerDemo.Test
             using var db = SqlServerUnitTest.GetDatabase();
             var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
 
-            var tep = new TestEventPublisher();
-            var cdc = new PostCdcOrchestrator(db, tep, logger);
-            var cdcr = await UnitTest.AssertNoFurtherChanges(cdc, tep).ConfigureAwait(false);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdcr = await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
 
             Assert.AreEqual(0, cdcr.ExecuteStatus?.InitialCount);
             Assert.IsNull(cdcr.ExecuteStatus?.ConsolidatedCount);
@@ -109,10 +111,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute picking up the changes.
-            var tep = new TestEventPublisher();
-            var cdc = new PostCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -126,14 +128,16 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(3, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(3, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(3, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(3, tep.Events.Count);
 
-            UnitTest.AssertEvent("PostsTest-MultipleChanges-1.txt", tep.Events[0]);
-            UnitTest.AssertEvent("PostsTest-MultipleChanges-2.txt", tep.Events[1]);
-            UnitTest.AssertEvent("PostsTest-MultipleChanges-3.txt", tep.Events[2]);
+            var events = imp.GetEvents();
+            Assert.AreEqual(3, events.Length);
+
+            UnitTest.AssertEvent("PostsTest-MultipleChanges-1.txt", events[0]);
+            UnitTest.AssertEvent("PostsTest-MultipleChanges-2.txt", events[1]);
+            UnitTest.AssertEvent("PostsTest-MultipleChanges-3.txt", events[2]);
 
             // Ensure procesed correctly, execute again with no changes.
-            await UnitTest.AssertNoFurtherChanges(cdc, tep).ConfigureAwait(false);
+            await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
         }
 
         [Test]
@@ -151,10 +155,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute picking up the _delete_ only.
-            var tep = new TestEventPublisher();
-            var cdc = new PostCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -168,12 +172,14 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, tep.Events.Count);
 
-            UnitTest.AssertEvent("PostsTest-UpdateThenDelete.txt", tep.Events[0]);
+            var events = imp.GetEvents();
+            Assert.AreEqual(1, events.Length);
+
+            UnitTest.AssertEvent("PostsTest-UpdateThenDelete.txt", events[0]);
 
             // Ensure procesed correctly, execute again with no changes.
-            await UnitTest.AssertNoFurtherChanges(cdc, tep).ConfigureAwait(false);
+            await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
         }
 
         [Test]
@@ -193,10 +199,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute picking up nothing.
-            var tep = new TestEventPublisher();
-            var cdc = new PostCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -210,10 +216,10 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(0, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(0, tep.Events.Count);
+            Assert.AreEqual(0, imp.GetEvents().Length);
 
             // Ensure procesed correctly, execute again with no changes.
-            await UnitTest.AssertNoFurtherChanges(cdc, tep).ConfigureAwait(false);
+            await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
         }
 
         [Test]
@@ -230,10 +236,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute picking up the changes resulting in a new event and corresponding version record.
-            var tep = new TestEventPublisher();
-            var cdc = new PostCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -247,7 +253,7 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, tep.Events.Count);
+            Assert.AreEqual(1, imp.GetEvents().Length);
 
             // Replay the database changes; i.e. change and then change back to original.
             script =
@@ -258,9 +264,9 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute picking up the changes but should have no event due to same version.
-            tep.Events.Clear();
+            imp.Reset();
             cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -274,10 +280,10 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(0, tep.Events.Count);
+            Assert.AreEqual(0, imp.GetEvents().Length);
 
             // Ensure procesed correctly, execute again with no changes.
-            await UnitTest.AssertNoFurtherChanges(cdc, tep).ConfigureAwait(false);
+            await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
         }
 
         [Test]
@@ -298,10 +304,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute picking up the changes _but_ discovering a data loss situation.
-            var tep = new TestEventPublisher();
-            var cdc = new PostCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -331,10 +337,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute picking up the changes contuning with the data loss situation.
-            var tep = new TestEventPublisher();
-            var cdc = new PostCdcOrchestrator(db, tep, logger) { ContinueWithDataLoss = true };
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger) { ContinueWithDataLoss = true };
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -359,10 +365,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute picking up the changes.
-            var tep = new TestEventPublisher();
-            var cdc = new PostCdcOrchestrator(db, tep, logger);
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -376,7 +382,7 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, tep.Events.Count);
+            Assert.AreEqual(1, imp.GetEvents().Length);
 
             // Set the last batch to incomplete and delete version tracking so i will publish event again - simulate batch failure.
             script =
@@ -386,9 +392,9 @@ namespace SqlServerDemo.Test
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
 
             // Execute picking up the existing batch and re-completing.
-            tep.Events.Clear();
+            imp.Reset();
             var cdcr2 = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr2, tep);
+            UnitTest.WriteResult(cdcr2, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr2);
@@ -405,7 +411,7 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, tep.Events.Count);
+            Assert.AreEqual(1, imp.GetEvents().Length);
         }
     }
 }

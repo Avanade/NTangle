@@ -5,6 +5,10 @@
 #nullable enable
 #pragma warning disable
 
+using CoreEx;
+using CoreEx.Entities;
+using CoreEx.Events;
+using CoreEx.Json;
 using DbEx;
 using Microsoft.Extensions.Logging;
 using NTangle;
@@ -14,6 +18,7 @@ using NTangle.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using SqlServerDemo.Publisher.Entities;
 
@@ -36,11 +41,12 @@ namespace SqlServerDemo.Publisher.Data
         /// Initializes a new instance of the <see cref="ContactCdcOrchestrator"/> class.
         /// </summary>
         /// <param name="db">The <see cref="IDatabase"/>.</param>
-        /// <param name="evtPub">The <see cref="IEventPublisher"/>.</param>
+        /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
+        /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="idGen">The <see cref="IIdentifierGenerator{T}"/>.</param>
-        public ContactCdcOrchestrator(IDatabase db, IEventPublisher evtPub, ILogger<ContactCdcOrchestrator> logger, IIdentifierGenerator<string> idGen) :
-            base(db, "[NTangle].[spContactBatchExecute]", "[NTangle].[spContactBatchComplete]", evtPub, logger, "[NTangle].[spIdentifierMappingCreate]", idGen, new IdentifierMappingMapper<string>()) => ContactCdcOrchestratorCtor();
+        public ContactCdcOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger<ContactCdcOrchestrator> logger, IIdentifierGenerator<string> idGen) :
+            base(db, "[NTangle].[spContactBatchExecute]", "[NTangle].[spContactBatchComplete]", eventPublisher, jsonSerializer, logger, "[NTangle].[spIdentifierMappingCreate]", idGen, new IdentifierMappingMapper<string>()) => ContactCdcOrchestratorCtor();
 
         partial void ContactCdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
@@ -87,12 +93,15 @@ namespace SqlServerDemo.Publisher.Data
         public class ContactCdcEnvelope : ContactCdc, IEntityEnvelope
         {
             /// <inheritdoc/>
-            public OperationType DatabaseOperationType { get; set; }
+            [JsonIgnore]
+            public CdcOperationType DatabaseOperationType { get; set; }
 
             /// <inheritdoc/>
+            [JsonIgnore]
             public string? DatabaseTrackingHash { get; set; }
 
             /// <inheritdoc/>
+            [JsonIgnore]
             public byte[] DatabaseLsn { get; set; }
         }
 
@@ -120,7 +129,7 @@ namespace SqlServerDemo.Publisher.Data
                 AlternateContactId = record.GetValue<int?>("AlternateContactId"),
                 GlobalAlternateContactId = record.GetValue<string?>("GlobalAlternateContactId"),
                 UniqueId = record.GetValue<Guid>("UniqueId"),
-                DatabaseOperationType = record.GetValue<OperationType>("_OperationType"),
+                DatabaseOperationType = record.GetValue<CdcOperationType>("_OperationType"),
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
             };

@@ -1,4 +1,7 @@
-﻿using NTangle;
+﻿using CoreEx.Entities;
+using CoreEx.Events;
+using CoreEx.Json;
+using NTangle;
 using NTangle.Test;
 using NUnit.Framework;
 using SqlServerDemo.Publisher.Data;
@@ -56,10 +59,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute should pick up and allocate all new global identifiers.
-            var tep = new TestEventPublisher();
-            var cdc = new ContactCdcOrchestrator(db, tep, logger, new IdentifierGenerator());
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new ContactCdcOrchestrator(db, imp, JsonSerializer.Default, logger, new IdentifierGenerator());
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -70,12 +73,14 @@ namespace SqlServerDemo.Test
             Assert.IsNotNull(cdcr.Batch.CorrelationId);
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(1, tep.Events.Count);
 
-            UnitTest.AssertEvent("ContactTest-GenerateAllIdentifiers.txt", tep.Events[0], "data.globalId", "data.globalAlternateContactId", "data.address.globalId", "data.address.globalAlternateAddressId");
+            var events = imp.GetEvents();
+            Assert.AreEqual(1, events.Length);
+
+            UnitTest.AssertEvent("ContactTest-GenerateAllIdentifiers.txt", events[0], "value.globalId", "value.globalAlternateContactId", "value.address.globalId", "value.address.globalAlternateAddressId");
 
             // Check the event identifiers.
-            var c = UnitTest.GetEventData<ContactCdc>(tep.Events[0]);
+            var c = UnitTest.GetEventData<ContactCdc>(events[0]);
             Assert.NotNull(c.GlobalId);
             Assert.NotNull(c.GlobalAlternateContactId);
             Assert.NotNull(c.Address?.GlobalId);
@@ -87,9 +92,9 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute should pick up and reuse all the previous global identifiers.
-            tep.Events.Clear();
+            imp.Reset();
             cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -103,10 +108,11 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, tep.Events.Count);
+            events = imp.GetEvents();
+            Assert.AreEqual(1, events.Length);
 
             // Check the event identifiers.
-            var c2 = UnitTest.GetEventData<ContactCdc>(tep.Events[0]);
+            var c2 = UnitTest.GetEventData<ContactCdc>(events[0]);
             Assert.AreEqual(c.GlobalId, c2.GlobalId);
             Assert.AreEqual(c.GlobalAlternateContactId, c2.GlobalAlternateContactId);
             Assert.AreEqual(c.Address?.GlobalId, c2.Address?.GlobalId);
@@ -130,10 +136,10 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute should pick up and reuse all the previous global identifiers.
-            var tep = new TestEventPublisher();
-            var cdc = new ContactCdcOrchestrator(db, tep, logger, new IdentifierGenerator());
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new ContactCdcOrchestrator(db, imp, JsonSerializer.Default, logger, new IdentifierGenerator());
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
-            UnitTest.WriteResult(cdcr, tep);
+            UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
             Assert.NotNull(cdcr);
@@ -147,12 +153,14 @@ namespace SqlServerDemo.Test
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, tep.Events.Count);
 
-            UnitTest.AssertEvent("ContactTest-UsePreassignedIdentifiers.txt", tep.Events[0], "data.globalId", "data.globalAlternateContactId", "data.address.globalId", "data.address.globalAlternateAddressId");
+            var events = imp.GetEvents();
+            Assert.AreEqual(1, events.Length);
+
+            UnitTest.AssertEvent("ContactTest-UsePreassignedIdentifiers.txt", events[0], "value.globalId", "value.globalAlternateContactId", "value.address.globalId", "value.address.globalAlternateAddressId");
 
             // Check the event identifiers.
-            var c = UnitTest.GetEventData<ContactCdc>(tep.Events[0]);
+            var c = UnitTest.GetEventData<ContactCdc>(events[0]);
             Assert.AreEqual("C1", c.GlobalId);
             Assert.NotNull(c.GlobalAlternateContactId);
             Assert.NotNull(c.Address?.GlobalId);

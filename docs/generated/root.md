@@ -30,9 +30,10 @@ Property | Description
 -|-
 **`schema`** | The default `Schema` name where the existing tables are defined within the database.<br/>&dagger; This is used as the default `Schema` for all child objects. Defaults to `dbo` (literal).
 `cdcSchema` | The schema name for the _ntangle_ generated `CDC`-related database artefacts.<br/>&dagger; Defaults to `NTangle` (literal).
-`cdcSchemaCreate` | Indicates whether to create the CDC Schema within the database.<br/>&dagger; Defaults to `false`.
+`cdcSchemaCreate` | Indicates whether to create the `CdcSchema` within the database.<br/>&dagger; Defaults to `false`.
 `versionTrackingTable` | The table name for the `Cdc`-VersionTracking.<br/>&dagger; Defaults to `VersionTracking` (literal).
 `cdcEnable` | Indicates whether to enable `Cdc` within the database for the tables that participate.<br/>&dagger; Defaults to `false`. This option can be overridden for each underlying table referenced.
+`outboxSchemaCreate` | Indicates whether to create the `OutboxSchema` within the database.<br/>&dagger; Defaults to `false`.
 
 <br/>
 
@@ -87,7 +88,7 @@ Provides the _outbox_ configuration.
 Property | Description
 -|-
 `outbox` | Indicates whether to generate the event outbox SQL and .NET artefacts.<br/>&dagger; Defaults to `false`.
-`outboxSchema` | The schema name of the event outbox table.<br/>&dagger; Defaults to `CdcSchema`.
+`outboxSchema` | The schema name of the event outbox table.<br/>&dagger; Defaults to `Outbox` (literal).
 `outboxTable` | The name of the event outbox table.<br/>&dagger; Defaults to `EventOutbox` (literal).
 `outboxEnqueueStoredProcedure` | The stored procedure name for the event outbox enqueue.<br/>&dagger; Defaults to `spEventOutboxEnqueue` (literal).
 `outboxDequeueStoredProcedure` | The stored procedure name for the event outbox dequeue.<br/>&dagger; Defaults to `spEventOutboxDequeue` (literal).
@@ -113,7 +114,8 @@ Provides the _.NET Namespace_ configuration for the generated artefacts.
 Property | Description
 -|-
 `namespaceBase` | The base Namespace (root) for the .NET artefacts.<br/>&dagger; Defaults to `AppName` (runtime parameter). For example `Avanade.Application`.
-`namespacePublisher` | The Namespace (root) for the CDC-related publisher .NET artefacts.<br/>&dagger; Defaults to `NamespaceBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.
+`namespacePublisher` | The Namespace (root) for the CDC-related Publisher .NET artefacts.<br/>&dagger; Defaults to `NamespaceBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.
+`namespaceOutbox` | The Namespace (root) for the Outbox-related Publisher .NET artefacts.<br/>&dagger; Defaults to `NamespacePublisher`.
 
 <br/>
 

@@ -1,12 +1,5 @@
 ﻿{
-  "specversion": "1.0",
-  "type": "legacy.contact.updated",
-  "source": "/database/cdc/legacy/contact/1",
-  "subject": "legacy.contact",
-  "action": "updated",
-  "partitionkey": "Contact",
-  "datacontenttype": "application/json",
-  "data": {
+  "value": {
     "name": "Name1",
     "phone": "000",
     "active": true,
@@ -15,5 +8,10 @@
     "address": {
       "street1": "Side"
     }
-  }
+  },
+  "subject": "legacy.contact",
+  "action": "updated",
+  "type": "legacy.contact.updated",
+  "source": "/database/cdc/legacy/contact/1",
+  "partitionKey": "Contact"
 }
