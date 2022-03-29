@@ -235,7 +235,7 @@ Parameters:
 Assemblies:
   FooBar.CodeGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   NTangle, Version=1.0.3.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
-  DbEx, Version=1.0.4.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+  DbEx, Version=1.0.5.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
 
 Scripts:
   Querying database to infer table(s)/column(s) schema...
@@ -368,7 +368,7 @@ SchemaOrder =
 OutDir = 
 Assemblies:
   FooBar.Database, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  DbEx, Version=1.0.4.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+  DbEx, Version=1.0.5.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
 
 --------------------------------------------------------------------------------
 
