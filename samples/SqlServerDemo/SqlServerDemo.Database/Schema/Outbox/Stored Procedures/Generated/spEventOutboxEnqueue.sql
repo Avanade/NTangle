@@ -1,4 +1,5 @@
 CREATE PROCEDURE [Outbox].[spEventOutboxEnqueue]
+  @SetEventsAsDequeued AS BIT = 0,
   @EventList AS [Outbox].[udtEventOutboxList] READONLY
 AS
 BEGIN
@@ -14,9 +15,14 @@ BEGIN
 
     -- Working variables.
     DECLARE @eventOutboxId BIGINT,
-            @enqueuedDate DATETIME
+            @enqueuedDate DATETIME,
+            @dequeuedDate DATETIME
 
     SET @enqueuedDate = SYSUTCDATETIME()
+    IF (@SetEventsAsDequeued = 1)
+    BEGIN
+      SET @dequeuedDate = @enqueuedDate
+    END
 
     -- Enqueued outbox resultant identifier.
     DECLARE @enqueuedId TABLE([EventOutboxId] BIGINT)
@@ -47,9 +53,9 @@ BEGIN
     WHILE @@FETCH_STATUS = 0
     BEGIN
         -- Enqueue event into outbox
-        INSERT INTO [Outbox].[EventOutbox] ([EnqueuedDate], [PartitionKey], [Destination])
+        INSERT INTO [Outbox].[EventOutbox] ([EnqueuedDate], [PartitionKey], [Destination], [DequeuedDate])
           OUTPUT inserted.EventOutboxId INTO @enqueuedId
-          VALUES (@enqueuedDate, @partitionKey, @destination)
+          VALUES (@enqueuedDate, @partitionKey, @destination, @dequeuedDate)
 
         SELECT @eventOutboxId = [EventOutboxId] FROM @enqueuedId
 

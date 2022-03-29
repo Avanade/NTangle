@@ -160,7 +160,7 @@ Entity_Interval=00:00:05                // Sets the interval timespan between or
 MaxQuerySize=50                         // Sets the maximum query size for all aggregate entities.
 Entity_MaxQuerySize=50                  // Sets the maximum query size for the specified entity; e.g. Contact_MaxQuerySize=50
 ContinueWithDataLoss=true               // Indicates to continue with potential data loss for all aggregate entities. 
-Entity_ContinueWithDataLoss=true        // Indicates to continue with potential data loss for all aggregate entities.
+Entity_ContinueWithDataLoss=true        // Indicates to continue with potential data loss for for the specified entity; e.g. Contact_ContinueWithDataLoss=true
 Services=Entity1,Entity2,EntityN        // Comma-separated list of entities to be orchestrated; default is all; e.g. Services=Contact,Person
 
 // Outbox dequeue and publish hosted service configuration:
@@ -217,100 +217,101 @@ The `ntangle.yaml` configuration file is pre-configured, and `Program.cs` has th
 The output from the console application should be similar to the following.
 
 ```
-╔╗╔╔╦╗┌─┐┌┐┌┌─┐┬  ┌─┐  ╔═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┐┌  ╔╦╗┌─┐┌─┐┬
-║║║ ║ ├─┤││││ ┬│  ├┤   ║  │ │ ││├┤───║ ╦├┤ │││   ║ │ ││ ││
+╔╗╔╔╦╗┌─┐┌┐┌┌─┐┬  ┌─┐  ╔═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┐┌  ╔╦╗┌─┐┌─┐┬  
+║║║ ║ ├─┤││││ ┬│  ├┤   ║  │ │ ││├┤───║ ╦├┤ │││   ║ │ ││ ││  
 ╝╚╝ ╩ ┴ ┴┘└┘└─┘┴─┘└─┘  ╚═╝└─┘─┴┘└─┘  ╚═╝└─┘┘└┘   ╩ └─┘└─┘┴─┘
 
-NTangle [v1.0.1]
+FooBar.CodeGen Code Generation Tool.
 
 Config = ntangle.yaml
 Script = SqlServerDbEx.yaml
-OutDir = C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar
+OutDir = C:\Users\eric\source\repos\FooBar
 ExpectNoChanges = False
 IsSimulation = False
 Parameters:
-  AppName = FooBar
   CreateDatabase = System.Func`2[System.String,NTangle.Data.SqlServer.SqlServerDatabase]
   DbProvider = SqlServer
+  AppName = FooBar
 Assemblies:
   FooBar.CodeGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  NTangle, Version=1.0.1.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+  NTangle, Version=1.0.3.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+  DbEx, Version=1.0.4.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
 
 Scripts:
   Querying database to infer table(s)/column(s) schema...
-    Database schema query complete [1390ms]
+    Database schema query complete [1723ms]
 
- Template: SqlServer/SpExecuteBatch_sql.hb (TableCodeGenerator: Database/Schema/Xxx/Stored Procedures)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spContactBatchExecute.sql
+ Template: SqlServer/SpExecuteBatch_sql.hbs (TableCodeGenerator: Database/Schema/Xxx/Stored Procedures)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spContactBatchExecute.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SpCompleteBatch_sql.hb (TableCodeGenerator: Database/Schema/Xxx/Stored Procedures)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spContactBatchComplete.sql
+ Template: SqlServer/SpCompleteBatch_sql.hbs (TableCodeGenerator: Database/Schema/Xxx/Stored Procedures)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spContactBatchComplete.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/UdtVersionTracking_sql.hb (RootCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Types\User-Defined Table Types\Generated\udtVersionTrackingList.sql
+ Template: SqlServer/UdtVersionTracking_sql.hbs (RootCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\NTangle\Types\User-Defined Table Types\Generated\udtVersionTrackingList.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SpIdentifierMappingCreate_sql.hb (IdentifierMappingCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
+ Template: SqlServer/SpIdentifierMappingCreate_sql.hbs (IdentifierMappingCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
   [Files: Unchanged = 0, Updated = 0, Created = 0]
- Template: SqlServer/UdtIdentifierMapping_sql.hb (IdentifierMappingCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
+ Template: SqlServer/UdtIdentifierMapping_sql.hbs (IdentifierMappingCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
   [Files: Unchanged = 0, Updated = 0, Created = 0]
- Template: SqlServer/SpOutboxEnqueue_sql.hb (OutboxCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spEventOutboxEnqueue.sql
+ Template: SqlServer/SpEventOutboxEnqueue_sql.hbs (OutboxCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\Outbox\Stored Procedures\Generated\spEventOutboxEnqueue.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SpOutboxDequeue_sql.hb (OutboxCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spEventOutboxDequeue.sql
+ Template: SqlServer/SpEventOutboxDequeue_sql.hbs (OutboxCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\Outbox\Stored Procedures\Generated\spEventOutboxDequeue.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/UdtEventOutbox_sql.hb (OutboxCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Types\User-Defined Table Types\Generated\udtEventOutboxList.sql
+ Template: SqlServer/UdtEventOutbox_sql.hbs (OutboxCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\Outbox\Types\User-Defined Table Types\Generated\udtEventOutboxList.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/VersionTrackingMapper_cs.hb (RootCodeGenerator: Publisher/Data)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Data\Generated\VersionTrackingMapper.cs
+ Template: SqlServer/VersionTrackingMapper_cs.hbs (RootCodeGenerator: Publisher/Data)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\VersionTrackingMapper.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/IdentifierMappingMapper_cs.hb (RootCodeGenerator: Publisher/Data)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Data\Generated\IdentifierMappingMapper.cs
+ Template: SqlServer/IdentifierMappingMapper_cs.hbs (RootCodeGenerator: Publisher/Data)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\IdentifierMappingMapper.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/EventOutboxMapper_cs.hb (RootCodeGenerator: Publisher/Data)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Data\Generated\EventOutboxMapper.cs
+ Template: Entity_cs.hbs (TableCodeGenerator: Publisher/Entities)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Entities\Generated\ContactCdc.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: Entity_cs.hb (TableCodeGenerator: Publisher/Entities)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Entities\Generated\ContactCdc.cs
+ Template: EntityOrchestrator_cs.hbs (TableCodeGenerator: Publisher/Data)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\ContactCdcOrchestrator.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: EntityOrchestrator_cs.hb (TableCodeGenerator: Publisher/Data)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Data\Generated\ContactCdcOrchestrator.cs
+ Template: SqlServer/EventOutboxEnqueue_cs.hbs (OutboxCodeGenerator: Publisher/Events)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\EventOutboxEnqueue.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: OutboxEventPublisher_cs.hb (OutboxCodeGenerator: Publisher/Events)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Events\Generated\OutboxEventPublisher.cs
+ Template: SqlServer/EventOutboxDequeue_cs.hbs (OutboxCodeGenerator: Publisher/Events)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\EventOutboxDequeue.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: OutboxDequeuePublisher_cs.hb (OutboxCodeGenerator: Publisher/Events)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Events\Generated\OutboxDequeuePublisher.cs
+ Template: IServiceCollectionExtensions_cs.hbs (RootCodeGenerator: Publisher)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Generated\IServiceCollectionExtensions.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: ServiceCollectionExtensions_cs.hb (RootCodeGenerator: Publisher)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Generated\ServiceCollectionExtensions.cs
+ Template: EntityHostedService_cs.hbs (RootCodeGenerator: Publisher/Services)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Services\Generated\ContactHostedService.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: EntityHostedService_cs.hb (RootCodeGenerator: Publisher/Services)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Services\Generated\ContactHostedService.cs
+ Template: SqlServer/SchemaCdc_sql.hbs (CdcSchemaCreateCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-01-create-ntangle-schema.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SchemaCdc_sql.hb (CdcSchemaCreateCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-01-create-ntangle-schema.sql
+ Template: SqlServer/TableVersionTracking_sql.hbs (RootCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-02-create-ntangle-versiontracking-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableVersionTracking_sql.hb (RootCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-02-create-ntangle-versiontracking-table.sql
+ Template: SqlServer/TableBatchTracking_sql.hbs (TableCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-03-create-ntangle-contactbatchtracking-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableBatchTracking_sql.hb (TableCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-03-create-ntangle-contactbatchtracking-table.sql
+ Template: SqlServer/SchemaEventOutbox_sql.hbs (OutboxCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-04-create-outbox-eventoutbox-schema.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableEventOutbox_sql.hb (OutboxCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-04-create-ntangle-eventoutbox-table.sql
+ Template: SqlServer/TableEventOutbox_sql.hbs (OutboxCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-05-create-outbox-eventoutbox-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableEventOutboxData_sql.hb (OutboxCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20211203-001316-05-create-ntangle-eventoutboxdata-table.sql
+ Template: SqlServer/TableEventOutboxData_sql.hbs (OutboxCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-06-create-outbox-eventoutboxdata-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableIdentifierMapping_sql.hb (IdentifierMappingCodeGenerator: Database/Migrations (GenOnce))
+ Template: SqlServer/TableIdentifierMapping_sql.hbs (IdentifierMappingCodeGenerator: Database/Migrations (GenOnce))
   [Files: Unchanged = 0, Updated = 0, Created = 0]
- Template: SqlServer/CdcEnable_sql.hb (CdcEnableCodeGenerator: Database/Migrations)
-    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\CdcEnable.post.deploy.sql
+ Template: SqlServer/CdcEnable_sql.hbs (CdcEnableCodeGenerator: Database/Migrations)
+    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\CdcEnable.post.deploy.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
 
-FooBar.CodeGen Complete. [1360ms, Files: Unchanged = 0, Updated = 0, Created = 21, TotalLines = 999]
+FooBar.CodeGen Complete. [1347ms, Files: Unchanged = 0, Updated = 0, Created = 21, TotalLines = 1026]
 ```
 
 <br/>
@@ -327,41 +328,47 @@ As _DbEx_ is being used, the generated artefacts are included in the project aut
     └── yyyymmdd-hhmmss-01-create-ntangle-schema.sql
     └── yyyymmdd-hhmmss-02-create-ntangle-versiontracking-table.sql
     └── yyyymmdd-hhmmss-03-create-ntangle-contactbatchtracking-table.sql
-    └── yyyymmdd-hhmmss-04-create-ntangle-eventoutbox-table.sql
-    └── yyyymmdd-hhmmss-05-create-ntangle-eventoutboxdata-table.sql
+    └── yyyymmdd-hhmmss-04-create-outbox-eventoutbox-schema.sql
+    └── yyyymmdd-hhmmss-05-create-outbox-eventoutbox-table.sql
+    └── yyyymmdd-hhmmss-06-create-outbox-eventoutboxdata-table.sql
     └── CdcEnable.post.deploy.sql
   └── NTangle
     └── Stored Procedures
       └── Generated
         └── spContactBatchComplete.sql
         └── spContactBatchExecute.sql
+    └── Types
+      └── User-Defined Table Types
+        └── Generated
+          └── udtVersionTrackingList.sql
+  └── Outbox
+    └── Stored Procedures
+      └── Generated
         └── spEventOutboxDequeue.sql
         └── spEventOutboxEnqueue.sql
     └── Types
       └── User-Defined Table Types
         └── Generated
           └── udtEventOutboxList.sql
-          └── udtVersionTrackingList.sql
 ```
 
 The `Program.cs` has the correct connection string. Compile the application and execute directly from Visual Studio (after setting the _Application arguments_ to `all` within the `Debug` tab of the `Project Properties`), or using `dotnet run all`.
 
 The output from the console application should be similar to the following.
 
-
 ```
-╔╦╗┌┐ ╔═╗─┐ ┬  ╔╦╗┌─┐┌┬┐┌─┐┌┐ ┌─┐┌─┐┌─┐  ╔╦╗┌─┐┌─┐┬
- ║║├┴┐║╣ ┌┴┬┘   ║║├─┤ │ ├─┤├┴┐├─┤└─┐├┤    ║ │ ││ ││
+╔╦╗┌┐ ╔═╗─┐ ┬  ╔╦╗┌─┐┌┬┐┌─┐┌┐ ┌─┐┌─┐┌─┐  ╔╦╗┌─┐┌─┐┬  
+ ║║├┴┐║╣ ┌┴┬┘   ║║├─┤ │ ├─┤├┴┐├─┤└─┐├┤    ║ │ ││ ││  
 ═╩╝└─┘╚═╝┴ └─  ═╩╝┴ ┴ ┴ ┴ ┴└─┘┴ ┴└─┘└─┘   ╩ └─┘└─┘┴─┘
 
-FooBar.Database [v1.0.0]
+FooBar.Database Database Tool.
 
-Command = All
-SchemaOrder =
-OutDir =
+Command = Deploy
+SchemaOrder = 
+OutDir = 
 Assemblies:
   FooBar.Database, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  DbEx, Version=1.0.1.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+  DbEx, Version=1.0.4.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
 
 --------------------------------------------------------------------------------
 
@@ -378,51 +385,50 @@ DATABASE MIGRATE: Migrating the database...
   Migrate (using DbUp) the embedded resources...
     Beginning database upgrade
     Checking whether journal table exists..
-    Journal table does not exist
-    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-01-create-ntangle-schema.sql'
+    Fetching list of already executed scripts.
+    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-01-create-ntangle-schema.sql'
     Checking whether journal table exists..
-    Creating the [SchemaVersions] table
-    The [SchemaVersions] table has been created
-    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-02-create-ntangle-versiontracking-table.sql'
-    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-03-create-ntangle-contactbatchtracking-table.sql'
-    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-04-create-ntangle-eventoutbox-table.sql'
-    Executing Database Server script 'FooBar.Database.Migrations.20211203-001316-05-create-ntangle-eventoutboxdata-table.sql'
+    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-02-create-ntangle-versiontracking-table.sql'
+    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-03-create-ntangle-contactbatchtracking-table.sql'
+    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-04-create-outbox-eventoutbox-schema.sql'
+    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-05-create-outbox-eventoutbox-table.sql'
+    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-06-create-outbox-eventoutboxdata-table.sql'
     Executing Database Server script 'FooBar.Database.Migrations.CdcEnable.post.deploy.sql'
     Upgrade successful
 
-Complete [7323ms].
+Complete. [8917ms]
 
 --------------------------------------------------------------------------------
 
 DATABASE SCHEMA: Drops and creates the database objects...
-  Probing for files (recursively): C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\*\*.sql
+  Probing for files (recursively): C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\*\*.sql
   Probing for embedded resources: FooBar.Database.Schema.*.sql, DbEx.Schema.*.sql
   Drop (using DbUp) known schema objects...
     Beginning database upgrade
     Checking whether journal table exists..
     Fetching list of already executed scripts.
-    Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spEventOutboxEnqueue]'
+    Executing Database Server script 'DROP PROCEDURE IF EXISTS [Outbox].[spEventOutboxEnqueue]'
     Checking whether journal table exists..
-    Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spEventOutboxDequeue]'
+    Executing Database Server script 'DROP PROCEDURE IF EXISTS [Outbox].[spEventOutboxDequeue]'
     Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spContactBatchExecute]'
     Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spContactBatchComplete]'
     Executing Database Server script 'DROP TYPE IF EXISTS [NTangle].[udtVersionTrackingList]'
-    Executing Database Server script 'DROP TYPE IF EXISTS [NTangle].[udtEventOutboxList]'
+    Executing Database Server script 'DROP TYPE IF EXISTS [Outbox].[udtEventOutboxList]'
     Upgrade successful
   Create (using DbUp) known schema objects...
     Beginning database upgrade
     Checking whether journal table exists..
     Fetching list of already executed scripts.
-    Executing Database Server script 'FooBar.Database.Schema.NTangle.Types.User_Defined_Table_Types.Generated.udtEventOutboxList.sql'
+    Executing Database Server script 'FooBar.Database.Schema.Outbox.Types.User_Defined_Table_Types.Generated.udtEventOutboxList.sql'
     Checking whether journal table exists..
     Executing Database Server script 'FooBar.Database.Schema.NTangle.Types.User_Defined_Table_Types.Generated.udtVersionTrackingList.sql'
     Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spContactBatchComplete.sql'
     Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spContactBatchExecute.sql'
-    Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spEventOutboxDequeue.sql'
-    Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spEventOutboxEnqueue.sql'
+    Executing Database Server script 'FooBar.Database.Schema.Outbox.Stored_Procedures.Generated.spEventOutboxDequeue.sql'
+    Executing Database Server script 'FooBar.Database.Schema.Outbox.Stored_Procedures.Generated.spEventOutboxEnqueue.sql'
     Upgrade successful
 
-Complete [286ms].
+Complete. [742ms]
 
 --------------------------------------------------------------------------------
 
@@ -443,42 +449,39 @@ FooBar.Database Complete. [8063ms]
 
 The `Program.cs` is pre-configured, and the `appsettings.json` has the correct connection string. All of the generated C# artefacts should have been automatically included within the .NET project. Compile the application and execute. Leave it running; use `ctrl-c` to stop once the following test has been performed.
 
+For the purposes of demonstration the final/primary `IEventSender` has been configured to use `LoggerEventSender`; this would be changed to use an appropriate `IEventSender` to send the events to an actual messaging system, e.g. Azure [`ServiceBusSender`](https://github.com/Avanade/CoreEx/blob/main/src/CoreEx.Messaging.Azure/ServiceBus/ServiceBusSender.cs).
+
 Within your favorite database tool make a change to `[Legacy].[Contact]` table, updating the `Name` column in the first row. Within the next 30 seconds similar console output to the following should be displayed.
 
 ```
 info: FooBar.Publisher.Services.ContactHostedService[0]
-      Service started. Timer first/interval 00:00:05/00:00:05.
-info: FooBar.Publisher.Services.OutboxDequeueHostedService[0]
-      Service started. Timer first/interval 00:00:05/00:00:05.
+      ContactHostedService started. Timer first/interval 00:00:01/00:00:01.
+info: NTangle.Services.EventOutboxHostedService[0]
+      EventOutboxHostedService started. Timer first/interval 00:00:02/00:00:02.
 info: Microsoft.Hosting.Lifetime[0]
       Application started. Press Ctrl+C to shut down.
 info: Microsoft.Hosting.Lifetime[0]
       Hosting environment: Production
 info: Microsoft.Hosting.Lifetime[0]
-      Content root path: C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\bin\Debug\netcoreapp3.1
+      Content root path: C:\Users\eric\source\repos\FooBar\FooBar.Publisher
 info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
-      Batch '1': 1 entity operations(s) were found. [MaxQuerySize=50, ContinueWithDataLoss=True, CorrelationId=a57c2994-168a-4875-8bde-bd6354188e88, ExecutionId=04d3958d-d573-4ae3-a8b2-0cb451aacab1, Elapsed=56ms]
-info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
-      Batch '1': 1 event(s) were published successfully. [Publisher=OutboxEventPublisher, CorrelationId=a57c2994-168a-4875-8bde-bd6354188e88, ExecutionId=04d3958d-d573-4ae3-a8b2-0cb451aacab1, Elapsed=83ms]
-info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
-      Batch '1': Marked as Completed. [CorrelationId=a57c2994-168a-4875-8bde-bd6354188e88, ExecutionId=04d3958d-d573-4ae3-a8b2-0cb451aacab1, Elapsed=19ms]
-info: FooBar.Publisher.Services.OutboxDequeueHostedService[0]
-      1 event(s) were dequeued. [Elapsed=15ms]
-info: NTangle.Events.LoggerEventPublisher[0]
+      Batch '1': 1 entity operations(s) were found. [MaxQuerySize=50, ContinueWithDataLoss=True, CorrelationId=c2b99065-1dec-423f-b01a-6d6257014058, ExecutionId=2f4d422d-2371-4181-ba88-5d9f5975b94f, Elapsed=1308ms]
+info: CoreEx.Events.LoggerEventSender[0]
+      Event[0].Data = 
       {
         "specversion": "1.0",
+        "id": "ca85a3f3-501b-4404-9e50-cb25f50605a2",
+        "time": "2022-03-29T14:56:10.5255554Z",
         "type": "legacy.contact.updated",
         "source": "/database/cdc/legacy/contact/1",
-        "id": "dc8e1380-5fdf-4497-a6d6-47d3e0c29198",
-        "time": "2021-11-17T17:03:44.8217601Z",
         "subject": "legacy.contact",
         "action": "updated",
-        "correlationid": "a57c2994-168a-4875-8bde-bd6354188e88",
+        "correlationid": "c2b99065-1dec-423f-b01a-6d6257014058",
         "datacontenttype": "application/json",
         "data": {
           "id": 1,
-          "name": "Bobby",
-          "phone": "123",
+          "name": "Bob",
+          "phone": "000",
           "addresses": [
             {
               "id": 11,
@@ -493,9 +496,11 @@ info: NTangle.Events.LoggerEventPublisher[0]
               "type": "P"
             }
           ],
-          "etag": "jQz7OsJNb3ztBaIPZg9g5Q=="
+          "etag": "u7OJKfm6B2jwJfg3o1/Ea7bTmuSbnXwTCme3z0FjQmw="
         }
       }
-info: FooBar.Publisher.Services.OutboxDequeueHostedService[0]
-      1 event(s) were published successfully. [Publisher=LoggerEventPublisher, Elapsed=3ms]
+info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
+      Batch '1': 1 event(s) were published successfully. [Publisher=EventPublisher, CorrelationId=c2b99065-1dec-423f-b01a-6d6257014058, ExecutionId=2f4d422d-2371-4181-ba88-5d9f5975b94f, Elapsed=340ms]
+info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
+      Batch '1': Marked as Completed. [CorrelationId=c2b99065-1dec-423f-b01a-6d6257014058, ExecutionId=2f4d422d-2371-4181-ba88-5d9f5975b94f, Elapsed=23ms]
 ```

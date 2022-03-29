@@ -39,7 +39,7 @@ namespace SqlServerDemo.Test
             await UnitTest.Delay().ConfigureAwait(false);
 
             // Execute should pick up and allocate all new global identifiers.
-            var eoe = new EventOutboxEnqueue(db);
+            var eoe = new EventOutboxEnqueue(db, UnitTest.GetLogger<EventOutboxEnqueue>());
             var ep = new EventPublisher(null, new CoreEx.Text.Json.CloudEventSerializer(), eoe);
             var cdc = new ContactCdcOrchestrator(db, ep, JsonSerializer.Default, logger, new IdentifierGenerator());
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);

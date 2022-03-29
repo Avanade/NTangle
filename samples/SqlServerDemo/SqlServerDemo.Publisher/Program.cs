@@ -38,7 +38,7 @@ namespace SqlServerDemo.Publisher
                     services.AddEventPublisher()
                             .AddEventDataFormatter()
                             .AddCloudEventSerializer()
-                            .AddGeneratedEventOutboxSender();
+                            .AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>())));
 
                     // Adds the CDC-hosted service(s) including orchestrator services, and specified EventOutbox dequeue/send service.
                     services.AddGeneratedCdcHostedServices()
