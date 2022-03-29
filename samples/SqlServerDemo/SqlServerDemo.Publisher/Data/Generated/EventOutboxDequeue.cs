@@ -28,7 +28,7 @@ namespace SqlServerDemo.Publisher.Data
         public EventOutboxDequeue(IDatabase database, IEventSender eventSender, ILogger<EventOutboxDequeue> logger) : base(database, eventSender, logger) { }
 
         /// <inheritdoc/>
-        public override string DequeueStoredProcedure => "[Outbox].[spEventOutboxDequeue]";
+        protected override string DequeueStoredProcedure => "[Outbox].[spEventOutboxDequeue]";
     }
 }
 

@@ -7,6 +7,7 @@
 
 using DbEx;
 using DbEx.SqlServer;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Data;
 
@@ -21,13 +22,14 @@ namespace SqlServerDemo.Publisher.Data
         /// Initializes a new instance of the <see cref="EventOutboxEnqueue"/> class.
         /// </summary>
         /// <param name="database">The <see cref="IDatabase"/>.</param>
-        public EventOutboxEnqueue(IDatabase database) : base(database) { }
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        public EventOutboxEnqueue(IDatabase database, ILogger<EventOutboxEnqueue> logger) : base(database, logger) { }
 
         /// <inheritdoc/>
-        public override string DbTvpTypeName => "[Outbox].[udtEventOutboxList]";
+        protected override string DbTvpTypeName => "[Outbox].[udtEventOutboxList]";
 
         /// <inheritdoc/>
-        public override string EnqueueStoredProcedure => "[Outbox].[spEventOutboxEnqueue]";
+        protected override string EnqueueStoredProcedure => "[Outbox].[spEventOutboxEnqueue]";
     }
 }
 
