@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx.Abstractions;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
-using CoreEx.Utility;
 using DbEx;
 using DbEx.SqlServer;
 using Microsoft.Extensions.Logging;
@@ -222,7 +222,7 @@ namespace NTangle.Cdc
         { 
             // Get the requested batch data.
             EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result;
-            Logger.LogTrace("Query for next (new) Change Data Capture batch. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, ExecutionId={ExecutionId}]", MaxQuerySize, ContinueWithDataLoss, ExecutionId);
+            Logger.LogDebug("Query for next (new) Change Data Capture batch. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, ExecutionId={ExecutionId}]", MaxQuerySize, ContinueWithDataLoss, ExecutionId);
 
             var sw = Stopwatch.StartNew();
 
@@ -253,12 +253,12 @@ namespace NTangle.Cdc
 
             if (result.Batch == null)
             {
-                Logger.LogTrace("Batch 'none': No new Change Data Capture data was found. [ExecutionId={ExecutionId}]", ExecutionId);
+                Logger.LogDebug("Batch 'none': No new Change Data Capture data was found. [ExecutionId={ExecutionId}]", ExecutionId);
                 return result;
             }
 
             Logger.LogInformation("Batch '{BatchId}': {OperationsCount} entity operations(s) were found. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                result.Batch.Id, result.Result.Count, MaxQuerySize, ContinueWithDataLoss, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
+                result.Batch.Id, result.Result.Count, MaxQuerySize, ContinueWithDataLoss, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
 
             if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)
             {
@@ -344,7 +344,7 @@ namespace NTangle.Cdc
             // Publish & send the events.
             if (coll2.Count == 0)
                 Logger.LogInformation("Batch '{BatchId}': No event(s) were published; no unique version tracking hash found. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                    result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
+                    result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
             else
             {
                 var events = (await CreateEventsAsync(coll2, result.Batch.CorrelationId, cancellationToken.Value).ConfigureAwait(false)).ToArray();
@@ -353,7 +353,7 @@ namespace NTangle.Cdc
                 sw.Stop();
 
                 Logger.LogInformation("Batch '{BatchId}': {EventCount} event(s) were published successfully. [Publisher={Publisher}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                    result.Batch.Id, events.Length, EventPublisher.GetType().Name, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
+                    result.Batch.Id, events.Length, EventPublisher.GetType().Name, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
             }
 
             // Complete the batch (ignore any further 'cancel' as event(s) have been published and we *must* complete to minimise chance of sending more than once).
@@ -364,7 +364,7 @@ namespace NTangle.Cdc
 
             if (cresult.IsSuccessful)
                 Logger.LogInformation("Batch '{BatchId}': Marked as Completed. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                    result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.ElapsedMilliseconds);
+                    result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
 
             return cresult;
         }

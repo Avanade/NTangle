@@ -139,7 +139,7 @@ The following samples are provided to guide usage:
 
 Sample | Description
 -|-
-[`SqlServerDemo`](./samples/SqlServerDemo) | A sample as an end-to-end solution walkthrough to demonstrate the usage of _nTangle_ against a Microsoft SQL Server database.
+[`SqlServerDemo`](./samples/SqlServerDemo) | A sample as an end-to-end solution to demonstrate the usage of _nTangle_ against a Microsoft SQL Server database. However, the best place to follow along and learn is to use the [`NTangle.Template`](./tools/NTangle.Template) tool - instructions are within to guide end-to-end setup and execution.
 
 <br/>
 

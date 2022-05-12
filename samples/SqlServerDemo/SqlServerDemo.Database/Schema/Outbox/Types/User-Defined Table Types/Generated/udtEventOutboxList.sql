@@ -4,7 +4,8 @@ CREATE TYPE [Outbox].[udtEventOutboxList] AS TABLE (
    */
 
   [EventId] NVARCHAR(127),
-  [Destination] NVARCHAR(127) NULL,
+  [EventDequeued] BIT NULL, -- Indicates whether to set the event as dequeued; i.e. already sent/processed.
+  [Destination] NVARCHAR(127) NULL, -- For example, queue/topic name.
   [Subject] NVARCHAR(511) NULL,
   [Action] NVARCHAR(255) NULL,
   [Type] NVARCHAR(1023) NULL,

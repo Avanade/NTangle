@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DbEx" Version="1.0.5" />
+    <PackageReference Include="DbEx" Version="1.0.9" />
   </ItemGroup>
 
   <ItemGroup>

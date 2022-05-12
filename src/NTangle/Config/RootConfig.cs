@@ -456,7 +456,7 @@ namespace NTangle.Config
             DbTables = await db.SelectSchemaAsync().ConfigureAwait(false);
 
             sw.Stop();
-            CodeGenArgs.Logger?.Log(LogLevel.Information, "{Content}", $"    Database schema query complete [{sw.ElapsedMilliseconds}ms]");
+            CodeGenArgs.Logger?.Log(LogLevel.Information, "{Content}", $"    Database schema query complete [{sw.Elapsed.TotalMilliseconds}ms]");
             CodeGenArgs.Logger?.Log(LogLevel.Information, "{Content}", string.Empty);
         }
 

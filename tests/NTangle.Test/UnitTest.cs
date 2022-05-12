@@ -129,7 +129,7 @@ namespace NTangle.Test
         /// <typeparam name="T">The data <see cref="Type"/>.</typeparam>
         /// <param name="eventData">The event <see cref="BinaryData"/>.</param>
         /// <returns>The data value.</returns>
-        public static T GetEventData<T>(EventData eventData) => (T)eventData.GetValue();
+        public static T GetEventData<T>(EventData eventData) => (T)eventData.Value;
 
         /// <summary>
         /// Execute the <see cref="IEntityOrchestrator"/> and ensure no further changes were found.
