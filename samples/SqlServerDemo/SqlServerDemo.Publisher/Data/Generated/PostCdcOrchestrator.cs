@@ -6,10 +6,11 @@
 #pragma warning disable
 
 using CoreEx;
+using CoreEx.Database;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
-using DbEx;
+using CoreEx.Mapping;
 using Microsoft.Extensions.Logging;
 using NTangle;
 using NTangle.Cdc;
@@ -19,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using SqlServerDemo.Publisher.Entities;
 
@@ -52,11 +54,11 @@ namespace SqlServerDemo.Publisher.Data
         partial void PostCdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
         /// <inheritdoc/>
-        protected override async Task<EntityOrchestratorResult<PostCdcEnvelopeCollection, PostCdcEnvelope>> GetBatchEntityDataAsync()
+        protected override async Task<EntityOrchestratorResult<PostCdcEnvelopeCollection, PostCdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
         {
             var pColl = new PostCdcEnvelopeCollection();
 
-            var result = await SelectQueryMultiSetAsync(
+            var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
                 // Root table: '[Legacy].[Posts]'
                 new MultiSetCollArgs<PostCdcEnvelopeCollection, PostCdcEnvelope>(_postCdcMapper, r => pColl = r, stopOnNull: true),
 
@@ -89,7 +91,7 @@ namespace SqlServerDemo.Publisher.Data
                     {
                         pColl.Where(x => x.PostsId == pt.PostsId).ForEach(x => x.Tags = pt.Coll);
                     }
-                })).ConfigureAwait(false);
+                })), cancellationToken).ConfigureAwait(false);
 
             result.Result.AddRange(pColl);
             return result;
@@ -139,7 +141,7 @@ namespace SqlServerDemo.Publisher.Data
         public class PostCdcMapper : IDatabaseMapper<PostCdcEnvelope>
         {
             /// <inheritdoc/>
-            public PostCdcEnvelope MapFromDb(DatabaseRecord record) => new PostCdcEnvelope
+            public PostCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new PostCdcEnvelope
             {
                 PostsId = record.GetValue<int>("PostsId"),
                 Text = record.GetValue<string?>("Text"),
@@ -148,6 +150,9 @@ namespace SqlServerDemo.Publisher.Data
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
             };
+
+            /// <inheritdoc/>
+            void IDatabaseMapper<PostCdcEnvelope>.MapToDb(PostCdcEnvelope? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
 
         /// <summary>
@@ -156,13 +161,16 @@ namespace SqlServerDemo.Publisher.Data
         public class CommentCdcMapper : IDatabaseMapper<PostCdc.CommentCdc>
         {
             /// <inheritdoc/>
-            public PostCdc.CommentCdc MapFromDb(DatabaseRecord record) => new PostCdc.CommentCdc
+            public PostCdc.CommentCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new PostCdc.CommentCdc
             {
                 CommentsId = record.GetValue<int>("CommentsId"),
                 PostsId = record.GetValue<int>("PostsId"),
                 Text = record.GetValue<string?>("Text"),
                 Date = record.GetValue<DateTime?>("Date")
             };
+
+            /// <inheritdoc/>
+            void IDatabaseMapper<PostCdc.CommentCdc>.MapToDb(PostCdc.CommentCdc? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
 
         /// <summary>
@@ -171,7 +179,7 @@ namespace SqlServerDemo.Publisher.Data
         public class CommentsTagsCdcMapper : IDatabaseMapper<PostCdc.CommentsTagsCdc>
         {
             /// <inheritdoc/>
-            public PostCdc.CommentsTagsCdc MapFromDb(DatabaseRecord record) => new PostCdc.CommentsTagsCdc
+            public PostCdc.CommentsTagsCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new PostCdc.CommentsTagsCdc
             {
                 Posts_PostsId = record.GetValue<int>("Posts_PostsId"),
                 TagsId = record.GetValue<int>("TagsId"),
@@ -179,6 +187,9 @@ namespace SqlServerDemo.Publisher.Data
                 ParentId = record.GetValue<int>("ParentId"),
                 Text = record.GetValue<string?>("Text")
             };
+
+            /// <inheritdoc/>
+            void IDatabaseMapper<PostCdc.CommentsTagsCdc>.MapToDb(PostCdc.CommentsTagsCdc? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
 
         /// <summary>
@@ -187,13 +198,16 @@ namespace SqlServerDemo.Publisher.Data
         public class PostsTagsCdcMapper : IDatabaseMapper<PostCdc.PostsTagsCdc>
         {
             /// <inheritdoc/>
-            public PostCdc.PostsTagsCdc MapFromDb(DatabaseRecord record) => new PostCdc.PostsTagsCdc
+            public PostCdc.PostsTagsCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new PostCdc.PostsTagsCdc
             {
                 TagsId = record.GetValue<int>("TagsId"),
                 ParentType = record.GetValue<string?>("ParentType"),
                 PostsId = record.GetValue<int>("PostsId"),
                 Text = record.GetValue<string?>("Text")
             };
+
+            /// <inheritdoc/>
+            void IDatabaseMapper<PostCdc.PostsTagsCdc>.MapToDb(PostCdc.PostsTagsCdc? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
     }
 }

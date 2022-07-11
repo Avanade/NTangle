@@ -1,4 +1,4 @@
-﻿using DbEx;
+﻿using CoreEx.Database.SqlServer;
 using Microsoft.Data.SqlClient;
 using NUnit.Framework;
 using System;
@@ -66,7 +66,7 @@ namespace NTangle.Test
         /// <summary>
         /// Perform one-time set up activities; remove any existing, create and publish nugets locally, install dotnet template.
         /// </summary>
-        public void OneTimeSetUp()
+        public static void OneTimeSetUp()
         {
             if (!_firstTime)
                 return;
@@ -173,10 +173,10 @@ namespace NTangle.Test
             Assert.IsTrue(stdOut.Contains("\"source\": \"/database/cdc/legacy/contact/1\""), "Expected published event content not found in stdout.");
         }
 
-        private async Task ChangeSomeData(string appName)
+        private static async Task ChangeSomeData(string appName)
         {
             var cs = $"Data Source=.;Initial Catalog={appName};Integrated Security=True;TrustServerCertificate=true";
-            var db = new Database<SqlConnection>(() => new SqlConnection(cs));
+            var db = new SqlServerDatabase(() => new SqlConnection(cs));
             await db.SqlStatement("UPDATE [Legacy].[Contact] SET [Phone] = '000' WHERE [ContactId] = 1").NonQueryAsync().ConfigureAwait(false);
         }
 

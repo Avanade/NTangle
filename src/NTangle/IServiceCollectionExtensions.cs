@@ -2,8 +2,8 @@
 
 using CoreEx.Configuration;
 using CoreEx.Hosting;
-using DbEx;
-using DbEx.SqlServer;
+using CoreEx.Database;
+using CoreEx.Database.SqlServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NTangle.Services;
@@ -49,10 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddCdcHostedService<THostedService>(this IServiceCollection services) where THostedService : class, ICdcHostedService
         {
-            if (services == null)
-                throw new ArgumentNullException(nameof(services));
-
-            var svcs = services.BuildServiceProvider().GetRequiredService<SettingsBase>().GetValue<string?>(ServicesKey);
+            var svcs = CheckServices(services).BuildServiceProvider().GetRequiredService<SettingsBase>().GetValue<string?>(ServicesKey);
             if (string.IsNullOrEmpty(svcs))
             {
                 services.AddHostedService<THostedService>();
@@ -67,14 +64,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds the <see cref="IDatabase"/> scoped service.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="create">The function to create the <see cref="IDatabase"/> instance.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddDatabase(this IServiceCollection services, Func<IServiceProvider, IDatabase> create) => CheckServices(services).AddScoped(create ?? throw new ArgumentNullException(nameof(create)));
-
-        /// <summary>
         /// Adds the <see cref="EventOutboxHostedService"/> using the <see cref="ServiceCollectionHostedServiceExtensions.AddHostedService{THostedService}(IServiceCollection)"/>. 
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -85,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks>To turn off the execution of the <see cref="EventOutboxHostedService"/>(s) at runtime set the '<c>EventOutboxHostedService</c>' configuration setting to <c>false</c>.</remarks>
         public static IServiceCollection AddEventOutboxHostedService(this IServiceCollection services, Func<IServiceProvider, EventOutboxDequeueBase> eventOutboxDequeueFactory, string? partitionKey = null, string? destination = null)
         {
-            var exe = services.BuildServiceProvider().GetRequiredService<SettingsBase>().GetValue<bool?>("EventOutboxHostedService");
+            var exe = CheckServices(services).BuildServiceProvider().GetRequiredService<SettingsBase>().GetValue<bool?>("EventOutboxHostedService");
             if (!exe.HasValue || exe.Value)
             {
                 services.AddHostedService(sp => new EventOutboxHostedService(sp, sp.GetRequiredService<ILogger<EventOutboxHostedService>>(), sp.GetRequiredService<SettingsBase>(), sp.GetRequiredService<IServiceSynchronizer>(), partitionKey, destination)

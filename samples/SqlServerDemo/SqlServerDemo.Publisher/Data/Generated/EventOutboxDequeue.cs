@@ -5,9 +5,9 @@
 #nullable enable
 #pragma warning disable
 
+using CoreEx.Database;
+using CoreEx.Database.SqlServer;
 using CoreEx.Events;
-using DbEx;
-using DbEx.SqlServer;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Data;

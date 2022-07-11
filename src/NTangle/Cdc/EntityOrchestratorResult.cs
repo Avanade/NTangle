@@ -33,12 +33,12 @@ namespace NTangle.Cdc
         /// <summary>
         /// Gets the <see cref="EntityOrchestratorExecuteStatus"/>.
         /// </summary>
-        /// <remarks>This will only be updated as a result of <see cref="IEntityOrchestrator.ExecuteAsync(System.Threading.CancellationToken?)"/>.</remarks>
+        /// <remarks>This will only be updated as a result of <see cref="IEntityOrchestrator.ExecuteAsync(System.Threading.CancellationToken)"/>.</remarks>
         public EntityOrchestratorExecuteStatus? ExecuteStatus { get; internal set; }
     }
 
     /// <summary>
-    /// Provides the specific status for the <see cref="IEntityOrchestrator.ExecuteAsync(System.Threading.CancellationToken?)"/> method.
+    /// Provides the specific status for the <see cref="IEntityOrchestrator.ExecuteAsync(System.Threading.CancellationToken)"/> method.
     /// </summary>
     public class EntityOrchestratorExecuteStatus
     {

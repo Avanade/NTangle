@@ -1,5 +1,6 @@
-﻿using CoreEx.Events;
-using DbEx;
+﻿using CoreEx.Database;
+using CoreEx.Database.SqlServer;
+using CoreEx.Events;
 #if (implement_dbprovider_sqlserver)
 using Microsoft.Data.SqlClient;
 #endif

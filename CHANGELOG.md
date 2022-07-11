@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v1.0.5
+- *Enhancement:* Updated `CoreEx` and `DbEx` dependencies to latest. This is to account for the move of the common ADO-based database access logic from `DbEx` to `CoreEx`.
+
 ## v1.0.4
 - *Enhancement:* Updated `CoreEx`, `OnRamp` and `DbEx` dependencies; including other non-Avanade dependencies to latest.
 - *Enhancement:* Template solution now outputs .NET 6.0 projects.

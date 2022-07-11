@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx;
 using CoreEx.Abstractions;
+using CoreEx.Database;
+using CoreEx.Database.SqlServer;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
-using DbEx;
-using DbEx.SqlServer;
 using Microsoft.Extensions.Logging;
 using NTangle.Data;
 using NTangle.Events;
@@ -148,23 +149,26 @@ namespace NTangle.Cdc
         /// Gets or sets the delegate to perform additional processing on the consolidated set of entities.
         /// </summary>
         /// <remarks>This is invoked directly after consolidation, and prior to versioning and completion.</remarks>
-        protected Func<TEntityEnvelopeColl, Task>? AdditionalEnvelopeProcessingAsync { get; set; }
+        protected Func<TEntityEnvelopeColl, CancellationToken, Task>? AdditionalEnvelopeProcessingAsync { get; set; }
 
         /// <summary>
         /// Completes an existing batch updating the corresponding <paramref name="versionTracking"/> where appropriate.
         /// </summary>
         /// <param name="batchTrackerId">The <see cref="BatchTracker.Id"/>.</param>
         /// <param name="versionTracking">The <see cref="VersionTracker"/> list.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-        Task<EntityOrchestratorResult> IEntityOrchestrator.CompleteAsync(long batchTrackerId, List<VersionTracker> versionTracking) => CompleteAsync(batchTrackerId, versionTracking);
+        Task<EntityOrchestratorResult> IEntityOrchestrator.CompleteAsync(long batchTrackerId, List<VersionTracker> versionTracking, CancellationToken cancellationToken)
+            => CompleteAsync(batchTrackerId, versionTracking, cancellationToken);
 
         /// <summary>
         /// Completes an existing batch updating the corresponding <paramref name="versionTracking"/> where appropriate.
         /// </summary>
         /// <param name="batchTrackerId">The <see cref="BatchTracker.Id"/>.</param>
         /// <param name="versionTracking">The <see cref="VersionTracker"/> list.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-        public async Task<EntityOrchestratorResult> CompleteAsync(long batchTrackerId, List<VersionTracker> versionTracking)
+        public async Task<EntityOrchestratorResult> CompleteAsync(long batchTrackerId, List<VersionTracker> versionTracking, CancellationToken cancellationToken = default)
         {
             if (ExecutionId == Guid.Empty)
                 ExecutionId = Guid.NewGuid();
@@ -174,15 +178,15 @@ namespace NTangle.Cdc
 
             try
             {
-                await Db.StoredProcedure(CompleteStoredProcedureName, p =>
+                await Db.StoredProcedure(CompleteStoredProcedureName).Params(p =>
                 {
                     p.AddParameter(BatchTrackingIdParamName, batchTrackerId);
                     p.AddTableValuedParameter(VersionTrackingListParamName, _versionTrackerMapper.CreateTableValuedParameter(versionTracking));
-                }).SelectMultiSetAsync(msa).ConfigureAwait(false);
+                }).SelectMultiSetAsync(MultiSetArgs.Create(msa), cancellationToken).ConfigureAwait(false);
             }
-            catch (DatabaseErrorException deex)
+            catch (BusinessException bex) // The known (converted) SQL Exception.
             {
-                result.Exception = deex;
+                result.Exception = bex;
                 Logger.LogError("{Message}", result.Exception?.Message);
             }
             catch (Exception ex)
@@ -202,7 +206,7 @@ namespace NTangle.Cdc
         }
 
         /// <inheritdoc/>
-        public async Task<EntityOrchestratorResult> ExecuteAsync(CancellationToken? cancellationToken = null)
+        public async Task<EntityOrchestratorResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -218,7 +222,7 @@ namespace NTangle.Cdc
         /// <summary>
         /// Performs the actual execution.
         /// </summary>
-        private async Task<EntityOrchestratorResult> ExecuteInternalAsync(CancellationToken? cancellationToken)
+        private async Task<EntityOrchestratorResult> ExecuteInternalAsync(CancellationToken cancellationToken = default)
         { 
             // Get the requested batch data.
             EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result;
@@ -228,7 +232,7 @@ namespace NTangle.Cdc
 
             try
             {
-                result = await GetBatchEntityDataAsync().ConfigureAwait(false);
+                result = await GetBatchEntityDataAsync(cancellationToken).ConfigureAwait(false);
                 result.ExecutionId = ExecutionId;
                 result.ExecuteStatus = new EntityOrchestratorExecuteStatus { InitialCount = result.Result.Count };
                 sw.Stop();
@@ -243,7 +247,7 @@ namespace NTangle.Cdc
 
                 result = new EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> { Exception = ex, ExecutionId = ExecutionId };
 
-                if (ex is DatabaseErrorException)
+                if (ex is BusinessException)
                     Logger.LogError("{DatabaseErrorMessage} [ExecutionId={ExecutionId}]", result.Exception.Message, ExecutionId);
                 else
                     Logger.LogCritical(ex, "Unexpected Exception encountered: {ExceptionMessage} [ExecutionId={ExecutionId}]", result.Exception.Message, ExecutionId);
@@ -260,10 +264,10 @@ namespace NTangle.Cdc
             Logger.LogInformation("Batch '{BatchId}': {OperationsCount} entity operations(s) were found. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
                 result.Batch.Id, result.Result.Count, MaxQuerySize, ContinueWithDataLoss, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
 
-            if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
             {
                 Logger.LogWarning("Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
-                return await Task.FromCanceled<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>>(cancellationToken.Value).ConfigureAwait(false);
+                return await Task.FromCanceled<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>>(cancellationToken).ConfigureAwait(false);
             }
 
             // Consolidate the results to the 'set' that is to be sent (i.e. ignore unneccessary).
@@ -298,15 +302,15 @@ namespace NTangle.Cdc
             result.ExecuteStatus.ConsolidatedCount = coll.Count;
 
             // Check cancellation.
-            if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
             {
                 Logger.LogWarning("Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
-                return await Task.FromCanceled<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>>(cancellationToken.Value).ConfigureAwait(false);
+                return await Task.FromCanceled<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>>(cancellationToken).ConfigureAwait(false);
             }
 
             // Where additional envelope processing is required then execute.
             if (AdditionalEnvelopeProcessingAsync != null)
-                await AdditionalEnvelopeProcessingAsync(coll).ConfigureAwait(false);
+                await AdditionalEnvelopeProcessingAsync(coll, cancellationToken).ConfigureAwait(false);
 
             // Determine whether anything may have been sent before (version tracking) and exclude (i.e. do not send again).
             var coll2 = new TEntityEnvelopeColl();
@@ -335,10 +339,10 @@ namespace NTangle.Cdc
             result.ExecuteStatus.PublishCount = coll2.Count;
 
             // Check cancellation.
-            if ((cancellationToken ??= CancellationToken.None).IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
             {
                 Logger.LogWarning("Batch '{BatchId}': Incomplete as a result of Cancellation. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]", result.Batch.Id, result.Batch.CorrelationId, ExecutionId);
-                return await Task.FromCanceled<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>>(cancellationToken.Value).ConfigureAwait(false);
+                return await Task.FromCanceled<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>>(cancellationToken).ConfigureAwait(false);
             }
 
             // Publish & send the events.
@@ -347,9 +351,9 @@ namespace NTangle.Cdc
                     result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
             else
             {
-                var events = (await CreateEventsAsync(coll2, result.Batch.CorrelationId, cancellationToken.Value).ConfigureAwait(false)).ToArray();
+                var events = (await CreateEventsAsync(coll2, result.Batch.CorrelationId, cancellationToken).ConfigureAwait(false)).ToArray();
                 sw = Stopwatch.StartNew();
-                await EventPublisher.Publish(events).SendAsync().ConfigureAwait(false);
+                await EventPublisher.Publish(events).SendAsync(cancellationToken).ConfigureAwait(false);
                 sw.Stop();
 
                 Logger.LogInformation("Batch '{BatchId}': {EventCount} event(s) were published successfully. [Publisher={Publisher}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
@@ -358,7 +362,7 @@ namespace NTangle.Cdc
 
             // Complete the batch (ignore any further 'cancel' as event(s) have been published and we *must* complete to minimise chance of sending more than once).
             sw = Stopwatch.StartNew();
-            var cresult = await CompleteAsync(result.Batch.Id, tracking).ConfigureAwait(false);
+            var cresult = await CompleteAsync(result.Batch.Id, tracking, cancellationToken).ConfigureAwait(false);
             cresult.ExecuteStatus = result.ExecuteStatus;
             sw.Stop();
 
@@ -373,18 +377,19 @@ namespace NTangle.Cdc
         /// Executes a multi-dataset query command with one or more <paramref name="multiSetArgs"/>; whilst also outputing the resulting return value.
         /// </summary>
         /// <param name="multiSetArgs">One or more <see cref="IMultiSetArgs"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The resultant <see cref="EntityOrchestratorResult{TEntityEnvelopeColl, TEntityEnvelope}"/>.</returns>
-        protected async Task<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>> SelectQueryMultiSetAsync(params IMultiSetArgs[] multiSetArgs)
+        protected async Task<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>> SelectQueryMultiSetAsync(IEnumerable<IMultiSetArgs> multiSetArgs, CancellationToken cancellationToken = default)
         {
             var result = new EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> { ExecutionId = ExecutionId };
             var msa = new List<IMultiSetArgs> { new MultiSetSingleArgs<BatchTracker>(_batchTrackerMapper, r => result.Batch = r, isMandatory: false, stopOnNull: true) };
             msa.AddRange(multiSetArgs);
 
-            await Db.StoredProcedure(ExecuteStoredProcedureName, p =>
+            await Db.StoredProcedure(ExecuteStoredProcedureName).Params(p =>
             {
                 p.AddParameter(MaxQuerySizeParamName, MaxQuerySize);
                 p.AddParameter(ContinueWithDataLossParamName, ContinueWithDataLoss);
-            }).SelectMultiSetAsync(msa.ToArray()).ConfigureAwait(false);
+            }).SelectMultiSetAsync(msa, cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -392,8 +397,9 @@ namespace NTangle.Cdc
         /// <summary>
         /// Gets the batch entity data from the database.
         /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>A <typeparamref name="TEntityEnvelopeColl"/>.</returns>
-        protected abstract Task<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>> GetBatchEntityDataAsync();
+        protected abstract Task<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Provides the capability to create none or more <see cref="EventData">events</see> from the entity <paramref name="coll">collection.</paramref> using the <paramref name="getEntityFunc"/>
@@ -404,7 +410,7 @@ namespace NTangle.Cdc
         /// <param name="correlationId">The correlarion identifier.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>None or more <see cref="EventData">events</see> to be published.</returns>
-        protected async Task<IEnumerable<EventData>> CreateEventsWithGetAsync(TEntityEnvelopeColl coll, Func<TEntityEnvelope, Task<TEntity>> getEntityFunc, string? correlationId, CancellationToken cancellationToken)
+        protected async Task<IEnumerable<EventData>> CreateEventsWithGetAsync(TEntityEnvelopeColl coll, Func<TEntityEnvelope, Task<TEntity>> getEntityFunc, string? correlationId, CancellationToken cancellationToken = default)
         {
             var events = new List<EventData>();
 
@@ -438,7 +444,7 @@ namespace NTangle.Cdc
         /// <param name="correlationId">The correlarion identifier.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>None or more <see cref="EventData">events</see> to be published.</returns>
-        protected virtual Task<IEnumerable<EventData>> CreateEventsAsync(TEntityEnvelopeColl coll, string? correlationId, CancellationToken cancellationToken)
+        protected virtual Task<IEnumerable<EventData>> CreateEventsAsync(TEntityEnvelopeColl coll, string? correlationId, CancellationToken cancellationToken = default)
         {
             var events = new List<EventData>();
 

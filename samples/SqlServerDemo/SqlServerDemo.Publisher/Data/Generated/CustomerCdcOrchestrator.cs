@@ -6,10 +6,11 @@
 #pragma warning disable
 
 using CoreEx;
+using CoreEx.Database;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
-using DbEx;
+using CoreEx.Mapping;
 using Microsoft.Extensions.Logging;
 using NTangle;
 using NTangle.Cdc;
@@ -19,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using SqlServerDemo.Publisher.Entities;
 
@@ -49,13 +51,13 @@ namespace SqlServerDemo.Publisher.Data
         partial void CustomerCdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
         /// <inheritdoc/>
-        protected override async Task<EntityOrchestratorResult<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>> GetBatchEntityDataAsync()
+        protected override async Task<EntityOrchestratorResult<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
         {
             var cColl = new CustomerCdcEnvelopeCollection();
 
-            var result = await SelectQueryMultiSetAsync(
+            var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
                 // Root table: '[Legacy].[Cust]'
-                new MultiSetCollArgs<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>(_customerCdcMapper, r => cColl = r, stopOnNull: true)).ConfigureAwait(false);
+                new MultiSetCollArgs<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>(_customerCdcMapper, r => cColl = r, stopOnNull: true)), cancellationToken).ConfigureAwait(false);
 
             result.Result.AddRange(cColl);
             return result;
@@ -108,7 +110,7 @@ namespace SqlServerDemo.Publisher.Data
         public class CustomerCdcMapper : IDatabaseMapper<CustomerCdcEnvelope>
         {
             /// <inheritdoc/>
-            public CustomerCdcEnvelope MapFromDb(DatabaseRecord record) => new CustomerCdcEnvelope
+            public CustomerCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new CustomerCdcEnvelope
             {
                 Id = record.GetValue<int>("Id"),
                 Name = record.GetValue<string?>("Name"),
@@ -119,6 +121,9 @@ namespace SqlServerDemo.Publisher.Data
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
             };
+
+            /// <inheritdoc/>
+            void IDatabaseMapper<CustomerCdcEnvelope>.MapToDb(CustomerCdcEnvelope? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
     }
 }

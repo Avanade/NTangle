@@ -162,7 +162,7 @@ namespace NTangle.Config
         public List<string>? OrchestratorCtorParams { get; set; }
 
         /// <summary>
-        /// Gets or sets the CDC .NET <see cref="DbEx.IDatabase"/> interface name.
+        /// Gets or sets the CDC .NET <see cref="CoreEx.Database.IDatabase"/> interface name.
         /// </summary>
         [JsonProperty("database", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty(".NET", Title = "The .NET database `IDatabase` Type name used in the constructor for Dependency Injection (DI).",

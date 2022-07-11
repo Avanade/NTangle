@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using DbEx;
+using CoreEx.Database;
+using CoreEx.Mapping;
 using NTangle.Cdc;
 using System;
 
@@ -12,7 +13,7 @@ namespace NTangle.Data
     public class BatchTrackerMapper : IDatabaseMapper<BatchTracker>
     {
         /// <inheritdoc/>
-        public BatchTracker MapFromDb(DatabaseRecord r) => new()
+        public BatchTracker? MapFromDb(DatabaseRecord r, OperationTypes operationType) => new()
         {
             Id = r.GetValue<long>("BatchTrackingId"),
             CreatedDate = r.GetValue<DateTime>("CreatedDate"),
@@ -21,5 +22,8 @@ namespace NTangle.Data
             CorrelationId = r.GetValue<string?>("CorrelationId"),
             HasDataLoss = r.GetValue<bool>("HasDataLoss")
         };
+
+        /// <inheritdoc/>
+        void IDatabaseMapper<BatchTracker>.MapToDb(BatchTracker? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
     }
 }

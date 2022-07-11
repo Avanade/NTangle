@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using CoreEx;
+using CoreEx.Database;
+using CoreEx.Database.SqlServer;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
-using DbEx;
-using DbEx.SqlServer;
 using Microsoft.Extensions.Logging;
 using NTangle.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NTangle.Cdc
@@ -97,7 +97,8 @@ namespace NTangle.Cdc
         /// Assigns the identity mapping by adding <i>new</i> for those items that do not currentyly have a global identifier currently assigned.
         /// </summary>
         /// <param name="coll">The entity envelope collection.</param>
-        protected async Task AssignIdentityMappingAsync(TEntityEnvelopeColl coll)
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        protected async Task AssignIdentityMappingAsync(TEntityEnvelopeColl coll, CancellationToken cancellationToken = default)
         {
             // Find all the instances where there is currently no global identifier assigned.
             var vimc = new ValueIdentifierMappingCollection<TGlobalIdentifer>();
@@ -111,7 +112,7 @@ namespace NTangle.Cdc
             var tvp = IdentifierMappingMapper!.CreateTableValuedParameter(imcd.Values);
 
             // Execute the stored procedure and get the updated list.
-            var imc = await Db.StoredProcedure(IdentifierMappingStoredProcedureName!, p => p.AddTableValuedParameter(IdentifierListParamName, tvp)).SelectAsync(IdentifierMappingMapper).ConfigureAwait(false);
+            var imc = await Db.StoredProcedure(IdentifierMappingStoredProcedureName!).Params(p => p.AddTableValuedParameter(IdentifierListParamName, tvp)).SelectQueryAsync(IdentifierMappingMapper, cancellationToken).ConfigureAwait(false);
             if (imc.Count() != imcd.Count)
                 throw new InvalidOperationException($"Stored procedure '{IdentifierMappingStoredProcedureName}' returned an unexpected result.");
 

@@ -6,10 +6,11 @@
 #pragma warning disable
 
 using CoreEx;
+using CoreEx.Database;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
-using DbEx;
+using CoreEx.Mapping;
 using Microsoft.Extensions.Logging;
 using NTangle;
 using NTangle.Cdc;
@@ -19,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using SqlServerDemo.Publisher.Entities;
 
@@ -51,11 +53,11 @@ namespace SqlServerDemo.Publisher.Data
         partial void ContactCdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
         /// <inheritdoc/>
-        protected override async Task<EntityOrchestratorResult<ContactCdcEnvelopeCollection, ContactCdcEnvelope>> GetBatchEntityDataAsync()
+        protected override async Task<EntityOrchestratorResult<ContactCdcEnvelopeCollection, ContactCdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
         {
             var cColl = new ContactCdcEnvelopeCollection();
 
-            var result = await SelectQueryMultiSetAsync(
+            var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
                 // Root table: '[Legacy].[Contact]'
                 new MultiSetCollArgs<ContactCdcEnvelopeCollection, ContactCdcEnvelope>(_contactCdcMapper, r => cColl = r, stopOnNull: true),
 
@@ -66,7 +68,7 @@ namespace SqlServerDemo.Publisher.Data
                     {
                         cColl.Where(x => x.AddressId == a.AddressId).ForEach(x => x.Address = a.Coll.FirstOrDefault());
                     }
-                })).ConfigureAwait(false);
+                })), cancellationToken).ConfigureAwait(false);
 
             result.Result.AddRange(cColl);
             return result;
@@ -116,7 +118,7 @@ namespace SqlServerDemo.Publisher.Data
         public class ContactCdcMapper : IDatabaseMapper<ContactCdcEnvelope>
         {
             /// <inheritdoc/>
-            public ContactCdcEnvelope MapFromDb(DatabaseRecord record) => new ContactCdcEnvelope
+            public ContactCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new ContactCdcEnvelope
             {
                 GlobalId = record.GetValue<string?>("GlobalId"),
                 CID = record.GetValue<int>("CID"),
@@ -133,6 +135,9 @@ namespace SqlServerDemo.Publisher.Data
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
             };
+
+            /// <inheritdoc/>
+            void IDatabaseMapper<ContactCdcEnvelope>.MapToDb(ContactCdcEnvelope? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
 
         /// <summary>
@@ -141,7 +146,7 @@ namespace SqlServerDemo.Publisher.Data
         public class AddressCdcMapper : IDatabaseMapper<ContactCdc.AddressCdc>
         {
             /// <inheritdoc/>
-            public ContactCdc.AddressCdc MapFromDb(DatabaseRecord record) => new ContactCdc.AddressCdc
+            public ContactCdc.AddressCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new ContactCdc.AddressCdc
             {
                 AddressId = record.GetValue<int>("AddressId"),
                 Street1 = record.GetValue<string?>("Street1"),
@@ -149,6 +154,9 @@ namespace SqlServerDemo.Publisher.Data
                 AlternateAddressId = record.GetValue<int?>("AlternateAddressId"),
                 GlobalAlternateAddressId = record.GetValue<string?>("GlobalAlternateAddressId")
             };
+
+            /// <inheritdoc/>
+            void IDatabaseMapper<ContactCdc.AddressCdc>.MapToDb(ContactCdc.AddressCdc? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
     }
 }

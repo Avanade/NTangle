@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using DbEx;
-using DbEx.SqlServer;
+using CoreEx.Database;
+using CoreEx.Database.SqlServer;
+using CoreEx.Mapping;
 using NTangle.Cdc;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace NTangle.Data
         public string DbTypeName { get; }
 
         /// <inheritdoc/>
-        public VersionTracker MapFromDb(DatabaseRecord record) => new()
+        public VersionTracker? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
             Key = record.GetValue<string>(nameof(VersionTracker.Key)),
             Hash = record.GetValue<string>(nameof(VersionTracker.Hash))
@@ -47,5 +48,8 @@ namespace NTangle.Data
 
             return tvp;
         }
+
+        /// <inheritdoc/>
+        void IDatabaseMapper<VersionTracker>.MapToDb(VersionTracker? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
     }
 }

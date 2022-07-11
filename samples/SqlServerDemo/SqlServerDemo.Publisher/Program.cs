@@ -1,11 +1,11 @@
-﻿using CoreEx.Events;
-using DbEx;
+﻿using CoreEx.Database;
+using CoreEx.Database.SqlServer;
+using CoreEx.Events;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NTangle.Data.SqlServer;
 using SqlServerDemo.Publisher.Data;
 
 namespace SqlServerDemo.Publisher

@@ -1,9 +1,9 @@
-﻿using DbEx;
+﻿using CoreEx.Database;
+using CoreEx.Database.SqlServer;
 using DbEx.Console;
 using DbEx.Migration;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using NTangle.Data.SqlServer;
 using NTangle.Test;
 using NUnit.Framework;
 using SqlServerDemo.Database;

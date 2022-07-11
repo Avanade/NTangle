@@ -7,10 +7,11 @@
 #pragma warning disable
 
 using CoreEx;
+using CoreEx.Database;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
-using DbEx;
+using CoreEx.Mapping;
 using Microsoft.Extensions.Logging;
 {{#ifeq Root.JsonSerializer 'Newtonsoft'}}
 using Newtonsoft.Json;
@@ -25,6 +26,7 @@ using System.Linq;
 {{#ifeq Root.JsonSerializer 'SystemText'}}
 using System.Text.Json.Serialization;
 {{/ifeq}}
+using System.Threading;
 using System.Threading.Tasks;
 using {{Root.NamespacePublisher}}.Entities;
 
@@ -78,13 +80,13 @@ namespace {{Root.NamespacePublisher}}.Data
         partial void {{Model}}CdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
         /// <inheritdoc/>
-        protected override async Task<EntityOrchestratorResult<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>> GetBatchEntityDataAsync()
+        protected override async Task<EntityOrchestratorResult<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
         {
             var {{Alias}}Coll = new {{Model}}CdcEnvelopeCollection();
 
-            var result = await SelectQueryMultiSetAsync(
+            var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
                 // Root table: '[{{Schema}}].[{{Table}}]'
-                new MultiSetCollArgs<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>(_{{camel Model}}CdcMapper, r => {{Alias}}Coll = r, stopOnNull: true){{#ifne CdcJoins.Count 0}},{{else}}).ConfigureAwait(false);{{/ifne}}
+                new MultiSetCollArgs<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>(_{{camel Model}}CdcMapper, r => {{Alias}}Coll = r, stopOnNull: true){{#ifne CdcJoins.Count 0}},{{else}}), cancellationToken).ConfigureAwait(false);{{/ifne}}
 {{#each CdcJoins}}
 
                 // Join table: '[{{Schema}}].[{{Table}}]' (unique name '{{Name}}')
@@ -102,7 +104,7 @@ namespace {{Root.NamespacePublisher}}.Data
   {{#each JoinHierarchy}}
                    {{indent IndentSpaces}} }
   {{/each}}
-                }){{#if @last}}).ConfigureAwait(false);{{else}},{{/if}}
+                }){{#if @last}}), cancellationToken).ConfigureAwait(false);{{else}},{{/if}}
 {{/each}}
 
             result.Result.AddRange({{Alias}}Coll);
@@ -160,7 +162,7 @@ namespace {{Root.NamespacePublisher}}.Data
         public class {{Model}}CdcMapper : IDatabaseMapper<{{Model}}CdcEnvelope>
         {
             /// <inheritdoc/>
-            public {{Model}}CdcEnvelope MapFromDb(DatabaseRecord record) => new {{Model}}CdcEnvelope
+            public {{Model}}CdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new {{Model}}CdcEnvelope
             {
 {{#if IdentifierMapping}}
                 GlobalId = record.GetValue<{{Root.IdentifierMappingDotNetType}}?>("GlobalId"),
@@ -177,6 +179,9 @@ namespace {{Root.NamespacePublisher}}.Data
                 DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
                 DatabaseLsn = record.GetValue<byte[]>("_Lsn")
             };
+
+            /// <inheritdoc/>
+            void IDatabaseMapper<{{Model}}CdcEnvelope>.MapToDb({{Model}}CdcEnvelope? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
 {{#each CdcJoins}}
 
@@ -186,7 +191,7 @@ namespace {{Root.NamespacePublisher}}.Data
         public class {{Model}}CdcMapper : IDatabaseMapper<{{Parent.Model}}Cdc.{{Model}}Cdc>
         {
             /// <inheritdoc/>
-            public {{Parent.Model}}Cdc.{{Model}}Cdc MapFromDb(DatabaseRecord record) => new {{Parent.Model}}Cdc.{{Model}}Cdc
+            public {{Parent.Model}}Cdc.{{Model}}Cdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new {{Parent.Model}}Cdc.{{Model}}Cdc
             {
   {{#each JoinHierarchyReverse}}
     {{#unless @last}}
@@ -204,6 +209,9 @@ namespace {{Root.NamespacePublisher}}.Data
       {{/each}}
   {{/each}}
             };
+
+            /// <inheritdoc/>
+            void IDatabaseMapper<{{Parent.Model}}Cdc.{{Model}}Cdc>.MapToDb({{Parent.Model}}Cdc.{{Model}}Cdc? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
 {{/each}}
     }
