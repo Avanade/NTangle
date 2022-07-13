@@ -1,6 +1,7 @@
 using CoreEx;
 using CoreEx.Events;
 using CoreEx.Json;
+using Microsoft.Data.SqlClient;
 using NTangle.Data;
 using NTangle.Test;
 using NUnit.Framework;

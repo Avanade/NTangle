@@ -83,8 +83,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoreEx" Version="1.0.6" />
-    <PackageReference Include="DbEx" Version="1.0.10" />
+    <PackageReference Include="DbEx" Version="1.0.11" />
     <PackageReference Include="OnRamp" Version="1.0.5" />
   </ItemGroup>
 
