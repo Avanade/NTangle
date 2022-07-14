@@ -2,7 +2,7 @@
 
 using CoreEx.Configuration;
 using CoreEx.Hosting;
-using DbEx.SqlServer;
+using CoreEx.Database.SqlServer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NTangle.Cdc;
@@ -98,11 +98,11 @@ namespace NTangle.Services
         public Func<IServiceProvider, EventOutboxDequeueBase>? EventOutboxDequeueFactory { get; set; }
 
         /// <summary>
-        /// Executes the entity orchestration (<see cref="IEntityOrchestrator.ExecuteAsync(CancellationToken?)"/>) for the next batch and/or last incomplete batch.
+        /// Executes the entity orchestration (<see cref="IEntityOrchestrator.ExecuteAsync"/>) for the next batch and/or last incomplete batch.
         /// </summary>
         /// <param name="scopedServiceProvider"><inheritdoc/></param>
         /// <param name="cancellationToken"><inheritdoc/></param>
-        protected override async Task SynchronizedExecuteAsync(IServiceProvider scopedServiceProvider, CancellationToken cancellationToken)
+        protected override async Task SynchronizedExecuteAsync(IServiceProvider scopedServiceProvider, CancellationToken cancellationToken = default)
         {
             if (EventOutboxDequeueFactory == null)
                 throw new NotImplementedException($"The {nameof(EventOutboxDequeueFactory)} property must be configured to create an instance of the {nameof(EventOutboxDequeueBase)}.");

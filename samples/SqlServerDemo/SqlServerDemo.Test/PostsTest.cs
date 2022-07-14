@@ -1,5 +1,7 @@
+using CoreEx;
 using CoreEx.Events;
 using CoreEx.Json;
+using Microsoft.Data.SqlClient;
 using NTangle.Data;
 using NTangle.Test;
 using NUnit.Framework;
@@ -73,7 +75,7 @@ namespace SqlServerDemo.Test
             Assert.IsFalse(cdcr.IsSuccessful);
             Assert.IsNull(cdcr.Batch);
             Assert.NotNull(cdcr.Exception);
-            Assert.IsInstanceOf<DatabaseErrorException>(cdcr.Exception);
+            Assert.IsInstanceOf<BusinessException>(cdcr.Exception);
             Assert.AreEqual("There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.", cdcr.Exception.Message);
             Assert.IsNull(cdcr.ExecuteStatus);
         }
@@ -314,7 +316,7 @@ namespace SqlServerDemo.Test
             Assert.IsFalse(cdcr.IsSuccessful);
             Assert.IsNull(cdcr.Batch);
             Assert.NotNull(cdcr.Exception);
-            Assert.IsInstanceOf<DatabaseErrorException>(cdcr.Exception);
+            Assert.IsInstanceOf<BusinessException>(cdcr.Exception);
             Assert.AreEqual("Unexpected data loss error for 'Legacy.Posts'; this indicates that the CDC data has probably been cleaned up before being successfully processed.", cdcr.Exception.Message);
             Assert.IsNull(cdcr.ExecuteStatus);
         }

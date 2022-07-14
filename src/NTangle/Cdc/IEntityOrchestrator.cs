@@ -23,19 +23,20 @@ namespace NTangle.Cdc
         bool ContinueWithDataLoss { get; set; }
 
         /// <summary>
-        /// Executes the next (new) outbox, or reprocesses the last incomplete, then <see cref="CompleteAsync(long, List{VersionTracker})">completes</see> on success.
+        /// Executes the next (new) outbox, or reprocesses the last incomplete, then <see cref="CompleteAsync">completes</see> on success.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
         /// <remarks>An outbox may be incomplete where there was a previous execution failure.</remarks>
-        Task<EntityOrchestratorResult> ExecuteAsync(CancellationToken? cancellationToken);
+        Task<EntityOrchestratorResult> ExecuteAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Completes an existing outbox updating the corresponding <paramref name="tracking"/> where appropriate.
         /// </summary>
         /// <param name="outboxId">The outbox identifer.</param>
         /// <param name="tracking">The <see cref="VersionTracker"/> list.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-        Task<EntityOrchestratorResult> CompleteAsync(long outboxId, List<VersionTracker> tracking);
+        Task<EntityOrchestratorResult> CompleteAsync(long outboxId, List<VersionTracker> tracking, CancellationToken cancellationToken = default);
     }
 }

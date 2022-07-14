@@ -6,8 +6,8 @@
 #pragma warning disable
 
 using CoreEx.Configuration;
+using CoreEx.Database;
 using CoreEx.Events;
-using DbEx;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

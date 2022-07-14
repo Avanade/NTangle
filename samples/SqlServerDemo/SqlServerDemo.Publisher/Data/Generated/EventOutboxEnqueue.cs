@@ -5,8 +5,8 @@
 #nullable enable
 #pragma warning disable
 
-using DbEx;
-using DbEx.SqlServer;
+using CoreEx.Database;
+using CoreEx.Database.SqlServer;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Data;

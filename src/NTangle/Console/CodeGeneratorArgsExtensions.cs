@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using DbEx;
+using CoreEx.Database;
 using OnRamp;
 using System;
 using System.Collections.Generic;

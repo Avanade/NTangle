@@ -140,7 +140,7 @@ namespace NTangle.Test
         public static async Task<EntityOrchestratorResult> AssertNoFurtherChanges(IEntityOrchestrator eo, InMemoryPublisher imp)
         {
             imp.Reset();
-            var cdcr = await eo.ExecuteAsync(null).ConfigureAwait(false);
+            var cdcr = await eo.ExecuteAsync().ConfigureAwait(false);
             WriteResult(cdcr, imp);
 
             Assert.NotNull(cdcr);

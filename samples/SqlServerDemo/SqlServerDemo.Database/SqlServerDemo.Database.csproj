@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DbEx" Version="1.0.9" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="Schema\**\*" />
     <EmbeddedResource Include="Migrations\**\*" />
     <EmbeddedResource Include="Data\**\*" />
@@ -18,6 +14,10 @@
 
   <ItemGroup>
     <Folder Include="Schema\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NTangle\NTangle.csproj" />
   </ItemGroup>
 
 </Project>

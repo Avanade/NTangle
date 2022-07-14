@@ -2,12 +2,12 @@
   "value": {
     "postsId": 1,
     "text": "Blah 1",
-    "date": "2020-01-01T00:00:00",
+    "date": "2020-01-01T00:00:00Z",
     "comments": [
       {
         "commentsId": 101,
         "text": "Blah blah 101 some more",
-        "date": "2020-01-01T00:00:00",
+        "date": "2020-01-01T00:00:00Z",
         "tags": [
           {
             "tagsId": 1002,
@@ -18,7 +18,7 @@
       {
         "commentsId": 102,
         "text": "Blah blah 102",
-        "date": "2020-01-01T00:00:00"
+        "date": "2020-01-01T00:00:00Z"
       }
     ],
     "tags": [

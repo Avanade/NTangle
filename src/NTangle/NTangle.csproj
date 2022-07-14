@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>NTangle</RootNamespace>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>
@@ -83,8 +83,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoreEx" Version="1.0.5" />
-    <PackageReference Include="DbEx" Version="1.0.9" />
+    <PackageReference Include="DbEx" Version="1.0.11" />
     <PackageReference Include="OnRamp" Version="1.0.5" />
   </ItemGroup>
 

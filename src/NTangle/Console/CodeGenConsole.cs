@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx.Database.SqlServer;
 using Microsoft.Data.SqlClient;
-using NTangle.Data.SqlServer;
 using OnRamp;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -40,7 +40,7 @@ namespace NTangle.Console
         public CodeGenConsole(string connectionString, params Assembly[] assemblies) : base()
         {
             Args.ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
-            Args.AddAssembly(typeof(DbEx.IDatabase).Assembly).AddAssembly(typeof(CodeGenConsole).Assembly);
+            Args.AddAssembly(typeof(DbEx.DatabaseExtensions).Assembly).AddAssembly(typeof(CodeGenConsole).Assembly);
             if (assemblies == null || assemblies.Length == 0)
                 Args.AddAssembly(Assembly.GetCallingAssembly());
             else

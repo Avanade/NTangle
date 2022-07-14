@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NTangle" Version="1.0.4" />
+    <PackageReference Include="NTangle" Version="1.0.5" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">

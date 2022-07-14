@@ -1,5 +1,6 @@
-﻿using CoreEx.Events;
-using DbEx;
+﻿using CoreEx.Database;
+using CoreEx.Database.SqlServer;
+using CoreEx.Events;
 #if (implement_dbprovider_sqlserver)
 using Microsoft.Data.SqlClient;
 #endif
@@ -8,9 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NTangle;
-#if (implement_dbprovider_sqlserver)
-using NTangle.Data.SqlServer;
-#endif
 using AppName.Publisher.Data;
 
 namespace AppName.Publisher
