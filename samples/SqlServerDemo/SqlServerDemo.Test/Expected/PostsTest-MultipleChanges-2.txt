@@ -2,12 +2,12 @@
   "value": {
     "postsId": 3,
     "text": "Blah 3",
-    "date": "2020-01-03T00:00:00",
+    "date": "2020-01-03T00:00:00Z",
     "comments": [
       {
         "commentsId": 301,
         "text": "Blah blah 301",
-        "date": "2020-01-03T00:00:00"
+        "date": "2020-01-03T00:00:00Z"
       }
     ]
   },
