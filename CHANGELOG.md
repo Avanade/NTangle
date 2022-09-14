@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v1.0.6
+- *Enhancement:* Updated `DbEx` dependency to latest.
+
 ## v1.0.5
 - *Enhancement:* Updated `CoreEx` and `DbEx` dependencies to latest. This is to account for the move of the common ADO-based database access logic from `DbEx` to `CoreEx`.
 
