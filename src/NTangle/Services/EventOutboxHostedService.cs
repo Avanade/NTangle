@@ -108,7 +108,15 @@ namespace NTangle.Services
                 throw new NotImplementedException($"The {nameof(EventOutboxDequeueFactory)} property must be configured to create an instance of the {nameof(EventOutboxDequeueBase)}.");
 
             var eod = EventOutboxDequeueFactory(scopedServiceProvider) ?? throw new InvalidOperationException($"The {nameof(EventOutboxDequeueFactory)} function must return an instance of {nameof(EventOutboxDequeueBase)}.");
-            while (await eod.DequeueAndSendAsync(MaxDequeueSize, PartitionKey, Destination, cancellationToken).ConfigureAwait(false) > 0) ;
+
+            try
+            {
+                while (await eod.DequeueAndSendAsync(MaxDequeueSize, PartitionKey, Destination, cancellationToken).ConfigureAwait(false) > 0) ;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Event Outbox dequeue and send failed: {Error}", ex.Message);
+            }
         }
     }
 }

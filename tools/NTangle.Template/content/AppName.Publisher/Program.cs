@@ -36,19 +36,32 @@ namespace AppName.Publisher
 #if (implement_dbprovider_sqlserver)
                             .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(hostContext.Configuration.GetConnectionString("SqlDb"))))
 #endif
+                            .AddExecutionContext()
                             .AddJsonSerializer();
 
                     // Adds the EventPublisher, which will use the default EventDataFormatter, with CloudEventSerializer and EventOutbox enqueue as sender.
                     services.AddEventPublisher()
                             .AddEventDataFormatter()
-                            .AddCloudEventSerializer()
-                            .AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(new LoggerEventSender(sp.GetRequiredService<ILogger<LoggerEventSender>>())));
+                            .AddCloudEventSerializer();
+
+                    // For testing purposes uses the LoggerEventSender; remove usage and uncomment others to leverage Azure Service Bus.
+                    services.AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(new LoggerEventSender(sp.GetRequiredService<ILogger<LoggerEventSender>>())));
+                    //services.AddAzureServiceBusClient()
+                    //        .AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(CreateServiceBusSender(sp)));
 
                     // Adds the CDC-hosted service(s) including orchestrator services, and specified EventOutbox dequeue/send service.
                     services.AddGeneratedCdcHostedServices()
                             .AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), new LoggerEventSender(sp.GetRequiredService<ILogger<LoggerEventSender>>()), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()))
+                            //.AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), CreateServiceBusSender(sp), sp.GetService<ILogger<EventOutboxDequeue>>()))
                             .AddGeneratedOrchestratorServices()
                             .AddFileLockSynchronizer();
                 });
+
+        /// <summary>
+        /// Creates the ServiceBusSender using the specified default queue or topic name.
+        /// </summary>
+        private static CoreEx.Azure.ServiceBus.ServiceBusSender CreateServiceBusSender(System.IServiceProvider sp) => new CoreEx.Azure.ServiceBus.ServiceBusSender(
+            sp.GetRequiredService<Azure.Messaging.ServiceBus.ServiceBusClient>(), sp.GetRequiredService<CoreEx.ExecutionContext>(), sp.GetRequiredService<CoreEx.Configuration.SettingsBase>(), sp.GetRequiredService<ILogger<CoreEx.Azure.ServiceBus.ServiceBusSender>>())
+                { DefaultQueueOrTopicName = "AppName" };
     }
 }
