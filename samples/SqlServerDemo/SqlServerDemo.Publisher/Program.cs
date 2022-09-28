@@ -39,14 +39,14 @@ namespace SqlServerDemo.Publisher
                     services.AddEventPublisher()
                             .AddEventDataFormatter()
                             .AddCloudEventSerializer()
-                            //.AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>())));
-                            .AddAzureServiceBusClient()
-                            .AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(CreateServiceBusSender(sp)));
+                            .AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>())));
+                            //.AddAzureServiceBusClient()
+                            //.AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(CreateServiceBusSender(sp)));
 
                     // Adds the CDC-hosted service(s) including orchestrator services, and specified EventOutbox dequeue/send service.
                     services.AddGeneratedCdcHostedServices()
-                            //.AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>()), sp.GetService<ILogger<EventOutboxDequeue>>()))
-                            .AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), CreateServiceBusSender(sp), sp.GetService<ILogger<EventOutboxDequeue>>()))
+                            .AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>()), sp.GetService<ILogger<EventOutboxDequeue>>()))
+                            //.AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), CreateServiceBusSender(sp), sp.GetService<ILogger<EventOutboxDequeue>>()))
                             .AddGeneratedOrchestratorServices()
                             .AddFileLockSynchronizer();
                 });
