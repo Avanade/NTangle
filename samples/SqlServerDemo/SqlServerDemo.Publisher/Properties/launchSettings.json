@@ -2,7 +2,7 @@
   "profiles": {
     "SqlServerDemo.Publisher": {
       "commandName": "Project",
-      "commandLineArgs": "Interval=00:00:05 OutboxInterval=00:00:10 ",
+      "commandLineArgs": "Interval=00:00:05 OutboxInterval=00:00:10 ContinueWithDataLoss=true",
       "environmentVariables": {
         "SqlServerDemo_ConnectionStrings__SqlDb": "lkjlskjlasd"
       }

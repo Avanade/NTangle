@@ -106,7 +106,14 @@ namespace NTangle.Test
             }
 
             // Build and package (nuget) - only local package, no deployment.
-            Assert.GreaterOrEqual(0, ExecuteCommand("powershell", "./nuget-publish.ps1 -configuration 'Debug' -IncludeSymbols -IncludeSource", _rootDir.FullName).exitCode, "nuget publish");
+            Assert.GreaterOrEqual(0, ExecuteCommand("dotnet", "clean ./src/ntangle", _rootDir.FullName).exitCode, "dotnet clean");
+            Assert.GreaterOrEqual(0, ExecuteCommand("dotnet", "build ./src/ntangle --force", _rootDir.FullName).exitCode, "dotnet build");
+            Assert.GreaterOrEqual(0, ExecuteCommand("dotnet", "pack ./src/ntangle", _rootDir.FullName).exitCode, "dotnet pack");
+
+            foreach (var fi in new DirectoryInfo(Path.Combine(_rootDir.FullName, "src", "ntangle")).EnumerateFiles("*.nupkg", SearchOption.AllDirectories))
+            {
+                Assert.GreaterOrEqual(0, ExecuteCommand("dotnet", $"nuget push {fi.FullName} --source {_nugetDir.FullName}", _rootDir.FullName).exitCode, $"dotnet nuget push {fi.FullName}");
+            }
 
             // Uninstall the template solution from local package.
             ExecuteCommand("dotnet", $"new -u ntangle.template --nuget-source {_nugetDir.FullName}", _rootDir.FullName);
