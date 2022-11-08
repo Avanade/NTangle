@@ -17,7 +17,7 @@ namespace NTangle.Events
         /// <param name="value">The entity value.</param>
         /// <param name="format">The <see cref="EventSourceFormat"/>.</param>
         /// <returns>The formatted action.</returns>
-        public static Uri? Format<T>(Uri? source, T value, EventSourceFormat? format = EventSourceFormat.NameAndTableKey) where T : IPrimaryKey
+        public static Uri? Format<T>(Uri? source, T value, EventSourceFormat? format = EventSourceFormat.NameAndTableKey) where T : IEntityKey
         {
             if (source == null)
                 return null;
@@ -25,8 +25,8 @@ namespace NTangle.Events
             return format switch
             {
                 EventSourceFormat.NameOnly => source,
-                EventSourceFormat.NameAndKey => CreateUri(source, value.PrimaryKey.ToString()),
-                EventSourceFormat.NameAndTableKey => CreateUri(source, value is IGlobalIdentifier gi ? gi.TableKey.ToString() : value.PrimaryKey.ToString()),
+                EventSourceFormat.NameAndKey => CreateUri(source, value.EntityKey.ToString()),
+                EventSourceFormat.NameAndTableKey => CreateUri(source, value is IGlobalIdentifier gi ? gi.TableKey.ToString() : value.EntityKey.ToString()),
                 _ => null
             };
         }

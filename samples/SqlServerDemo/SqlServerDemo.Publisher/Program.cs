@@ -45,14 +45,17 @@ namespace SqlServerDemo.Publisher
 
                     // Adds the CDC-hosted service(s) including orchestrator services, and specified EventOutbox dequeue/send service.
                     services.AddGeneratedCdcHostedServices()
-                            .AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>()), sp.GetService<ILogger<EventOutboxDequeue>>()))
-                            //.AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), CreateServiceBusSender(sp), sp.GetService<ILogger<EventOutboxDequeue>>()))
+                            .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>()), sp.GetService<ILogger<EventOutboxDequeue>>()))
+                            //.AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), CreateServiceBusSender(sp), sp.GetService<ILogger<EventOutboxDequeue>>()))
                             .AddGeneratedOrchestratorServices()
                             .AddFileLockSynchronizer();
                 });
 
-        private static CoreEx.Azure.ServiceBus.ServiceBusSender CreateServiceBusSender(System.IServiceProvider sp) => new CoreEx.Azure.ServiceBus.ServiceBusSender(
-            sp.GetRequiredService<Azure.Messaging.ServiceBus.ServiceBusClient>(), sp.GetRequiredService<CoreEx.ExecutionContext>(), sp.GetRequiredService<CoreEx.Configuration.SettingsBase>(), sp.GetRequiredService<ILogger<CoreEx.Azure.ServiceBus.ServiceBusSender>>())
-            { DefaultQueueOrTopicName = "ntangle_sqlserverdemo" };
+        /// <summary>
+        /// Creates the <see cref="CoreEx.Azure.ServiceBus.ServiceBusSender"/>.
+        /// </summary>
+        private static CoreEx.Azure.ServiceBus.ServiceBusSender CreateServiceBusSender(System.IServiceProvider sp) 
+            => new (sp.GetRequiredService<Azure.Messaging.ServiceBus.ServiceBusClient>(), sp.GetRequiredService<CoreEx.ExecutionContext>(), sp.GetRequiredService<CoreEx.Configuration.SettingsBase>(), sp.GetRequiredService<ILogger<CoreEx.Azure.ServiceBus.ServiceBusSender>>())
+                { DefaultQueueOrTopicName = "ntangle_sqlserverdemo" };
     }
 }

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using DbEx.Schema;
+using DbEx.DbSchema;
 
 namespace NTangle.Config
 {

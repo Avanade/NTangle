@@ -272,7 +272,7 @@ namespace NTangle.Cdc
 
             // Consolidate the results to the 'set' that is to be sent (i.e. ignore unneccessary).
             var coll = new TEntityEnvelopeColl();
-            foreach (var grp in result.Result.GroupBy(x => new { x.PrimaryKey }))
+            foreach (var grp in result.Result.GroupBy(x => new { x.EntityKey }))
             {
                 // Find delete and use.
                 var item = grp.Where(x => x.DatabaseOperationType == CdcOperationType.Delete).FirstOrDefault();
@@ -332,7 +332,7 @@ namespace NTangle.Cdc
                 if (item.DatabaseTrackingHash == null || item.DatabaseTrackingHash != entity.ETag)
                 {
                     coll2.Add(item);
-                    tracking.Add(new VersionTracker { Key = entity.PrimaryKey.ToString(), Hash = entity.ETag });
+                    tracking.Add(new VersionTracker { Key = entity.EntityKey.ToString(), Hash = entity.ETag });
                 }
             }
 
@@ -464,7 +464,7 @@ namespace NTangle.Cdc
         /// <param name="operationType">The <see cref="CdcOperationType"/> to infer the <see cref="EventDataBase.Action"/>.</param>
         /// <param name="correlationId">The correlarion identifier.</param>
         /// <returns>The <see cref="EventData"/>.</returns>
-        protected virtual EventData CreateEvent<T>(T value, CdcOperationType operationType, string? correlationId) where T : IPrimaryKey
+        protected virtual EventData CreateEvent<T>(T value, CdcOperationType operationType, string? correlationId) where T : IEntityKey
         {
             var ed = new EventData<T>
             {

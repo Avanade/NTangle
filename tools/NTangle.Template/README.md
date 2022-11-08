@@ -402,7 +402,7 @@ Complete. [8917ms]
 
 DATABASE SCHEMA: Drops and creates the database objects...
   Probing for files (recursively): C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\*\*.sql
-  Probing for embedded resources: FooBar.Database.Schema.*.sql, DbEx.Schema.*.sql
+  Probing for embedded resources: FooBar.Database.Schema.*.sql, DbEx.DbSchema.*.sql
   Drop (using DbUp) known schema objects...
     Beginning database upgrade
     Checking whether journal table exists..

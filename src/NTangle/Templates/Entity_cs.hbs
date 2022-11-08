@@ -26,7 +26,7 @@ namespace {{Root.NamespacePublisher}}.Entities
     /// <summary>
     /// Represents the CDC model for the root (parent) database table '[{{Schema}}].[{{Name}}]'.
     /// </summary>
-    public partial class {{Model}}Cdc : IEntity{{#ifval IdentifierColumn}}, IIdentifier<{{IdentifierColumn.DotNetType}}{{#if IdentifierColumn.IsDotNetNullable}}?{{/if}}>{{/ifval}}{{#ifval ColumnConfigIsDeleted}}, ILogicallyDeletedExtended{{/ifval}}{{#ifne SelectedTenantIdColumns.Count 0}}, ITenantId{{/ifne}}{{#if HasPartitionKey}}, IPartitionKey{{/if}}{{#if IdentifierMapping}}, IGlobalIdentifier<{{Root.IdentifierMappingDotNetType}}>{{/if}}{{#if UsesGlobalIdentifier}}, ILinkIdentifierMapping<{{Root.IdentifierMappingDotNetType}}>{{/if}}
+    public partial class {{Model}}Cdc : IEntity{{#ifval ColumnConfigIsDeleted}}, ILogicallyDeletedExtended{{/ifval}}{{#ifne SelectedTenantIdColumns.Count 0}}, ITenantId{{/ifne}}{{#if HasPartitionKey}}, IPartitionKey{{/if}}{{#if IdentifierMapping}}, IGlobalIdentifier<{{Root.IdentifierMappingDotNetType}}>{{/if}}{{#if UsesGlobalIdentifier}}, ILinkIdentifierMapping<{{Root.IdentifierMappingDotNetType}}>{{/if}}
     {
 {{#if IdentifierMapping}}
         /// <inheritdoc/>

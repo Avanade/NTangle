@@ -3,7 +3,7 @@
 using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
-using DbEx.Schema;
+using DbEx.DbSchema;
 using OnRamp.Utility;
 using System;
 using System.Collections.Generic;
