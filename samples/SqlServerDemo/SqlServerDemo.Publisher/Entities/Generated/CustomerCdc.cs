@@ -17,7 +17,7 @@ namespace SqlServerDemo.Publisher.Entities
     /// <summary>
     /// Represents the CDC model for the root (parent) database table '[Legacy].[Customer]'.
     /// </summary>
-    public partial class CustomerCdc : IEntity, IIdentifier<int>, ILogicallyDeletedExtended
+    public partial class CustomerCdc : IEntity, ILogicallyDeletedExtended
     {
         /// <summary>
         /// Gets or sets the Id '[Legacy].[Customer].[CustId]' column value.

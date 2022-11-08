@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
 using DbEx;
-using DbEx.Schema;
+using DbEx.DbSchema;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NTangle.Console;

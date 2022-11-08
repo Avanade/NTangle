@@ -16,10 +16,10 @@ namespace NTangle.Events
         /// <param name="value">The entity value.</param>
         /// <param name="format">The <see cref="EventSubjectFormat"/>.</param>
         /// <returns>The formatted action.</returns>
-        public static string Format<T>(string subject, T value, EventSubjectFormat? format = EventSubjectFormat.NameAndKey) where T : IPrimaryKey => format switch
+        public static string Format<T>(string subject, T value, EventSubjectFormat? format = EventSubjectFormat.NameAndKey) where T : IEntityKey => format switch
         {
-            EventSubjectFormat.NameAndKey => $"{subject}.{value.PrimaryKey}",
-            EventSubjectFormat.NameAndTableKey => $"{subject}.{(value is IGlobalIdentifier gi ? gi.TableKey : value.PrimaryKey)}",
+            EventSubjectFormat.NameAndKey => $"{subject}.{value.EntityKey}",
+            EventSubjectFormat.NameAndTableKey => $"{subject}.{(value is IGlobalIdentifier gi ? gi.TableKey : value.EntityKey)}",
             _ => subject
         };
     }

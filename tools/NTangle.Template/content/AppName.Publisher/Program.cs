@@ -51,8 +51,8 @@ namespace AppName.Publisher
 
                     // Adds the CDC-hosted service(s) including orchestrator services, and specified EventOutbox dequeue/send service.
                     services.AddGeneratedCdcHostedServices()
-                            .AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), new LoggerEventSender(sp.GetRequiredService<ILogger<LoggerEventSender>>()), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()))
-                            //.AddEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), CreateServiceBusSender(sp), sp.GetService<ILogger<EventOutboxDequeue>>()))
+                            .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), new LoggerEventSender(sp.GetRequiredService<ILogger<LoggerEventSender>>()), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()))
+                            //.AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), CreateServiceBusSender(sp), sp.GetService<ILogger<EventOutboxDequeue>>()))
                             .AddGeneratedOrchestratorServices()
                             .AddFileLockSynchronizer();
                 });

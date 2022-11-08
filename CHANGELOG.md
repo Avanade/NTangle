@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v1.0.8
+- *Enhancement: Updated `CoreEx` and `DbEx`; key changes related to: `IPrimaryKey` and event outbox service ownership.  
+
 ## v1.0.7
 - *Fixed:* Event Outbox dequeue and send publishing failure will log and continue (allowing retry); versus fail process.
 - *Enhancement:* Template updated to show code (commented out) for Azure Service Bus event publishing.

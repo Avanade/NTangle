@@ -3,7 +3,7 @@
 using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
-using DbEx.Schema;
+using DbEx.DbSchema;
 using System.Linq;
 using System.Threading.Tasks;
 

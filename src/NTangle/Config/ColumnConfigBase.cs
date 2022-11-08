@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
 using OnRamp.Config;
-using DbEx.Schema;
+using DbEx.DbSchema;
 using System;
 using System.Threading.Tasks;
 
