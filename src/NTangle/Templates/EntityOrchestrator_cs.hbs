@@ -43,7 +43,7 @@ namespace {{Root.NamespacePublisher}}.Data
     public partial class {{Model}}CdcOrchestrator : EntityOrchestrator<{{Model}}Cdc, {{Model}}CdcOrchestrator.{{Model}}CdcEnvelopeCollection, {{Model}}CdcOrchestrator.{{Model}}CdcEnvelope, VersionTrackingMapper{{#if UsesGlobalIdentifier}}, {{Root.IdentifierMappingDotNetType}}{{/if}}>, I{{Model}}CdcOrchestrator
     {
         private static readonly {{Model}}CdcMapper _{{camel Model}}CdcMapper = new {{Model}}CdcMapper();
-{{#each CdcJoins}}
+{{#each DistinctModels}}
         private static readonly {{Model}}CdcMapper _{{camel Model}}CdcMapper = new {{Model}}CdcMapper();
 {{/each}}
 {{#each OrchestratorCtorParameters}}
@@ -183,7 +183,7 @@ namespace {{Root.NamespacePublisher}}.Data
             /// <inheritdoc/>
             void IDatabaseMapper<{{Model}}CdcEnvelope>.MapToDb({{Model}}CdcEnvelope? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
         }
-{{#each CdcJoins}}
+{{#each DistinctModels}}
 
         /// <summary>
         /// Represents a <see cref="{{Model}}Cdc"/> database mapper.
