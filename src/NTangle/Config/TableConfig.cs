@@ -339,6 +339,11 @@ namespace NTangle.Config
         public List<JoinConfig> CdcJoins => Joins!.Where(x => CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
+        /// Gets the <see cref="DistinctModels"/> collection for distinct CdcJoins.
+        /// </summary>
+        public List<JoinConfig> DistinctModels => CdcJoins.GroupBy(e=>e.Model).Select(p=>p.First()).ToList();
+
+        /// <summary>
         /// Gets the <see cref="JoinConfig"/> collection for "all" those that are not flagged as CDC monitored.
         /// </summary>
         public List<JoinConfig> NonCdcJoins => Joins!.Where(x => !CompareNullOrValue(x.Type, "Cdc")).ToList();
