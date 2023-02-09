@@ -86,14 +86,14 @@ namespace {{Root.NamespacePublisher}}.Data
 
             var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
                 // Root table: '[{{Schema}}].[{{Table}}]'
-                new MultiSetCollArgs<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>(_{{camel Model}}CdcMapper, r => {{Alias}}Coll = r, stopOnNull: true){{#ifne CdcJoins.Count 0}},{{else}}), cancellationToken).ConfigureAwait(false);{{/ifne}}
+                new MultiSetCollArgs<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>(_{{camel Model}}CdcMapper, __result => {{Alias}}Coll = __result, stopOnNull: true){{#ifne CdcJoins.Count 0}},{{else}}), cancellationToken).ConfigureAwait(false);{{/ifne}}
 {{#each CdcJoins}}
 
                 // Join table: '[{{Schema}}].[{{Table}}]' (unique name '{{Name}}')
-                new MultiSetCollArgs<{{Parent.Model}}Cdc.{{Model}}CdcCollection, {{Parent.Model}}Cdc.{{Model}}Cdc>(_{{camel Model}}CdcMapper, r =>
+                new MultiSetCollArgs<{{Parent.Model}}Cdc.{{Model}}CdcCollection, {{Parent.Model}}Cdc.{{Model}}Cdc>(_{{camel Model}}CdcMapper, __result =>
                 {
   {{#each JoinHierarchyReverse}}
-                   {{indent IndentSpaces}} foreach (var {{Alias}} in {{#if @first}}r{{else}}{{HierarchyChild.Alias}}{{/if}}{{#unless @first}}.Coll{{/unless}}.GroupBy(x => new { {{#each OnSelectColumns}}{{#unless @last}}, {{/unless}}x.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}} }).Select(g => new { {{#each OnSelectColumns}}{{#unless @last}}, {{/unless}}g.Key.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}}, Coll = g.{{#if @last}}ToCollection<{{../Parent.Model}}Cdc.{{../Model}}CdcCollection, {{../Parent.Model}}Cdc.{{../Model}}Cdc>{{else}}ToList{{/if}}() }))
+                   {{indent IndentSpaces}} foreach (var {{Alias}} in {{#if @first}}__result{{else}}{{HierarchyChild.Alias}}{{/if}}{{#unless @first}}.Coll{{/unless}}.GroupBy(x => new { {{#each OnSelectColumns}}{{#unless @last}}, {{/unless}}x.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}} }).Select(g => new { {{#each OnSelectColumns}}{{#unless @last}}, {{/unless}}g.Key.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}}, Coll = g.{{#if @last}}ToCollection<{{../Parent.Model}}Cdc.{{../Model}}CdcCollection, {{../Parent.Model}}Cdc.{{../Model}}Cdc>{{else}}ToList{{/if}}() }))
                    {{indent IndentSpaces}} {
     {{#unless @last}}
                    {{indent IndentSpaces}}     var {{#ifval HierarchyChild}}{{HierarchyChild.Alias}}{{else}}{{Parent.Alias}}{{/ifval}}Item = {{#ifval HierarchyChild}}{{HierarchyChild.Alias}}{{else}}{{Parent.Alias}}{{/ifval}}Coll.First(x => {{#each OnSelectColumns}}{{#unless @last}} && {{/unless}}x.{{ToColumnAlias}} == {{Parent.Alias}}.{{#if @../last}}{{ToColumnAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/each}}).{{Property}};

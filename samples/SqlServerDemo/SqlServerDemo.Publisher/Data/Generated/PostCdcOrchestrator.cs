@@ -60,21 +60,21 @@ namespace SqlServerDemo.Publisher.Data
 
             var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
                 // Root table: '[Legacy].[Posts]'
-                new MultiSetCollArgs<PostCdcEnvelopeCollection, PostCdcEnvelope>(_postCdcMapper, r => pColl = r, stopOnNull: true),
+                new MultiSetCollArgs<PostCdcEnvelopeCollection, PostCdcEnvelope>(_postCdcMapper, __result => pColl = __result, stopOnNull: true),
 
                 // Join table: '[Legacy].[Comments]' (unique name 'Comments')
-                new MultiSetCollArgs<PostCdc.CommentCdcCollection, PostCdc.CommentCdc>(_commentCdcMapper, r =>
+                new MultiSetCollArgs<PostCdc.CommentCdcCollection, PostCdc.CommentCdc>(_commentCdcMapper, __result =>
                 {
-                    foreach (var c in r.GroupBy(x => new { x.PostsId }).Select(g => new { g.Key.PostsId, Coll = g.ToCollection<PostCdc.CommentCdcCollection, PostCdc.CommentCdc>() }))
+                    foreach (var c in __result.GroupBy(x => new { x.PostsId }).Select(g => new { g.Key.PostsId, Coll = g.ToCollection<PostCdc.CommentCdcCollection, PostCdc.CommentCdc>() }))
                     {
                         pColl.Where(x => x.PostsId == c.PostsId).ForEach(x => x.Comments = c.Coll);
                     }
                 }),
 
                 // Join table: '[Legacy].[Tags]' (unique name 'CommentsTags')
-                new MultiSetCollArgs<PostCdc.CommentsTagsCdcCollection, PostCdc.CommentsTagsCdc>(_commentsTagsCdcMapper, r =>
+                new MultiSetCollArgs<PostCdc.CommentsTagsCdcCollection, PostCdc.CommentsTagsCdc>(_commentsTagsCdcMapper, __result =>
                 {
-                    foreach (var c in r.GroupBy(x => new { x.Posts_PostsId }).Select(g => new { g.Key.Posts_PostsId, Coll = g.ToList() }))
+                    foreach (var c in __result.GroupBy(x => new { x.Posts_PostsId }).Select(g => new { g.Key.Posts_PostsId, Coll = g.ToList() }))
                     {
                         var pItem = pColl.First(x => x.PostsId == c.Posts_PostsId).Comments;
                         foreach (var ct in c.Coll.GroupBy(x => new { x.ParentId }).Select(g => new { g.Key.ParentId, Coll = g.ToCollection<PostCdc.CommentsTagsCdcCollection, PostCdc.CommentsTagsCdc>() }))
@@ -85,9 +85,9 @@ namespace SqlServerDemo.Publisher.Data
                 }),
 
                 // Join table: '[Legacy].[Tags]' (unique name 'PostsTags')
-                new MultiSetCollArgs<PostCdc.PostsTagsCdcCollection, PostCdc.PostsTagsCdc>(_postsTagsCdcMapper, r =>
+                new MultiSetCollArgs<PostCdc.PostsTagsCdcCollection, PostCdc.PostsTagsCdc>(_postsTagsCdcMapper, __result =>
                 {
-                    foreach (var pt in r.GroupBy(x => new { x.PostsId }).Select(g => new { g.Key.PostsId, Coll = g.ToCollection<PostCdc.PostsTagsCdcCollection, PostCdc.PostsTagsCdc>() }))
+                    foreach (var pt in __result.GroupBy(x => new { x.PostsId }).Select(g => new { g.Key.PostsId, Coll = g.ToCollection<PostCdc.PostsTagsCdcCollection, PostCdc.PostsTagsCdc>() }))
                     {
                         pColl.Where(x => x.PostsId == pt.PostsId).ForEach(x => x.Tags = pt.Coll);
                     }

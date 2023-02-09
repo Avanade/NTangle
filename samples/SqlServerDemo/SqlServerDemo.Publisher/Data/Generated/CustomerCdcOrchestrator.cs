@@ -57,7 +57,7 @@ namespace SqlServerDemo.Publisher.Data
 
             var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
                 // Root table: '[Legacy].[Cust]'
-                new MultiSetCollArgs<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>(_customerCdcMapper, r => cColl = r, stopOnNull: true)), cancellationToken).ConfigureAwait(false);
+                new MultiSetCollArgs<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>(_customerCdcMapper, __result => cColl = __result, stopOnNull: true)), cancellationToken).ConfigureAwait(false);
 
             result.Result.AddRange(cColl);
             return result;
