@@ -59,12 +59,12 @@ namespace SqlServerDemo.Publisher.Data
 
             var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
                 // Root table: '[Legacy].[Contact]'
-                new MultiSetCollArgs<ContactCdcEnvelopeCollection, ContactCdcEnvelope>(_contactCdcMapper, r => cColl = r, stopOnNull: true),
+                new MultiSetCollArgs<ContactCdcEnvelopeCollection, ContactCdcEnvelope>(_contactCdcMapper, __result => cColl = __result, stopOnNull: true),
 
                 // Join table: '[Legacy].[Address]' (unique name 'Address')
-                new MultiSetCollArgs<ContactCdc.AddressCdcCollection, ContactCdc.AddressCdc>(_addressCdcMapper, r =>
+                new MultiSetCollArgs<ContactCdc.AddressCdcCollection, ContactCdc.AddressCdc>(_addressCdcMapper, __result =>
                 {
-                    foreach (var a in r.GroupBy(x => new { x.AddressId }).Select(g => new { g.Key.AddressId, Coll = g.ToCollection<ContactCdc.AddressCdcCollection, ContactCdc.AddressCdc>() }))
+                    foreach (var a in __result.GroupBy(x => new { x.AddressId }).Select(g => new { g.Key.AddressId, Coll = g.ToCollection<ContactCdc.AddressCdcCollection, ContactCdc.AddressCdc>() }))
                     {
                         cColl.Where(x => x.AddressId == a.AddressId).ForEach(x => x.Address = a.Coll.FirstOrDefault());
                     }
