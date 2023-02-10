@@ -108,14 +108,15 @@ The connection string defaulted within the [`Program.cs`](./content/AppName.Code
 The command line arguments are as follows:
 
 ```
-AppName.Database
+AppName.Database Database Tool. [SQL Server]
 
 Usage: AppName.Database [options] <command> <script-args>
 
 Arguments:
-  command                    Database migration command.
-                             Allowed values are: None, Drop, Create, Migrate, Schema, Reset, Data, All, DropAndAll, ResetAndData, ResetAndAll, Script.
-  script-args                Arguments for the Script command (first being the script name).
+  command                    Database migration command (see https://github.com/Avanade/dbex#commands-functions).
+                             Allowed values are: None, Drop, Create, Migrate, CodeGen, Schema, Deploy, Reset, Data, DeployWithData, Database, DropAndDatabase, All, DropAndAll,
+                             ResetAndData, ResetAndDatabase, ResetAndAll, Execute, Script.
+  args                       Additional arguments; 'Script' arguments (first being the script name) -or- 'Execute' (each a SQL statement to invoke).
 
 Options:
   -?|-h|--help               Show help information.
@@ -124,7 +125,9 @@ Options:
   -so|--schema-order         Database schema name (multiple can be specified in priority order).
   -o|--output                Output directory path.
   -a|--assembly              Assembly containing embedded resources (multiple can be specified in probing order).
+  -p|--param                 Parameter expressed as a 'Name=Value' pair (multiple can be specified).
   -eo|--entry-assembly-only  Use the entry assembly only (ignore all other assemblies).
+  --accept-prompts           Accept prompts; command should _not_ stop and wait for user confirmation (DROP or RESET commands).
 ```
 
 All required artefacts are generally added to this project using [`AppName.CodeGen`](#AppName.CodeGen).

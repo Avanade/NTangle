@@ -2,8 +2,13 @@
 
 Represents the **NuGet** versions.
 
+## v1.1.0
+- *Enhancement:* Updated `CoreEx` (`v2.5.1`) and `DbEx` (`v2.3.2`); this results in minor breaking changes that will need to be addressed.
+- [*Issue 25:*](https://github.com/Avanade/NTangle/issues/25) Resolved code generation error where a database table name resulted in an alias of `r`.
+- [*Issue 26:*](https://github.com/Avanade/NTangle/issues/26) Resolved duplication of models when generating code.
+
 ## v1.0.8
-- *Enhancement: Updated `CoreEx` and `DbEx`; key changes related to: `IPrimaryKey` and event outbox service ownership.  
+- *Enhancement:* Updated `CoreEx` and `DbEx`; key changes related to: `IPrimaryKey` and event outbox service ownership.  
 
 ## v1.0.7
 - *Fixed:* Event Outbox dequeue and send publishing failure will log and continue (allowing retry); versus fail process.
