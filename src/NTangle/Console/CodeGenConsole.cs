@@ -40,7 +40,7 @@ namespace NTangle.Console
         public CodeGenConsole(string connectionString, params Assembly[] assemblies) : base()
         {
             Args.ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
-            Args.AddAssembly(typeof(DbEx.DatabaseExtensions).Assembly).AddAssembly(typeof(CodeGenConsole).Assembly);
+            Args.AddAssembly(typeof(DbEx.DatabaseExtensions).Assembly).AddAssembly(typeof(DbEx.SqlServer.SqlServerSchemaConfig).Assembly).AddAssembly(typeof(CodeGenConsole).Assembly);
             if (assemblies == null || assemblies.Length == 0)
                 Args.AddAssembly(Assembly.GetCallingAssembly());
             else

@@ -9,6 +9,7 @@ using NTangle.Cdc;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CoreEx.Database.SqlServer.Outbox;
 
 namespace NTangle.Services
 {

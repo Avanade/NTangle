@@ -608,8 +608,7 @@ namespace NTangle.Config
         /// </summary>
         private async Task PrepareJoins()
         {
-            if (Joins == null)
-                Joins = new List<JoinConfig>();
+            Joins ??= new List<JoinConfig>();
 
             // Prepare the Join and also make sure the alias is unique.
             var dict = new Dictionary<string, int> { { Alias!, 1 } };

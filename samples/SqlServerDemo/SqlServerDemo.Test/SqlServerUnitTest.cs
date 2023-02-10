@@ -1,7 +1,7 @@
 ﻿using CoreEx.Database;
 using CoreEx.Database.SqlServer;
-using DbEx.Console;
-using DbEx.Migration;
+using DbEx;
+using DbEx.SqlServer.Console;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using NTangle.Test;
@@ -33,9 +33,10 @@ namespace SqlServerDemo.Test
         [OneTimeSetUp]
         public static async Task SetUpDatabase()
         {
-            var result = await SqlServerMigratorConsole
+            var result = await SqlServerMigrationConsole
                 .Create<Program>(UnitTest.GetConfig("SqlServerDemo_").GetConnectionString("SqlDb"))
-                .ConsoleArgs(a => a.AddAssembly(typeof(Program).Assembly))
+                .Assembly<Program>()
+                .AcceptsPrompts()
                 .RunAsync(MigrationCommand.DropAndAll).ConfigureAwait(false);
 
             if (result != 0)

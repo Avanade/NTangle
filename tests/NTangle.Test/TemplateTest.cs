@@ -142,7 +142,7 @@ namespace NTangle.Test
                 Assert.Fail($"Unable to find database create script: {cfn}");
 
             // Database: Drop and Create database.
-            Assert.Zero(ExecuteCommand("dotnet", "run drop", Path.Combine(dir, $"{appName}.Database")).exitCode, "dotnet run drop [database]");
+            Assert.Zero(ExecuteCommand("dotnet", "run drop --accept-prompts", Path.Combine(dir, $"{appName}.Database")).exitCode, "dotnet run drop [database]");
             Assert.Zero(ExecuteCommand("dotnet", "run create", Path.Combine(dir, $"{appName}.Database")).exitCode, "dotnet run create [database]");
 
             // Read the set-up database script and ignore all lines until "DECLARE" found; previous not required.
