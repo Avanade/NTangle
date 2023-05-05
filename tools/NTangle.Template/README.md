@@ -10,23 +10,20 @@ Before the `NTangle.Template` template can be used it must be installed from [Nu
 
 ```
 -- Use the latest published from NuGet...
-dotnet new -i ntangle.template --nuget-source https://api.nuget.org/v3/index.json
+dotnet new install ntangle.template --nuget-source https://api.nuget.org/v3/index.json
 
 -- Or alternatively, point to a local folder...
-dotnet new -i ntangle.template --nuget-source C:\Users\Name\nuget-publish
+dotnet new install ntangle.template --nuget-source C:\Users\Name\nuget-publish
 ```
 
-To verify once installed, execute `dotnet new ntangle --help`. This will output the following showing the supported _NTangle_ command line options.
+To verify once installed, execute `dotnet new list ntangle`; this will output the following.
 
 ```
-NTangle solution (C#)
-Author: NTangle developers
-Options:
-  -db|--dbproject  The database project option.
-                       DbEx      - Indicates to use DbEx-based deployment migration application.
-                       Dacpac    - Indicates to use SQL Server data-tier application (DACPAC).
-                       None      - Indicates that a database project is not required.
-                   Default: DbEx
+These templates matched your input: 'ntangle'
+
+Template Name     Short Name  Language  Tags
+----------------  ----------  --------  -------------------------------------
+NTangle solution  ntangle     [C#]      NTangle/CDC/Database/Console/Solution
 ```
 
 <br/>
@@ -52,7 +49,7 @@ The following solution and projects will be created within the root `AppName` fo
 ```
 └── AppName
   └── AppName.CodeGen     # Database and code generation console
-  └── AppName.Database    # Datbase project; e.g. SQL Server data-tier application (DAC)
+  └── AppName.Database    # Datbase project; e.g. DbEx or SQL Server data-tier application (DAC)
   └── AppName.Publisher   # Runtime orchestration and event publishing console
   └── AppName.sln         # Solution file that references all above projects
 ```
@@ -71,12 +68,12 @@ The templated structure represents the bare minimum needed to start. Generally, 
 
 ### AppName.CodeGen
 
-The connection string defaulted within the [`Program.cs`](./content/AppName.CodeGen/Program.cs) needs to be validated and adjusted to that required for development purposes. The connection string can be overridden either by using the default environment variable (e.g. `AppName_ConnectionString` where any `.` characters in the `AppName` are replaced with a corresponding `_`), or as a command line argument.
+The connection string defaulted within the [`Program.cs`](./content/AppName.CodeGen/Program.cs) needs to be validated and adjusted to that required for development purposes. The connection string can also be overridden either by using the default environment variable (e.g. `AppName_ConnectionString` where any `.` characters in the `AppName` are replaced with a corresponding `_`), or as a command line argument.
 
-The command line arguments are as follows:
+The command line arguments are as follows; execute `dotnet run -- --help`:
 
 ```
-AppName.CodeGen
+AppName.CodeGen Code Generation Tool.
 
 Usage: AppName.CodeGen [options]
 
@@ -93,7 +90,7 @@ Options:
   -sim|--simulation         Indicates whether the code-generation is a simulation (i.e. does not create/update any artefacts).
 ```
 
-Otherwise, the **key** artefact that is maintained is [`ntangle.yaml`](./content/AppName.CodeGen/ntangle.yaml) that contains the CDC-related table configuration used to drive the code-generation. The contents are provided as an example only, and generally would be removed and replaced with the _actual_ configuration.
+Otherwise, the **key** artefact that is maintained is the [`ntangle.yaml`](./content/AppName.CodeGen/ntangle.yaml) which contains the CDC-related table configuration used to drive the code-generation. The contents are provided as an example only, and generally would be removed and replaced with the _actual_ configuration.
 
 To execute the code-generation use `dotnet run`, or execute the `AppName.CodeGen.exe` directly.
 
@@ -110,7 +107,7 @@ The command line arguments are as follows:
 ```
 AppName.Database Database Tool. [SQL Server]
 
-Usage: AppName.Database [options] <command> <script-args>
+Usage: AppName.Database [options] <command> <args>
 
 Arguments:
   command                    Database migration command (see https://github.com/Avanade/dbex#commands-functions).
@@ -128,17 +125,26 @@ Options:
   -p|--param                 Parameter expressed as a 'Name=Value' pair (multiple can be specified).
   -eo|--entry-assembly-only  Use the entry assembly only (ignore all other assemblies).
   --accept-prompts           Accept prompts; command should _not_ stop and wait for user confirmation (DROP or RESET commands).
+
+Script command and argument(s):
+  script [default]                  Creates a default (empty) SQL script.
+  script alter <Schema> <Table>     Creates a SQL script to perform an ALTER TABLE.
+  script cdc <Schema> <Table>       Creates a SQL script to turn on CDC for the specified table.
+  script cdcdb                      Creates a SQL script to turn on CDC for the database.
+  script create <Schema> <Table>    Creates a SQL script to perform a CREATE TABLE.
+  script refdata <Schema> <Table>   Creates a SQL script to perform a CREATE TABLE as reference data.
+  script schema <Schema>            Creates a SQL script to perform a CREATE SCHEMA.
 ```
 
-All required artefacts are generally added to this project using [`AppName.CodeGen`](#AppName.CodeGen).
+The required artefacts are generally added to this project using the earlier code-generator (see [`AppName.CodeGen`](#AppName.CodeGen)).
 
-To execute the database migration use `dotnet run`, or execute the `AppName.Database.exe` directly.
+To execute the database migration use `dotnet run all`, or execute the `AppName.Database.exe all` directly.
 
 <br/>
 
 ### AppName.Database (Dacpac)
 
-A Microsoft SQL Server data-tier application ([DAC](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications)) will have been generated. This project will be empty except for [`Post.Deploy.sql`](./content/AppName.Database/Post.Deploy.sql), this executes `:r .\Generated\CdcEnable.post.deploy.sql` which will be created once code-generation has been executed (where configured to do so, which is the default).
+A Microsoft SQL Server data-tier application ([DAC](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications)) will have been generated. This project will be empty except for [`Post.Deploy.sql`](./content/AppName.Database/Post.Deploy.sql), this executes `:r .\Generated\CdcEnable.post.deploy.sql` which will be created once code-generation has been executed (where configured to do so).
 
 _Tip:_ If after genneration, any of the generated files are not automatically added to the Visual Studio Project structure, the _Show All Files_ in the _Solution Explorer_ can be used to view, and then added en masse by selecting and using the _Include In Project_ function.
 
@@ -154,23 +160,6 @@ This default publisher is a console application whose purpose is to orchestrate 
 
 The connection string defaulted within the [`appsettings.json`](./content/AppName.Publisher/appsettings.json) needs to be validated and adjusted to that required for development purposes. The connection string can be overridden either by using the default environment variable (e.g. `AppName_ConnectionStrings__SqlDb` where any `.` characters in the `AppName` will be replaced with a corresponding `_`), or as a command line argument (e.g. `ConnectionStrings:SqlDb="value"`).
 
-Additionally, the following configuration settings can be used to control execution.
-
-```
-// Orchestration hosted service(s) configurations:
-Interval=00:00:05                       // Sets the interval timespan between orchestrations for all aggregate entities. 
-Entity_Interval=00:00:05                // Sets the interval timespan between orchestrations for the specified entity; e.g. Contact_Interval=00:00:05
-MaxQuerySize=50                         // Sets the maximum query size for all aggregate entities.
-Entity_MaxQuerySize=50                  // Sets the maximum query size for the specified entity; e.g. Contact_MaxQuerySize=50
-ContinueWithDataLoss=true               // Indicates to continue with potential data loss for all aggregate entities. 
-Entity_ContinueWithDataLoss=true        // Indicates to continue with potential data loss for for the specified entity; e.g. Contact_ContinueWithDataLoss=true
-Services=Entity1,Entity2,EntityN        // Comma-separated list of entities to be orchestrated; default is all; e.g. Services=Contact,Person
-
-// Outbox dequeue and publish hosted service configuration:
-OutboxInterval=00:00:05                 // Sets the interval timespan for the outbox dequeue and publishing.
-OutboxMaxDequeueSize=100                // Sets the maximum outbox dequeue size (number of events) per execution.
-```
-
 <br/>
 
 ## Demonstration
@@ -181,7 +170,7 @@ The following walks through the process of demonstrating how to execute the end-
 
 ### Create database
 
-An existing database is required that contains tables and data. To create the database and set up, copy the contents of [`create-database.sql`](./create-database.sql) and execute using your favorite database tool.
+An existing database is required that contains tables and data. To create the database and set up, copy the contents of [`create-database.sql`](./create-database.sql) and execute using your favorite database tool. This will also turn on CDC for the database after it is created.
 
 The following tables, with the relationships described, will be created.
 
@@ -215,106 +204,108 @@ dotnet new ntangle
 
 ### FooBar.CodeGen
 
-The `ntangle.yaml` configuration file is pre-configured, and `Program.cs` has the correct connection string. Compile the application and execute directly from Visual Studio, or using `dotnet run`.
+The `ntangle.yaml` configuration file is largely pre-configured. For the purposes of this demo, the root property `cdcEnable` should be set to `true`; this will enable the generation of the TSQL to enable CDC on each of the tables.
 
-The output from the console application should be similar to the following.
+The `Program.cs` has a default connection string, this needs to be validated and adjusted to that required to enable access to the required SQL Server instance.
+
+Compile the application and execute directly from Visual Studio, or using `dotnet run`. The output from the console application should be similar to the following.
 
 ```
-╔╗╔╔╦╗┌─┐┌┐┌┌─┐┬  ┌─┐  ╔═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┐┌  ╔╦╗┌─┐┌─┐┬  
-║║║ ║ ├─┤││││ ┬│  ├┤   ║  │ │ ││├┤───║ ╦├┤ │││   ║ │ ││ ││  
+╔╗╔╔╦╗┌─┐┌┐┌┌─┐┬  ┌─┐  ╔═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┐┌  ╔╦╗┌─┐┌─┐┬
+║║║ ║ ├─┤││││ ┬│  ├┤   ║  │ │ ││├┤───║ ╦├┤ │││   ║ │ ││ ││
 ╝╚╝ ╩ ┴ ┴┘└┘└─┘┴─┘└─┘  ╚═╝└─┘─┴┘└─┘  ╚═╝└─┘┘└┘   ╩ └─┘└─┘┴─┘
 
 FooBar.CodeGen Code Generation Tool.
 
 Config = ntangle.yaml
 Script = SqlServerDbEx.yaml
-OutDir = C:\Users\eric\source\repos\FooBar
+OutDir = C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar
 ExpectNoChanges = False
 IsSimulation = False
 Parameters:
-  CreateDatabase = System.Func`2[System.String,NTangle.Data.SqlServer.SqlServerDatabase]
-  DbProvider = SqlServer
+  CreateDatabase = System.Func`2[System.String,CoreEx.Database.IDatabase]
   AppName = FooBar
 Assemblies:
   FooBar.CodeGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  NTangle, Version=1.0.3.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
-  DbEx, Version=1.0.5.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+  NTangle, Version=2.0.0.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+  DbEx.SqlServer, Version=2.3.4.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+  DbEx, Version=2.3.4.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
 
 Scripts:
   Querying database to infer table(s)/column(s) schema...
-    Database schema query complete [1723ms]
+    Database schema query complete [2064.3337ms]
 
- Template: SqlServer/SpExecuteBatch_sql.hbs (TableCodeGenerator: Database/Schema/Xxx/Stored Procedures)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spContactBatchExecute.sql
+ Template: SpExecuteBatch_sql.hbs (TableCodeGenerator: Database/Schema/Xxx/Stored Procedures)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spContactBatchExecute.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SpCompleteBatch_sql.hbs (TableCodeGenerator: Database/Schema/Xxx/Stored Procedures)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spContactBatchComplete.sql
+ Template: SpCompleteBatch_sql.hbs (TableCodeGenerator: Database/Schema/Xxx/Stored Procedures)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Stored Procedures\Generated\spContactBatchComplete.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/UdtVersionTracking_sql.hbs (RootCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\NTangle\Types\User-Defined Table Types\Generated\udtVersionTrackingList.sql
+ Template: UdtVersionTracking_sql.hbs (RootCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\NTangle\Types\User-Defined Table Types\Generated\udtVersionTrackingList.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SpIdentifierMappingCreate_sql.hbs (IdentifierMappingCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
+ Template: SpIdentifierMappingCreate_sql.hbs (IdentifierMappingCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
   [Files: Unchanged = 0, Updated = 0, Created = 0]
- Template: SqlServer/UdtIdentifierMapping_sql.hbs (IdentifierMappingCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
+ Template: UdtIdentifierMapping_sql.hbs (IdentifierMappingCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
   [Files: Unchanged = 0, Updated = 0, Created = 0]
- Template: SqlServer/SpEventOutboxEnqueue_sql.hbs (OutboxCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\Outbox\Stored Procedures\Generated\spEventOutboxEnqueue.sql
+ Template: SpEventOutboxEnqueue_sql.hbs (OutboxCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\Outbox\Stored Procedures\Generated\spEventOutboxEnqueue.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SpEventOutboxDequeue_sql.hbs (OutboxCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\Outbox\Stored Procedures\Generated\spEventOutboxDequeue.sql
+ Template: SpEventOutboxDequeue_sql.hbs (OutboxCodeGenerator: Database/Schema/Xxx/Types/Stored Procedures)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\Outbox\Stored Procedures\Generated\spEventOutboxDequeue.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/UdtEventOutbox_sql.hbs (OutboxCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\Outbox\Types\User-Defined Table Types\Generated\udtEventOutboxList.sql
+ Template: UdtEventOutbox_sql.hbs (OutboxCodeGenerator: Database/Schema/Xxx/Types/User-Defined Table Types)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\Outbox\Types\User-Defined Table Types\Generated\udtEventOutboxList.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/VersionTrackingMapper_cs.hbs (RootCodeGenerator: Publisher/Data)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\VersionTrackingMapper.cs
+ Template: VersionTrackingMapper_cs.hbs (RootCodeGenerator: Publisher/Data)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Data\Generated\VersionTrackingMapper.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/IdentifierMappingMapper_cs.hbs (RootCodeGenerator: Publisher/Data)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\IdentifierMappingMapper.cs
+ Template: IdentifierMappingMapper_cs.hbs (RootCodeGenerator: Publisher/Data)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Data\Generated\IdentifierMappingMapper.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
  Template: Entity_cs.hbs (TableCodeGenerator: Publisher/Entities)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Entities\Generated\ContactCdc.cs
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Entities\Generated\ContactCdc.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
  Template: EntityOrchestrator_cs.hbs (TableCodeGenerator: Publisher/Data)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\ContactCdcOrchestrator.cs
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Data\Generated\ContactOrchestrator.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/EventOutboxEnqueue_cs.hbs (OutboxCodeGenerator: Publisher/Events)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\EventOutboxEnqueue.cs
+ Template: EventOutboxEnqueue_cs.hbs (OutboxCodeGenerator: Publisher/Events)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Data\Generated\EventOutboxEnqueue.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/EventOutboxDequeue_cs.hbs (OutboxCodeGenerator: Publisher/Events)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Data\Generated\EventOutboxDequeue.cs
+ Template: EventOutboxDequeue_cs.hbs (OutboxCodeGenerator: Publisher/Events)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Data\Generated\EventOutboxDequeue.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
  Template: IServiceCollectionExtensions_cs.hbs (RootCodeGenerator: Publisher)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Generated\IServiceCollectionExtensions.cs
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Generated\IServiceCollectionExtensions.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
  Template: EntityHostedService_cs.hbs (RootCodeGenerator: Publisher/Services)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Publisher\Services\Generated\ContactHostedService.cs
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Publisher\Services\Generated\ContactHostedService.cs
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SchemaCdc_sql.hbs (CdcSchemaCreateCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-01-create-ntangle-schema.sql
+ Template: SchemaCdc_sql.hbs (CdcSchemaCreateCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20230505-203956-01-create-ntangle-schema.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableVersionTracking_sql.hbs (RootCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-02-create-ntangle-versiontracking-table.sql
+ Template: TableVersionTracking_sql.hbs (RootCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20230505-203956-02-create-ntangle-versiontracking-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableBatchTracking_sql.hbs (TableCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-03-create-ntangle-contactbatchtracking-table.sql
+ Template: TableBatchTracking_sql.hbs (TableCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20230505-203956-03-create-ntangle-contactbatchtracking-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/SchemaEventOutbox_sql.hbs (OutboxCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-04-create-outbox-eventoutbox-schema.sql
+ Template: SchemaEventOutbox_sql.hbs (OutboxCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20230505-203956-04-create-outbox-eventoutbox-schema.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableEventOutbox_sql.hbs (OutboxCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-05-create-outbox-eventoutbox-table.sql
+ Template: TableEventOutbox_sql.hbs (OutboxCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20230505-203956-05-create-outbox-eventoutbox-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableEventOutboxData_sql.hbs (OutboxCodeGenerator: Database/Migrations (GenOnce))
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\20220328-201828-06-create-outbox-eventoutboxdata-table.sql
+ Template: TableEventOutboxData_sql.hbs (OutboxCodeGenerator: Database/Migrations (GenOnce))
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\20230505-203956-06-create-outbox-eventoutboxdata-table.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
- Template: SqlServer/TableIdentifierMapping_sql.hbs (IdentifierMappingCodeGenerator: Database/Migrations (GenOnce))
+ Template: TableIdentifierMapping_sql.hbs (IdentifierMappingCodeGenerator: Database/Migrations (GenOnce))
   [Files: Unchanged = 0, Updated = 0, Created = 0]
- Template: SqlServer/CdcEnable_sql.hbs (CdcEnableCodeGenerator: Database/Migrations)
-    Created -> C:\Users\eric\source\repos\FooBar\FooBar.Database\Migrations\CdcEnable.post.deploy.sql
+ Template: CdcEnable_sql.hbs (CdcEnableCodeGenerator: Database/Migrations)
+    Created -> C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Migrations\CdcEnable.post.deploy.sql
   [Files: Unchanged = 0, Updated = 0, Created = 1]
 
-FooBar.CodeGen Complete. [1347ms, Files: Unchanged = 0, Updated = 0, Created = 21, TotalLines = 1026]
+FooBar.CodeGen Complete. [2556ms, Files: Unchanged = 0, Updated = 0, Created = 21, TotalLines = 1011]
 ```
 
 <br/>
@@ -324,8 +315,6 @@ FooBar.CodeGen Complete. [1347ms, Files: Unchanged = 0, Updated = 0, Created = 2
 As _DbEx_ is being used, the generated artefacts are included in the project automatically. The artefacts are as follows.
 
 ```
-└── Generated
-  └── CdcEnable.sql
 └── Schema
   └── Migrations
     └── yyyymmdd-hhmmss-01-create-ntangle-schema.sql
@@ -355,136 +344,137 @@ As _DbEx_ is being used, the generated artefacts are included in the project aut
           └── udtEventOutboxList.sql
 ```
 
-The `Program.cs` has the correct connection string. Compile the application and execute directly from Visual Studio (after setting the _Application arguments_ to `all` within the `Debug` tab of the `Project Properties`), or using `dotnet run all`.
+The `Program.cs` has a default connection string, this needs to be validated and adjusted to that required to enable access to the required SQL Server instance. Compile the application and execute directly from Visual Studio (after setting the _Application arguments_ to `all` within the `Debug` tab of the `Project Properties`), or using `dotnet run all`.
 
 The output from the console application should be similar to the following.
 
 ```
-╔╦╗┌┐ ╔═╗─┐ ┬  ╔╦╗┌─┐┌┬┐┌─┐┌┐ ┌─┐┌─┐┌─┐  ╔╦╗┌─┐┌─┐┬  
- ║║├┴┐║╣ ┌┴┬┘   ║║├─┤ │ ├─┤├┴┐├─┤└─┐├┤    ║ │ ││ ││  
+╔╦╗┌┐ ╔═╗─┐ ┬  ╔╦╗┌─┐┌┬┐┌─┐┌┐ ┌─┐┌─┐┌─┐  ╔╦╗┌─┐┌─┐┬
+ ║║├┴┐║╣ ┌┴┬┘   ║║├─┤ │ ├─┤├┴┐├─┤└─┐├┤    ║ │ ││ ││
 ═╩╝└─┘╚═╝┴ └─  ═╩╝┴ ┴ ┴ ┴ ┴└─┘┴ ┴└─┘└─┘   ╩ └─┘└─┘┴─┘
 
-FooBar.Database Database Tool.
+FooBar.Database Database Tool. [SQL Server]
 
-Command = Deploy
-SchemaOrder = 
-OutDir = 
+Command = All
+Provider = SqlServer
+SchemaOrder = dbo
+OutDir = C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database
+Parameters:
+  DatabaseName = FooBar
+  JournalSchema = dbo
+  JournalTable = SchemaVersions
 Assemblies:
+  DbEx, Version=2.3.4.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
+  DbEx.SqlServer, Version=2.3.4.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
   FooBar.Database, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  DbEx, Version=1.0.5.0, Culture=neutral, PublicKeyToken=10b60143e92943c1
 
 --------------------------------------------------------------------------------
 
 DATABASE CREATE: Checking database existence and creating where not found...
-  Create database (using DbUp)...
-    Master ConnectionString => Data Source=.;Initial Catalog=master;Integrated Security=True;Password=
+  Create database...
+    Database 'FooBar' already exists and therefore not created.
 
-Complete [400ms].
+Complete. [1243.4841ms]
 
 --------------------------------------------------------------------------------
 
 DATABASE MIGRATE: Migrating the database...
-  Probing for embedded resources: FooBar.Database.Migrations.*.sql, DbEx.Migrations.*.sql
-  Migrate (using DbUp) the embedded resources...
-    Beginning database upgrade
-    Checking whether journal table exists..
-    Fetching list of already executed scripts.
-    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-01-create-ntangle-schema.sql'
-    Checking whether journal table exists..
-    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-02-create-ntangle-versiontracking-table.sql'
-    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-03-create-ntangle-contactbatchtracking-table.sql'
-    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-04-create-outbox-eventoutbox-schema.sql'
-    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-05-create-outbox-eventoutbox-table.sql'
-    Executing Database Server script 'FooBar.Database.Migrations.20220328-201828-06-create-outbox-eventoutboxdata-table.sql'
-    Executing Database Server script 'FooBar.Database.Migrations.CdcEnable.post.deploy.sql'
-    Upgrade successful
+  Probing for embedded resources: FooBar.Database.Migrations.*.sql, DbEx.SqlServer.Migrations.*.sql, DbEx.Migrations.*.sql
+  Execute the embedded resources...
+    *Journal table did not exist within the database and was automatically created.
+    FooBar.Database.Migrations.20230505-203956-01-create-ntangle-schema.sql
+    FooBar.Database.Migrations.20230505-203956-02-create-ntangle-versiontracking-table.sql
+    FooBar.Database.Migrations.20230505-203956-03-create-ntangle-contactbatchtracking-table.sql
+    FooBar.Database.Migrations.20230505-203956-04-create-outbox-eventoutbox-schema.sql
+    FooBar.Database.Migrations.20230505-203956-05-create-outbox-eventoutbox-table.sql
+    FooBar.Database.Migrations.20230505-203956-06-create-outbox-eventoutboxdata-table.sql
+    FooBar.Database.Migrations.CdcEnable.post.deploy.sql
 
-Complete. [8917ms]
+Complete. [8585.2454ms]
 
 --------------------------------------------------------------------------------
 
 DATABASE SCHEMA: Drops and creates the database objects...
-  Probing for files (recursively): C:\Users\eric\source\repos\FooBar\FooBar.Database\Schema\*\*.sql
-  Probing for embedded resources: FooBar.Database.Schema.*.sql, DbEx.DbSchema.*.sql
-  Drop (using DbUp) known schema objects...
-    Beginning database upgrade
-    Checking whether journal table exists..
-    Fetching list of already executed scripts.
-    Executing Database Server script 'DROP PROCEDURE IF EXISTS [Outbox].[spEventOutboxEnqueue]'
-    Checking whether journal table exists..
-    Executing Database Server script 'DROP PROCEDURE IF EXISTS [Outbox].[spEventOutboxDequeue]'
-    Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spContactBatchExecute]'
-    Executing Database Server script 'DROP PROCEDURE IF EXISTS [NTangle].[spContactBatchComplete]'
-    Executing Database Server script 'DROP TYPE IF EXISTS [NTangle].[udtVersionTrackingList]'
-    Executing Database Server script 'DROP TYPE IF EXISTS [Outbox].[udtEventOutboxList]'
-    Upgrade successful
-  Create (using DbUp) known schema objects...
-    Beginning database upgrade
-    Checking whether journal table exists..
-    Fetching list of already executed scripts.
-    Executing Database Server script 'FooBar.Database.Schema.Outbox.Types.User_Defined_Table_Types.Generated.udtEventOutboxList.sql'
-    Checking whether journal table exists..
-    Executing Database Server script 'FooBar.Database.Schema.NTangle.Types.User_Defined_Table_Types.Generated.udtVersionTrackingList.sql'
-    Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spContactBatchComplete.sql'
-    Executing Database Server script 'FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spContactBatchExecute.sql'
-    Executing Database Server script 'FooBar.Database.Schema.Outbox.Stored_Procedures.Generated.spEventOutboxDequeue.sql'
-    Executing Database Server script 'FooBar.Database.Schema.Outbox.Stored_Procedures.Generated.spEventOutboxEnqueue.sql'
-    Upgrade successful
+  Probing for files (recursively): C:\Users\eric\OneDrive\Source\Visual Studio 2019\FooBar\FooBar.Database\Schema\*\*.sql
+  Probing for embedded resources: FooBar.Database.Schema.*.sql, DbEx.SqlServer.Schema.*.sql, DbEx.Schema.*.sql
 
-Complete. [742ms]
+  Drop known schema objects...
+    DROP PROCEDURE IF EXISTS [Outbox].[spEventOutboxEnqueue]
+    DROP PROCEDURE IF EXISTS [Outbox].[spEventOutboxDequeue]
+    DROP PROCEDURE IF EXISTS [NTangle].[spContactBatchExecute]
+    DROP PROCEDURE IF EXISTS [NTangle].[spContactBatchComplete]
+    DROP TYPE IF EXISTS [Outbox].[udtEventOutboxList]
+    DROP TYPE IF EXISTS [NTangle].[udtVersionTrackingList]
+
+  Create known schema objects...
+    FooBar.Database.Schema.NTangle.Types.User_Defined_Table_Types.Generated.udtVersionTrackingList.sql > CREATE TYPE [NTangle].[udtVersionTrackingList]
+    FooBar.Database.Schema.Outbox.Types.User_Defined_Table_Types.Generated.udtEventOutboxList.sql > CREATE TYPE [Outbox].[udtEventOutboxList]
+    FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spContactBatchComplete.sql > CREATE PROCEDURE [NTangle].[spContactBatchComplete]
+    FooBar.Database.Schema.NTangle.Stored_Procedures.Generated.spContactBatchExecute.sql > CREATE PROCEDURE [NTangle].[spContactBatchExecute]
+    FooBar.Database.Schema.Outbox.Stored_Procedures.Generated.spEventOutboxDequeue.sql > CREATE PROCEDURE [Outbox].[spEventOutboxDequeue]
+    FooBar.Database.Schema.Outbox.Stored_Procedures.Generated.spEventOutboxEnqueue.sql > CREATE PROCEDURE [Outbox].[spEventOutboxEnqueue]
+
+Complete. [422.1665ms]
 
 --------------------------------------------------------------------------------
 
 DATABASE DATA: Insert or merge the embedded YAML data...
-  Probing for embedded resources: DbEx.Data.*.sql, FooBar.Database.Data.*.sql
+  Probing for embedded resources: DbEx.Data.*.[sql|yaml], DbEx.SqlServer.Data.*.[sql|yaml], FooBar.Database.Data.*.[sql|yaml]
   ** Nothing found. **
 
-Complete [6ms].
+Complete. [7.6648ms]
 
 --------------------------------------------------------------------------------
 
-FooBar.Database Complete. [8063ms]
+FooBar.Database Complete. [10271.7272ms]
 ```
 
 <br/>
 
 ### FooBar.Publisher
 
-The `Program.cs` is pre-configured, and the `appsettings.json` has the correct connection string. All of the generated C# artefacts should have been automatically included within the .NET project. Compile the application and execute. Leave it running; use `ctrl-c` to stop once the following test has been performed.
+The `Program.cs` is pre-configured, and the `appsettings.json` has a default connection string, this needs to be validated and adjusted to that required to enable access to the required SQL Server instance. All of the generated C# artefacts should have been automatically included within the .NET project. Compile the application and execute. Leave it running; use `ctrl-c` to stop once the following test has been performed.
 
-For the purposes of demonstration the final/primary `IEventSender` has been configured to use `LoggerEventSender`; this would be changed to use an appropriate `IEventSender` to send the events to an actual messaging system, e.g. Azure [`ServiceBusSender`](https://github.com/Avanade/CoreEx/blob/main/src/CoreEx.Messaging.Azure/ServiceBus/ServiceBusSender.cs).
+For the purposes of demonstration the `EventOutboxHostedService` has been configured to use the `LoggerEventSender`; this would need to be changed to use an appropriate `IEventSender` to send the events to an actual messaging system, e.g. Azure [`ServiceBusSender`](https://github.com/Avanade/CoreEx/blob/main/src/CoreEx.Messaging.Azure/ServiceBus/ServiceBusSender.cs).
 
-Within your favorite database tool make a change to `[Legacy].[Contact]` table, updating the `Name` column in the first row. Within the next 30 seconds similar console output to the following should be displayed.
+Within your favorite database tool make a change to `[Legacy].[Contact]` table, updating the `Name` column in the first row. Within the next 5-10 seconds similar console output to the following should be displayed.
 
 ```
-info: FooBar.Publisher.Services.ContactHostedService[0]
-      ContactHostedService started. Timer first/interval 00:00:01/00:00:01.
-info: NTangle.Services.EventOutboxHostedService[0]
-      EventOutboxHostedService started. Timer first/interval 00:00:02/00:00:02.
-info: Microsoft.Hosting.Lifetime[0]
-      Application started. Press Ctrl+C to shut down.
-info: Microsoft.Hosting.Lifetime[0]
-      Hosting environment: Production
-info: Microsoft.Hosting.Lifetime[0]
-      Content root path: C:\Users\eric\source\repos\FooBar\FooBar.Publisher
-info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
-      Batch '1': 1 entity operations(s) were found. [MaxQuerySize=50, ContinueWithDataLoss=True, CorrelationId=c2b99065-1dec-423f-b01a-6d6257014058, ExecutionId=2f4d422d-2371-4181-ba88-5d9f5975b94f, Elapsed=1308ms]
+info: FooBar.Publisher.Data.ContactOrchestrator[0]
+      Batch '1': 1 entity operations(s) were found. [MaxQuerySize=100, ContinueWithDataLoss=True, CorrelationId=27f19f01-aee7-4df7-b318-356960480a7d, ExecutionId=c553797c-77b2-4818-892a-80a126b63546, Elapsed=143.5141ms]
+info: FooBar.Publisher.Data.ContactOrchestrator[0]
+      Batch '1': 1 event(s) were published successfully. [Publisher=EventPublisher, CorrelationId=27f19f01-aee7-4df7-b318-356960480a7d, ExecutionId=c553797c-77b2-4818-892a-80a126b63546, Elapsed=558.2567ms]
+info: FooBar.Publisher.Data.ContactOrchestrator[0]
+      Batch '1': Marked as Completed. [CorrelationId=27f19f01-aee7-4df7-b318-356960480a7d, ExecutionId=c553797c-77b2-4818-892a-80a126b63546, Elapsed=27.2628ms]
+info: FooBar.Publisher.Data.EventOutboxDequeue[0]
+      1 event(s) were dequeued. [Elapsed=54.2871ms]
 info: CoreEx.Events.LoggerEventSender[0]
-      Event[0].Data = 
-      {
+      Event[0].Metadata = {
+        "id": "9cd0e900-4679-4fb0-8e79-9e7c1b0d144e",
+        "subject": "legacy.contact",
+        "action": "updated",
+        "type": "legacy.contact",
+        "source": "/database/cdc/legacy/contact/1",
+        "timestamp": "2023-05-05T20:46:27.0571826+00:00",
+        "correlationId": "27f19f01-aee7-4df7-b318-356960480a7d",
+        "key": "1",
+        "etag": "RR/C\u002Bdq/uV0ipsTJNzhtyioHDhpA3ko4ZnXmvmsMhsE="
+      }
+      Event[0].Data = {
         "specversion": "1.0",
-        "id": "ca85a3f3-501b-4404-9e50-cb25f50605a2",
-        "time": "2022-03-29T14:56:10.5255554Z",
-        "type": "legacy.contact.updated",
+        "id": "9cd0e900-4679-4fb0-8e79-9e7c1b0d144e",
+        "time": "2023-05-05T20:46:27.0571826Z",
+        "type": "legacy.contact",
         "source": "/database/cdc/legacy/contact/1",
         "subject": "legacy.contact",
         "action": "updated",
-        "correlationid": "c2b99065-1dec-423f-b01a-6d6257014058",
+        "correlationid": "27f19f01-aee7-4df7-b318-356960480a7d",
+        "etag": "RR/C\u002Bdq/uV0ipsTJNzhtyioHDhpA3ko4ZnXmvmsMhsE=",
         "datacontenttype": "application/json",
         "data": {
           "id": 1,
-          "name": "Bob",
-          "phone": "000",
+          "name": "Bobby",
+          "phone": "123",
           "addresses": [
             {
               "id": 11,
@@ -499,11 +489,9 @@ info: CoreEx.Events.LoggerEventSender[0]
               "type": "P"
             }
           ],
-          "etag": "u7OJKfm6B2jwJfg3o1/Ea7bTmuSbnXwTCme3z0FjQmw="
+          "etag": "RR/C\u002Bdq/uV0ipsTJNzhtyioHDhpA3ko4ZnXmvmsMhsE="
         }
       }
-info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
-      Batch '1': 1 event(s) were published successfully. [Publisher=EventPublisher, CorrelationId=c2b99065-1dec-423f-b01a-6d6257014058, ExecutionId=2f4d422d-2371-4181-ba88-5d9f5975b94f, Elapsed=340ms]
-info: FooBar.Publisher.Data.ContactCdcOrchestrator[0]
-      Batch '1': Marked as Completed. [CorrelationId=c2b99065-1dec-423f-b01a-6d6257014058, ExecutionId=2f4d422d-2371-4181-ba88-5d9f5975b94f, Elapsed=23ms]
+info: FooBar.Publisher.Data.EventOutboxDequeue[0]
+      1 event(s) were sent successfully. [Sender=LoggerEventSender, Elapsed=135.5593ms]
 ```

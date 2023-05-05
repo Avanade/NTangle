@@ -1,4 +1,5 @@
-﻿using CoreEx.Events;
+﻿using CoreEx.Configuration;
+using CoreEx.Events;
 using CoreEx.Json;
 using NTangle.Test;
 using NUnit.Framework;
@@ -17,11 +18,11 @@ namespace SqlServerDemo.Test
             // NOTE: This is intended for execution directly after the database has been created and no CDC capture has occured on the underlying table.
 
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<CustomerCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<CustomerOrchestrator>();
 
             // Execute should pick up the update and delete.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new CustomerCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new CustomerOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 

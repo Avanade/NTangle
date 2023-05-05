@@ -216,6 +216,14 @@ namespace NTangle.Config
             Description = "Defaults to `NameAndTableKey` (being the child `Cdc.ModelName` appended with the corresponding table key).")]
         public string? EventSourceFormat { get; set; }
 
+        /// <summary>
+        /// Gets or sets the root for the event type by prepending to all event type names.
+        /// </summary>
+        [JsonProperty("eventTypeRoot", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Event", Title = "The root for the event type by prepending to all event type names via CDC.",
+            Description = "Used to enable the sending of messages to the likes of EventHubs, Service Broker, Kafka, etc. Defaults to `EventSubjectRoot`.", IsImportant = true)]
+        public string? EventTypeRoot { get; set; }
+
         #endregion
 
         #region Outbox
@@ -425,6 +433,7 @@ namespace NTangle.Config
             EventSourceFormat = DefaultWhereNull(EventSubjectFormat, () => "NameAndTableKey");
             EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => "NameOnly");
             EventActionFormat = DefaultWhereNull(EventActionFormat, () => "PastTense");
+            EventTypeRoot = DefaultWhereNull(EventTypeRoot, () => EventSubjectRoot);
             OutboxSchema = DefaultWhereNull(OutboxSchema, () => "Outbox");
             OutboxSchemaCreate = DefaultWhereNull(OutboxSchemaCreate, () => false);
             OutboxTable = DefaultWhereNull(OutboxTable, () => "EventOutbox");
@@ -452,10 +461,7 @@ namespace NTangle.Config
             var cs = CodeGenArgs.ConnectionString ?? throw new CodeGenException("Connection string must be specified via an environment variable or as a command-line option.");
 
             var sw = Stopwatch.StartNew();
-            var db = CodeGenArgs.GetCreateDatabase(false)?.Invoke(CodeGenArgs.ConnectionString!);
-            if (db == null)
-                throw new CodeGenException(this, null, "A database provider must be specified during application startup, consider using the likes of 'UseSqlServer' to specify; e.g: 'CodeGenConsole.Create(\"...\").UseSqlServer().RunAsync(args)'.");
-
+            var db = (CodeGenArgs.GetCreateDatabase(false)?.Invoke(CodeGenArgs.ConnectionString!)) ?? throw new CodeGenException(this, null, "A database provider must be specified during application startup, consider using the likes of 'UseSqlServer' to specify; e.g: 'CodeGenConsole.Create(\"...\").UseSqlServer().RunAsync(args)'.");
             var csb = new SqlConnectionStringBuilder(CodeGenArgs.ConnectionString);
             DbTables = await db.SelectSchemaAsync(new SqlServerSchemaConfig(csb.InitialCatalog)).ConfigureAwait(false);
 

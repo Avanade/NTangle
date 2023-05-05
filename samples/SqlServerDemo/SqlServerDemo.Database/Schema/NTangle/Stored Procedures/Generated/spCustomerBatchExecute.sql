@@ -148,10 +148,11 @@ BEGIN
         [c].[Name] AS [Name],
         [c].[Email] AS [Email],
         [c].[is-deleted] AS [IsDeleted],
-        [c].[RowVersion] AS [RowVersion]
+        [c].[RowVersion] AS [RowVersion],
+        CASE WHEN EXISTS (SELECT 1 FROM [Legacy].[Cust] AS [__c] WHERE ([__c].[CustId] = [_chg].[CustId])) THEN CAST (0 AS BIT) ELSE CAST (1 AS BIT) END AS [_IsPhysicallyDeleted]
       FROM #_changes AS [_chg]
       LEFT OUTER JOIN [Legacy].[Cust] AS [c] ON ([c].[CustId] = [_chg].[CustId])
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Object] = 'Legacy_Customer' AND [_vt].[Key] = CAST([_chg].[CustId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Schema] = N'Legacy' AND [_vt].[Table] = N'Customer' AND [_vt].[Key] = CAST([_chg].[CustId] AS NVARCHAR(128)))
       ORDER BY [_Lsn] ASC
 
     -- Commit the transaction.

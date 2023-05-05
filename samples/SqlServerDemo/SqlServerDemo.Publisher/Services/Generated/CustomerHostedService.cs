@@ -5,21 +5,12 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx.Configuration;
-using CoreEx.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using NTangle.Services;
-using System;
-using SqlServerDemo.Publisher.Data;
-using SqlServerDemo.Publisher.Entities;
-
 namespace SqlServerDemo.Publisher.Services
 {
     /// <summary>
     /// Provides the Change Data Capture (CDC) <see cref="CustomerCdc"/> entity (aggregate root) <see cref="HostedService{T}"/> capabilities (database table '[Legacy].[Customer]').
     /// </summary>
-    public partial class CustomerHostedService : CdcHostedService<ICustomerCdcOrchestrator, CustomerCdc>
+    public partial class CustomerHostedService : CdcHostedService<ICustomerOrchestrator, CustomerCdc>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomerHostedService"/> class.

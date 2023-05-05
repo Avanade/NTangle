@@ -6,27 +6,6 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx.Configuration;
-using CoreEx.Database;
-using CoreEx.Events;
-{{#ifne HostedServices.Count 0}}
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-{{/ifne}}
-{{#ifne HostedServices.Count 0}}
-using NTangle;
-{{/ifne}}
-{{#if Outbox}}
-using NTangle.Data;
-using NTangle.Events;
-{{/if}}
-using {{Root.NamespacePublisher}}.Data;
-{{#ifne HostedServices.Count 0}}
-using {{Root.NamespacePublisher}}.Services;
-{{/ifne}}
-using System;
-
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
@@ -39,38 +18,35 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddGeneratedOrchestratorServices(this IServiceCollection services)
+        public static IServiceCollection AddGeneratedCdcOrchestratorServices(this IServiceCollection services)
 {{#each Tables}}
-            {{#if @first}}=> services{{else}}           {{/if}}.AddScoped<I{{Model}}CdcOrchestrator, {{Model}}CdcOrchestrator>(){{#if @last}};{{/if}}
+            {{#if @first}}=> services{{else}}           {{/if}}.AddScoped<I{{Model}}Orchestrator, {{Model}}Orchestrator>(){{#if @last}};{{/if}}
 {{/each}}
 {{#ifne HostedServices.Count 0}}
 
         /// <summary>
-        /// Adds the generated <see cref="NTangle.Services.CdcHostedService"/> services.
+        /// Adds the generated <see cref="NTangle.Services.CdcHostedService"/> services where enabled (see <see cref="CdcSettings.EnabledSettingsName"/>).
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddGeneratedCdcHostedServices(this IServiceCollection services)
+        {
+            var settings = services.BuildServiceProvider().GetRequiredService<SettingsBase>();
   {{#each HostedServices}}
-            {{#if @first}}=> services{{else}}           {{/if}}.AddCdcHostedService<{{Model}}HostedService>(){{#if @last}};{{/if}}
+            AddGeneratedCdcHostedService<{{Model}}HostedService>(settings, services);
   {{/each}}
-{{/ifne}}
-{{#if Outbox}}
+            return services;
+        }
 
         /// <summary>
-        /// Adds the generated <see cref="EventOutboxEnqueue"/> as a <see cref="CoreEx.Events.IEventSender"/> scoped service.
+        /// Adds the generated hosted service.
         /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="configure">The action to enable the <see cref="EventOutboxEnqueue"/> to be further configured.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddGeneratedEventOutboxSender(this IServiceCollection services, Action<IServiceProvider, EventOutboxEnqueue>? configure = null)
-            => services.AddScoped<IEventSender>(sp =>
-            {
-                var eoe = new EventOutboxEnqueue(sp.GetRequiredService<IDatabase>(), sp.GetRequiredService<ILogger<EventOutboxEnqueue>>());
-                configure?.Invoke(sp, eoe);
-                return eoe;
-            });
-{{/if}}
+        private static void AddGeneratedCdcHostedService<THostedService>(SettingsBase settings, IServiceCollection services) where THostedService : class, ICdcHostedService
+        {
+            if (settings.GetCdcValue<bool?>(typeof(THostedService).Name, CdcSettings.EnabledSettingsName) ?? true)
+                services.AddHostedService<THostedService>();
+        }
+{{/ifne}}
     }
 }
 

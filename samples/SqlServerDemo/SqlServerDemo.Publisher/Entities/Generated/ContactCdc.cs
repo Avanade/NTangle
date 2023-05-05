@@ -5,14 +5,6 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx.Entities;
-using NTangle;
-using NTangle.Cdc;
-using System;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-
 namespace SqlServerDemo.Publisher.Entities
 {
     /// <summary>
@@ -109,8 +101,8 @@ namespace SqlServerDemo.Publisher.Entities
         /// <inheritdoc/>
         public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<string> coll, IIdentifierGenerator<string> idGen)
         {
-            coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalId), Schema = "Legacy", Table = "Contact", Key = TableKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<ContactCdc>().ConfigureAwait(false) });
-            coll.AddAsync(GlobalAlternateContactId == default && AlternateContactId != default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalAlternateContactId), Schema = "Legacy", Table = "Contact", Key = AlternateContactId.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<ContactCdc>().ConfigureAwait(false) });
+            await coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalId), Schema = "Legacy", Table = "Contact", Key = TableKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<ContactCdc>().ConfigureAwait(false) }).ConfigureAwait(false);
+            await coll.AddAsync(GlobalAlternateContactId == default && AlternateContactId != default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalAlternateContactId), Schema = "Legacy", Table = "Contact", Key = AlternateContactId.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<ContactCdc>().ConfigureAwait(false) }).ConfigureAwait(false);
             await (Address?.LinkIdentifierMappingsAsync(coll, idGen) ?? Task.CompletedTask).ConfigureAwait(false);
         }
 

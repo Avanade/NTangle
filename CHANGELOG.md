@@ -2,6 +2,18 @@
 
 Represents the **NuGet** versions.
 
+## v2.0.0
+- **Note:** This version contains a number of breaking changes and generated artefact file name changes; all existing generated artefacts should be deleted and re-generated. Where possible it is recommended to create new using the template solution and copy across existing non-generated artefacts, such as the NTangle YAML etc.
+- *Enhancement:* Removed need for `UseSqlServer` for `CodeGenConsole` as this is the only supported database option. New `UseDeploymentOption` to enable deployment option override; defaults to `DeploymentOption.DbEx`.
+- *Enhancement:* Leverage `EventDataFormatter` and `IEventPublisher.CreateValueEvent` for improved _CoreEx_ consistency.
+- *Enhancement:* `VersionTracking` table has had `Object` column replaced with `Schema` and `Table` columns to be explicit/consistent.
+- *Enhancement:* Improved configuration override capabilities using `appsettings.json`.
+- *Enhancement:* Template solution has refactored baseline code output.
+- *Enhancement:* Updated `CoreEx` (`v2.10.1`) and `DbEx` (`v2.3.4`) dependencies.
+- *Fixed:* Create and update events not published where a subsequent delete occurs; i.e. the entity is physically deleted. The create and update cannot be published as the entity contents are no longer available, and there is not way to reliable way to construct.
+- *Fixed:* Previously where a create (optional updates) and delete occured within a batch no events were published; now the delete event is published as a minimum to be consistent with the preceeding fix.
+- *Fixed:* Code-generated entities correctly invoke `IdentifierMapping` asynchronously using an `await`.
+
 ## v1.1.0
 - *Enhancement:* Updated `CoreEx` (`v2.5.1`) and `DbEx` (`v2.3.2`); this results in minor breaking changes that will need to be addressed.
 - [*Issue 25:*](https://github.com/Avanade/NTangle/issues/25) Resolved code generation error where a database table name resulted in an alias of `r`.

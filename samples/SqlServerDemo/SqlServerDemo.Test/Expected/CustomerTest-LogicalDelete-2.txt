@@ -6,6 +6,6 @@
   },
   "subject": "legacy.customer",
   "action": "updated",
-  "type": "legacy.customer.updated",
+  "type": "legacy.customer",
   "source": "/database/cdc/legacy/cust/1"
 }

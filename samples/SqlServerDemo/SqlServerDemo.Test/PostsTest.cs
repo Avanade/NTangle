@@ -54,7 +54,7 @@ namespace SqlServerDemo.Test
         public async Task InvalidBatchStatus()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
 
             // Add two incomplete batches.
             var script =
@@ -66,7 +66,7 @@ namespace SqlServerDemo.Test
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
 
             var imp = new InMemoryPublisher(logger);
-            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -84,10 +84,10 @@ namespace SqlServerDemo.Test
         public async Task NoChanges()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
 
             var imp = new InMemoryPublisher(logger);
-            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
 
             Assert.AreEqual(0, cdcr.ExecuteStatus?.InitialCount);
@@ -99,7 +99,7 @@ namespace SqlServerDemo.Test
         public async Task MultipleChanges()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
 
             // Make some table changes for cdc tracking.
             var script =
@@ -114,7 +114,7 @@ namespace SqlServerDemo.Test
 
             // Execute picking up the changes.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -146,7 +146,7 @@ namespace SqlServerDemo.Test
         public async Task UpdateThenDelete()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
 
             // Update a row and then delete - should only result in a delete.
             var script =
@@ -158,7 +158,7 @@ namespace SqlServerDemo.Test
 
             // Execute picking up the _delete_ only.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -188,7 +188,7 @@ namespace SqlServerDemo.Test
         public async Task CreateUpdateThenDelete()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
 
             // Create rows, update and then delete - should result in nothing (quick create/delete within same batch are ignored)!
             var script =
@@ -202,7 +202,7 @@ namespace SqlServerDemo.Test
 
             // Execute picking up nothing.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -216,9 +216,79 @@ namespace SqlServerDemo.Test
             Assert.IsFalse(cdcr.Batch.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
             Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(1, imp.GetEvents().Length);
+
+            var events = imp.GetEvents();
+            Assert.AreEqual(1, events.Length);
+
+            UnitTest.AssertEvent("PostsTest-CreateUpdateThenDelete.txt", events[0]);
+
+            // Ensure procesed correctly, execute again with no changes.
+            await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
+        }
+
+        [Test]
+        public async Task CreateUpdateWithUpcomingDelete()
+        {
+            using var db = SqlServerUnitTest.GetDatabase();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
+
+            // Create rows, update and then delete - should result in nothing (quick create/delete within same batch are ignored)!
+            var script =
+                "INSERT INTO [Legacy].[Posts] ([PostsId], [Text], [Date]) VALUES (404, 'Blah 404', '2020-01-01T15:30:42')" + Environment.NewLine +
+                "INSERT INTO [Legacy].[Comments] ([CommentsId], [PostsId], [Text], [Date]) VALUES (4041, 404, 'Blah blah 4041', '2020-01-01T18:30:42')" + Environment.NewLine +
+                "UPDATE [Legacy].[Comments] SET [Text] = 'Bananas' WHERE [CommentsId] = 4041" + Environment.NewLine +
+                "DELETE FROM [Legacy].[Posts] WHERE [PostsId] = 404";
+
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+            await UnitTest.Delay().ConfigureAwait(false);
+
+            // Execute picking up nothing.
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger) { MaxQuerySize = 1 };
+            var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, imp);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNotNull(cdcr.Batch);
+            Assert.IsTrue(cdcr.Batch.IsComplete);
+            Assert.IsNotNull(cdcr.Batch.CompletedDate);
+            Assert.IsNotNull(cdcr.Batch.CorrelationId);
+            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(0, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(0, imp.GetEvents().Length);
+
+            // Now get the delete that we previously identified as an upcoming delete.
+            imp = new InMemoryPublisher(logger);
+            cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger) { MaxQuerySize = 1 };
+            cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, imp);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNotNull(cdcr.Batch);
+            Assert.IsTrue(cdcr.Batch.IsComplete);
+            Assert.IsNotNull(cdcr.Batch.CompletedDate);
+            Assert.IsNotNull(cdcr.Batch.CorrelationId);
+            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(1, imp.GetEvents().Length);
+
+            var events = imp.GetEvents();
+            Assert.AreEqual(1, events.Length);
+
+            UnitTest.AssertEvent("PostsTest-CreateUpdateThenDelete.txt", events[0]);
 
             // Ensure procesed correctly, execute again with no changes.
             await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
@@ -228,7 +298,7 @@ namespace SqlServerDemo.Test
         public async Task UpdateSameVersion()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
 
             var script =
                 "UPDATE [Legacy].[Tags] SET [TEXT] = '#Other' WHERE [TagsId] = 3301" + Environment.NewLine +
@@ -239,7 +309,7 @@ namespace SqlServerDemo.Test
 
             // Execute picking up the changes resulting in a new event and corresponding version record.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -292,7 +362,7 @@ namespace SqlServerDemo.Test
         public async Task DataLossStop()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
 
             // Set up cdc tracking for data too far in the past; then update a Post to trigger CDC.
             var script =
@@ -307,7 +377,7 @@ namespace SqlServerDemo.Test
 
             // Execute picking up the changes _but_ discovering a data loss situation.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -325,7 +395,7 @@ namespace SqlServerDemo.Test
         public async Task DataLossContinue()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
 
             // Set up cdc tracking for data too far in the past; then update a Post to trigger CDC.
             var script =
@@ -340,7 +410,7 @@ namespace SqlServerDemo.Test
 
             // Execute picking up the changes contuning with the data loss situation.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger) { ContinueWithDataLoss = true };
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger) { ContinueWithDataLoss = true };
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -359,7 +429,7 @@ namespace SqlServerDemo.Test
         public async Task RetryWhenIncomplete()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<PostCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
 
             var script = "UPDATE [Legacy].[Tags] SET [TEXT] = '#Other' WHERE [TagsId] = 3301";
 
@@ -368,7 +438,7 @@ namespace SqlServerDemo.Test
 
             // Execute picking up the changes.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new PostCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 

@@ -6,21 +6,6 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx.Entities;
-{{#ifeq Root.JsonSerializer 'Newtonsoft'}}
-using Newtonsoft.Json;
-{{/ifeq}}
-using NTangle;
-using NTangle.Cdc;
-using System;
-using System.Collections.Generic;
-{{#ifeq Root.JsonSerializer 'SystemText'}}
-using System.Text.Json.Serialization;
-{{/ifeq}}
-{{#if UsesGlobalIdentifier}}
-using System.Threading.Tasks;
-{{/if}}
-
 namespace {{Root.NamespacePublisher}}.Entities
 {
     /// <summary>
@@ -171,11 +156,11 @@ namespace {{Root.NamespacePublisher}}.Entities
         public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<{{Root.IdentifierMappingDotNetType}}> coll, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen)
         {
   {{#if IdentifierMapping}}
-            coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof(GlobalId), Schema = "{{Schema}}", Table = "{{Name}}", Key = TableKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Model}}Cdc>().ConfigureAwait(false) });
+            await coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof(GlobalId), Schema = "{{Schema}}", Table = "{{Name}}", Key = TableKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Model}}Cdc>().ConfigureAwait(false) }).ConfigureAwait(false);
   {{/if}}
   {{#each SelectedEntityColumns}}
     {{#ifval IdentifierMappingParent}}
-            coll.AddAsync({{NameAlias}} == default && {{IdentifierMappingParent.NameAlias}} != default, async () => new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof({{NameAlias}}), Schema = "{{IdentifierMappingSchema}}", Table = "{{IdentifierMappingTable}}", Key = {{IdentifierMappingParent.NameAlias}}.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Parent.Model}}Cdc>().ConfigureAwait(false) });
+            await coll.AddAsync({{NameAlias}} == default && {{IdentifierMappingParent.NameAlias}} != default, async () => new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof({{NameAlias}}), Schema = "{{IdentifierMappingSchema}}", Table = "{{IdentifierMappingTable}}", Key = {{IdentifierMappingParent.NameAlias}}.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<{{Parent.Model}}Cdc>().ConfigureAwait(false) }).ConfigureAwait(false);
     {{/ifval}}
   {{/each}}
   {{#each JoinCdcChildren}}

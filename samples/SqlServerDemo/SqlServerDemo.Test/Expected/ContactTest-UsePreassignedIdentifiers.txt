@@ -11,7 +11,7 @@
   },
   "subject": "legacy.contact",
   "action": "updated",
-  "type": "legacy.contact.updated",
+  "type": "legacy.contact",
   "source": "/database/cdc/legacy/contact/1",
   "partitionKey": "Contact"
 }

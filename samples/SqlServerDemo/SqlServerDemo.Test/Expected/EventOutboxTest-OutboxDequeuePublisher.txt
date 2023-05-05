@@ -1,6 +1,6 @@
 ﻿{
   "specversion": "1.0",
-  "type": "legacy.contact.updated",
+  "type": "legacy.contact",
   "source": "/database/cdc/legacy/contact/1",
   "subject": "legacy.contact",
   "action": "updated",

@@ -191,13 +191,14 @@ BEGIN
         [c].[AddressId] AS [AddressId],
         [c].[AlternateContactId] AS [AlternateContactId],
         [_im1].[GlobalId] AS [GlobalAlternateContactId],
-        [cm].[UniqueId] AS [UniqueId]
+        [cm].[UniqueId] AS [UniqueId],
+        CASE WHEN EXISTS (SELECT 1 FROM [Legacy].[Contact] AS [__c] WHERE ([__c].[ContactId] = [_chg].[ContactId])) THEN CAST (0 AS BIT) ELSE CAST (1 AS BIT) END AS [_IsPhysicallyDeleted]
       FROM #_changes AS [_chg]
       LEFT OUTER JOIN [Legacy].[Contact] AS [c] ON ([c].[ContactId] = [_chg].[ContactId])
       LEFT OUTER JOIN [Legacy].[ContactMapping] AS [cm] ON ([cm].[ContactId] = [c].[ContactId])
-      LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im] ON ([_im].[Schema] = 'Legacy' AND [_im].[Table] = 'Contact' AND [_im].[Key] = CAST([_chg].[ContactId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im] ON ([_im].[Schema] = N'Legacy' AND [_im].[Table] = N'Contact' AND [_im].[Key] = CAST([_chg].[ContactId] AS NVARCHAR(128)))
       LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im1] ON ([_im1].[Schema] = 'Legacy' AND [_im1].[Table] = 'Contact' AND [_im1].[Key] = CAST([c].[AlternateContactId] AS NVARCHAR(128))) 
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Object] = 'Legacy_Contact' AND [_vt].[Key] = _im.GlobalId)
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Schema] = N'Legacy' AND [_vt].[Table] = N'Contact' AND [_vt].[Key] = _im.GlobalId)
       ORDER BY [_Lsn] ASC
 
     -- Related table: '[Legacy].[Address]' - unique name 'Address' - only use INNER JOINS to get what is actually there right now (where applicable).
@@ -211,8 +212,8 @@ BEGIN
       FROM #_changes AS [_chg]
       INNER JOIN [Legacy].[Contact] AS [c] ON ([c].[ContactId] = [_chg].[ContactId])
       INNER JOIN [Legacy].[Address] AS [a] ON ([a].[AddressId] = [c].[AddressId])
-      LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im] ON ([_im].[Schema] = 'Legacy' AND [_im].[Table] = 'Address' AND [_im].[Key] = CAST([a].[AddressId] AS NVARCHAR(128)))
-      LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im1] ON ([_im1].[Schema] = 'Legacy' AND [_im1].[Table] = 'Address' AND [_im1].[Key] = CAST([a].[AlternateAddressId] AS NVARCHAR(128))) 
+      LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im] ON ([_im].[Schema] = N'Legacy' AND [_im].[Table] = N'Address' AND [_im].[Key] = CAST([a].[AddressId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im1] ON ([_im1].[Schema] = N'Legacy' AND [_im1].[Table] = N'Address' AND [_im1].[Key] = CAST([a].[AlternateAddressId] AS NVARCHAR(128))) 
       WHERE [_chg].[_Op] <> 1
 
     -- Commit the transaction.

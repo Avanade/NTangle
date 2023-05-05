@@ -43,7 +43,7 @@ namespace SqlServerDemo.Test
         public async Task LogicalDelete()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<CustomerCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<CustomerOrchestrator>();
 
             // Update customer 1 and deleted customer 2.
             var script =
@@ -55,7 +55,7 @@ namespace SqlServerDemo.Test
 
             // Execute should pick up the update and delete.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new CustomerCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new CustomerOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -83,7 +83,7 @@ namespace SqlServerDemo.Test
         public async Task ExcludeRowVersionFromETag()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<CustomerCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<CustomerOrchestrator>();
 
             // Update customer 1.
             var script = "UPDATE [Legacy].[Cust] SET [Email] = 'bob@domain.com' WHERE [CustId] = 1";
@@ -93,7 +93,7 @@ namespace SqlServerDemo.Test
 
             // Execute should pick up the update.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new CustomerCdcOrchestrator(db, imp, JsonSerializer.Default, logger);
+            var cdc = new CustomerOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -143,7 +143,7 @@ namespace SqlServerDemo.Test
         public async Task MaxQuerySize()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<CustomerCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<CustomerOrchestrator>();
 
             var script =
                 "INSERT INTO [Legacy].[Cust] ([CustId], [Name], [Email]) VALUES (11, 'eleven', 'eleven@email.com')" + Environment.NewLine +
@@ -159,7 +159,7 @@ namespace SqlServerDemo.Test
 
             // Execute should pick up the first 3.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new CustomerCdcOrchestrator(db, imp, JsonSerializer.Default, logger) { MaxQuerySize = 3 };
+            var cdc = new CustomerOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger) { MaxQuerySize = 3 };
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 

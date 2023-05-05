@@ -257,10 +257,11 @@ BEGIN
         [_chg].[PostsId] AS [PostsId],
         [p].[PostsId] AS [TableKey_PostsId],
         [p].[Text] AS [Text],
-        [p].[Date] AS [Date]
+        [p].[Date] AS [Date],
+        CASE WHEN EXISTS (SELECT 1 FROM [Legacy].[Posts] AS [__p] WHERE ([__p].[PostsId] = [_chg].[PostsId])) THEN CAST (0 AS BIT) ELSE CAST (1 AS BIT) END AS [_IsPhysicallyDeleted]
       FROM #_changes AS [_chg]
       LEFT OUTER JOIN [Legacy].[Posts] AS [p] ON ([p].[PostsId] = [_chg].[PostsId])
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Object] = 'Legacy_Posts' AND [_vt].[Key] = CAST([_chg].[PostsId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Schema] = N'Legacy' AND [_vt].[Table] = N'Posts' AND [_vt].[Key] = CAST([_chg].[PostsId] AS NVARCHAR(128)))
       ORDER BY [_Lsn] ASC
 
     -- Related table: '[Legacy].[Comments]' - unique name 'Comments' - only use INNER JOINS to get what is actually there right now (where applicable).

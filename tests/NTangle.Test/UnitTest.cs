@@ -10,6 +10,7 @@ using System.Linq;
 using Stj = System.Text.Json;
 using System.Threading.Tasks;
 using Con = System.Console;
+using CoreEx.Configuration;
 
 namespace NTangle.Test
 {
@@ -28,6 +29,12 @@ namespace NTangle.Test
         /// </summary>
         /// <returns>The <see cref="IConfigurationRoot"/>.</returns>
         public static IConfigurationRoot GetConfig(string prefix) => new ConfigurationBuilder().SetBasePath(Environment.CurrentDirectory).AddJsonFile("appsettings.json").AddEnvironmentVariables(prefix).Build();
+
+        /// <summary>
+        /// Gets (builds) the <see cref="SettingsBase"/>.
+        /// </summary>
+        /// <returns>The <see cref="SettingsBase"/>.</returns>
+        public static SettingsBase GetSettings(string prefix = null) => new DefaultSettings(GetConfig(prefix ?? "ntangle_unittest"));
 
         /// <summary>
         /// Gets a console <see cref="ILogger"/>.
@@ -103,7 +110,7 @@ namespace NTangle.Test
         /// <param name="exclude">The properties to exclude from the comparison.</param>
         public static void AssertEvent(string expected, EventData actual, params string[] exclude)
         {
-            JsonSerializer.Default.TryApplyFilter(actual, new string[] { "id", "timestamp", "correlationid", "value.etag" }.Concat(exclude), out string json, JsonPropertyFilter.Exclude);
+            JsonSerializer.Default.TryApplyFilter(actual, new string[] { "id", "timestamp", "correlationid", "etag", "key", "value.etag" }.Concat(exclude), out string json, JsonPropertyFilter.Exclude);
             var je = (Stj.JsonElement)JsonSerializer.Default.Deserialize(json);
             var exp = File.ReadAllText(Path.Combine("Expected", expected));
             Assert.AreEqual(exp, JsonSerializer.Default.Serialize(je, JsonWriteFormat.Indented));
@@ -118,7 +125,7 @@ namespace NTangle.Test
         public static void AssertEvent(string expected, EventSendData actual, params string[] exclude)
         {
             var jn = Stj.Nodes.JsonNode.Parse(actual.Data);
-            CoreEx.Text.Json.JsonFilterer.Apply(jn, new string[] { "id", "time", "correlationid", "data.etag" }.Concat(exclude), JsonPropertyFilter.Exclude);
+            CoreEx.Text.Json.JsonFilterer.Apply(jn, new string[] { "id", "time", "correlationid", "etag", "key", "data.etag" }.Concat(exclude), JsonPropertyFilter.Exclude);
             var exp = File.ReadAllText(Path.Combine("Expected", expected));
             Assert.AreEqual(exp, jn.ToJsonString(new Stj.JsonSerializerOptions { WriteIndented = true }));
         }

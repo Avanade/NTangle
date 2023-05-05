@@ -1,61 +1,44 @@
-﻿using CoreEx.Database;
-using CoreEx.Database.SqlServer;
-using CoreEx.Events;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using SqlServerDemo.Publisher.Data;
+﻿namespace SqlServerDemo.Publisher;
 
-namespace SqlServerDemo.Publisher
+/// <summary>
+/// The console program leveraging <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host"/>.
+/// </summary>
+internal class Program
 {
     /// <summary>
-    /// The console program leveraging <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host"/>.
+    /// Main entry point and host builder.
     /// </summary>
-    internal class Program
-    {
-        /// <summary>
-        /// Main entry point.
-        /// </summary>
-        /// <param name="args">The console arguments.</param>
-        internal static void Main(string[] args) => CreateHostBuilder(args).ConfigureHostConfiguration(c => c.AddEnvironmentVariables(prefix: "SqlServerDemo_")).Build().Run();
+    /// <param name="args">The console arguments.</param>
+    internal static void Main(string[] args) => Host.CreateDefaultBuilder(args)
+        .ConfigureHostConfiguration(c => c.AddEnvironmentVariables(prefix: "SqlServerDemo_"))
+        .ConfigureServices((services) =>
+        {
+            services.AddSettings<SqlServerDemoSettings>()
+                    .AddLogging(b => b.AddSimpleConsole())
+                    .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<SqlServerDemoSettings>().DatabaseConnectionString)))
+                    .AddStringIdentifierGenerator()
+                    .AddExecutionContext()
+                    .AddJsonSerializer();
 
-        /// <summary>
-        /// Create the <see cref="IHostBuilder"/>.
-        /// </summary>
-        internal static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddDefaultSettings()
-                            .AddLogging(b => b.AddSimpleConsole())
-                            .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(hostContext.Configuration.GetConnectionString("SqlDb"))))
-                            .AddStringIdentifierGenerator()
-                            .AddExecutionContext()
-                            .AddJsonSerializer();
+            // Adds the CDC-hosted service(s), including underlying orchestrator services, and local file synchronizer (to run-as singleton).
+            services.AddGeneratedCdcHostedServices()
+                    .AddGeneratedCdcOrchestratorServices()
+                    .AddFileLockSynchronizer();
 
-                    // Adds the EventPublisher, which will use the default EventDataFormatter, with CloudEventSerializer and EventOutbox enqueue as sender.
-                    services.AddEventPublisher()
-                            .AddEventDataFormatter()
-                            .AddCloudEventSerializer()
-                            .AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>())));
-                            //.AddAzureServiceBusClient()
-                            //.AddGeneratedEventOutboxSender((sp, eoe) => eoe.SetPrimaryEventSender(CreateServiceBusSender(sp)));
+            // Adds the EventPublisher, which will use the default EventDataFormatter, with CloudEventSerializer and EventOutbox enqueue as sender.
+            services.AddEventPublisher()
+                    .AddEventDataFormatter()
+                    .AddCloudEventSerializer()
+                    .AddScoped<IEventSender, EventOutboxEnqueue>();
 
-                    // Adds the CDC-hosted service(s) including orchestrator services, and specified EventOutbox dequeue/send service.
-                    services.AddGeneratedCdcHostedServices()
-                            .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), new LoggerEventSender(sp.GetService<ILogger<LoggerEventSender>>()), sp.GetService<ILogger<EventOutboxDequeue>>()))
-                            //.AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetService<IDatabase>(), CreateServiceBusSender(sp), sp.GetService<ILogger<EventOutboxDequeue>>()))
-                            .AddGeneratedOrchestratorServices()
-                            .AddFileLockSynchronizer();
-                });
+            // For demo/testing purposes uses the LoggerEventSender; remove usage and uncomment Azure Service Bus below.
+            services.AddScoped<LoggerEventSender>()
+                    .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), sp.GetRequiredService<LoggerEventSender>(), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()));
 
-        /// <summary>
-        /// Creates the <see cref="CoreEx.Azure.ServiceBus.ServiceBusSender"/>.
-        /// </summary>
-        private static CoreEx.Azure.ServiceBus.ServiceBusSender CreateServiceBusSender(System.IServiceProvider sp) 
-            => new (sp.GetRequiredService<Azure.Messaging.ServiceBus.ServiceBusClient>(), sp.GetRequiredService<CoreEx.ExecutionContext>(), sp.GetRequiredService<CoreEx.Configuration.SettingsBase>(), sp.GetRequiredService<ILogger<CoreEx.Azure.ServiceBus.ServiceBusSender>>())
-                { DefaultQueueOrTopicName = "ntangle_sqlserverdemo" };
-    }
+            // Adds the ServiceBusSender to publish the events to Azure Service Bus, and starts the event outbox dequeue hosted service.
+            //services.AddSingleton(sp => new Az.ServiceBusClient(sp.GetRequiredService<SqlServerDemoSettings>().ServiceBusConnectionString))
+            //        .AddScoped<ServiceBusSender>()
+            //        .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), sp.GetRequiredService<ServiceBusSender>(), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()));
+        })
+        .Build().Run();
 }

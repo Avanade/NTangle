@@ -2,6 +2,7 @@
 
 using CoreEx.Configuration;
 using CoreEx.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NTangle.Cdc;
 using System;
@@ -16,23 +17,11 @@ namespace NTangle.Services
     public abstract class CdcHostedService<TOrchestrator, TEntity> : SynchronizedTimerHostedServiceBase<TEntity>, ICdcHostedService where TOrchestrator : IEntityOrchestrator<TEntity> where TEntity : IEntity
     {
         private TimeSpan? _interval;
-        private int? _maxQuerySize;
-        private bool? _continueWithDataLoss;
 
         /// <summary>
         /// The configuration settings name for <see cref="Interval"/>.
         /// </summary>
         public const string IntervalName = "Interval";
-
-        /// <summary>
-        /// The configuration settings name for <see cref="MaxQuerySize"/>.
-        /// </summary>
-        public const string MaxQuerySizeName = "MaxQuerySize";
-
-        /// <summary>
-        /// The configuration settings name for <see cref="ContinueWithDataLoss"/>.
-        /// </summary>
-        public const string ContinueWithDataLossName = "ContinueWithDataLoss";
 
         /// <summary>
         /// Gets or sets the default interval seconds used where the specified <see cref="Interval"/> is less than or equal to zero. Defaults to <b>thirty</b> seconds.
@@ -51,52 +40,27 @@ namespace NTangle.Services
         /// <summary>
         /// Gets or sets the interval between each execution.
         /// </summary>
-        /// <remarks>Will default to configuration, a) <see cref="TimerHostedServiceBase.ServiceName"/>_<see cref="IntervalName"/> (e.g. '<c>ContactService_Interval</c>'), then b) <see cref="IntervalName"/>, where specified; otherwise, <see cref="DefaultInterval"/>.</remarks>
         public override TimeSpan Interval
         {
-            get => _interval ?? Settings.GetValue<TimeSpan?>($"{ServiceName}_{IntervalName}") ?? Settings.GetValue<TimeSpan?>(IntervalName) ?? DefaultInterval;
+            get => _interval ?? Settings.GetCdcValue<TimeSpan?>(ServiceName, IntervalName) ?? DefaultInterval;
             set => _interval = value;
-        }
-
-        /// <summary>
-        /// Gets or sets the maximum query size to limit the number of CDC (Change Data Capture) rows that are batched in a <see cref="BatchTracker"/>.
-        /// </summary>
-        /// <remarks>Where specified overrides the <see cref="IEntityOrchestrator.MaxQuerySize"/>.
-        /// <para>Will default to configuration, a) <see cref="TimerHostedServiceBase.ServiceName"/>_<see cref="MaxQuerySizeName"/> (e.g. '<c>ContactService_MaxQuerySize</c>'), then b) <see cref="MaxQuerySizeName"/>, where specified.</para></remarks>
-        public virtual int? MaxQuerySize
-        {
-            get => _maxQuerySize ?? Settings.GetValue<int?>($"{ServiceName}_{MaxQuerySizeName}") ?? Settings.GetValue<int?>(MaxQuerySizeName);
-            set => _maxQuerySize = value;
-        }
-
-        /// <summary>
-        /// Indicates whether to ignore any data loss and continue using the CDC (Change Data Capture) data that is available.
-        /// </summary>
-        /// <remarks>For more information as to why data loss may occur for SQL Server see: https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/administer-and-monitor-change-data-capture-sql-server 
-        /// <para>Will default to configuration settings, a) <see cref="TimerHostedServiceBase.ServiceName"/>_<see cref="ContinueWithDataLossName"/> (e.g. '<c>ContactService_ContinueWithDataLoss</c>'), then b) <see cref="ContinueWithDataLossName"/>, where specified.</para></remarks>
-        public virtual bool? ContinueWithDataLoss
-        {
-            get => _continueWithDataLoss ?? Settings.GetValue<bool?>($"{ServiceName}_{ContinueWithDataLossName}") ?? Settings.GetValue<bool?>(ContinueWithDataLossName);
-            set => _continueWithDataLoss = value;
         }
 
         /// <inheritdoc/>
         protected override async Task SynchronizedExecuteAsync(IServiceProvider scopedServiceProvider, CancellationToken cancellationToken)
         {
-            // Instantiate and initialize the orchestrator.
-            var eo = (TOrchestrator)scopedServiceProvider.GetService(typeof(TOrchestrator)) ?? throw new InvalidOperationException($"Attempted to get service '{typeof(TOrchestrator).FullName}' but null was returned; this would indicate that the service has not been configured correctly.");
-
-            var mqs = MaxQuerySize;
-            if (mqs.HasValue)
-                eo.MaxQuerySize = mqs.Value;
-
-            var cwdl = ContinueWithDataLoss;
-            if (cwdl.HasValue)
-                eo.ContinueWithDataLoss = cwdl.Value;
-
             // Keep executing until unsuccessful or reached end of current CDC data stream.
             while (true)
             {
+                // New scope per iteration to ensure any dependencies are disposed correctly; reset the execution context between invocations.
+                using var scope = scopedServiceProvider.CreateScope();
+                CoreEx.ExecutionContext.Reset();
+
+                // Instantiate the orchestrator.
+                var eo = (TOrchestrator)scope.ServiceProvider.GetService(typeof(TOrchestrator))
+                    ?? throw new InvalidOperationException($"Attempted to get service '{typeof(TOrchestrator).FullName}' but null was returned; this would indicate that the service has not been configured correctly.");
+
+                // Execute the orchestrator.
                 var result = await eo.ExecuteAsync(cancellationToken).ConfigureAwait(false);
                 if (cancellationToken.IsCancellationRequested)
                     return;
