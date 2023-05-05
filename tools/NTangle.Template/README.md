@@ -6,7 +6,7 @@ This is the .NET template used to accelerate the creation of an _nTangle_ soluti
 
 ## Installation
 
-Before the `NTangle.Template` template can be used it must be installed from [NuGet](https://www.nuget.org/packages/NTangle.Template/). The `dotnet new -i` command is used to perform this.
+Before the `NTangle.Template` template can be used it must be installed from [NuGet](https://www.nuget.org/packages/NTangle.Template/). The `dotnet new install` command is used to perform this.
 
 ```
 -- Use the latest published from NuGet...
