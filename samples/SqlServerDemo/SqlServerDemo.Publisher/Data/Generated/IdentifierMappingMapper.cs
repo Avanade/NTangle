@@ -5,11 +5,6 @@
 #nullable enable
 #pragma warning disable
 
-using NTangle.Cdc;
-using NTangle.Data;
-using System.Collections.Generic;
-using System.Data;
-
 namespace SqlServerDemo.Publisher.Data
 {
     /// <summary>

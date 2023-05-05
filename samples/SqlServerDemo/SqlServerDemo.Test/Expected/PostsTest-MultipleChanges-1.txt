@@ -30,6 +30,6 @@
   },
   "subject": "legacy.post.1",
   "action": "updated",
-  "type": "legacy.post.updated",
+  "type": "legacy.post",
   "source": "/database/cdc/legacy/posts"
 }

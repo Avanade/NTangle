@@ -8,7 +8,7 @@
 
 _nTangle_ is a Change Data Capture (CDC) code generation tool and corresponding runtime. Unlike other CDC-based technologies which replicate changes to rows, _nTangle_ is designed to replicate business entity (aggregate) changes.
 
-For example, if a database contains a `Person` and one-to-many related `Address` table, a traditional CDC replicator would leverage the CDC-capabilities of the database as the data source and replicate all changes from both tables largely distinct from each other. Additional logic would then be required within the downstream systems to aggregate these distinct changes back into a holistic business entity, if possible.
+For example, if a database contains a `Person` and one-to-many related `Address` table, a traditional CDC replicator would leverage the CDC-capabilities of the database as the data source and replicate all changes from both tables largely distinct from each other. Additional logic would then be required within the downstream systems to aggregate these distinct changes back into a holistic business entity where required, if possible.
 
 _nTangle_ tackles this differently by packaging the changes at the source into an aggregated entity which is then replicated. With _nTangle_ the CDC-capabilities of the database are leveraged as the trigger, with a corresponding query across all related tables to produce a holistic business entity. Therefore, if a change is made to `Person` or `Address` this will result in the publishing of the entity. Where transactional changes are made to both `Person` and `Address` a single holistic business entity will be published including all changes.
 
@@ -39,7 +39,7 @@ SalesOrder             // Parent
 
 The CDC capability is used specifically as a trigger for change (being `Create`, `Update` or `Delete`). The resulting data that is published is the latest, not a snapshot in time (CDC captured). The reason for this is two-fold:
 1. Given how the CDC data is batch retrieved there is no guarantee that the CDC captured data represents a final intended state suitable for publishing; and,
-1. This process is intended to be running near real-time so getting the latest version will produce the most current committed version as at that time.
+2. This process is intended to be running near real-time so getting the latest version will produce the most current committed version as at that time.
 
 To further guarantee only a single event for a specific version is published the resulting _entity_ is JSON serialized and hashed; this value is checked (and saved) against the prior version to ensure a publish contains data that is actionable. This will minimize redundant publishing, whilst also making the underlying processing more efficient.
 
@@ -49,7 +49,7 @@ To further guarantee only a single event for a specific version is published the
 
 This official [documentation](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server) describes the Microsoft SQL Server CDC-capabilities.
 
-Although throughout references are made to Microsoft SQL Server, the intention of _nTangle_ is that it is largely agnostic to the database technology, and therefore support for other databases will (or may) be supported in the future based on demand.
+Although throughout references are made to Microsoft SQL Server, the intention of _nTangle_ is that it is largely agnostic to the database technology, and therefore support for other databases will (or may) be supported in the future based on demand, and their capabilities.
 
 <br/>
 
@@ -70,7 +70,7 @@ _nTangle_ has been created to provide a seamless means to create CDC-enabled agg
 
 ### Code-generation
 
-The code-generation is managed via a console application using the [`CodeGenConsole`](./src/NTangle/Console/CodeGenConsole.cs) to manage. This internally leverages [OnRamp](https://github.com/Avanade/onramp) to enable. 
+The code-generation is managed via a console application using the [`CodeGenConsole`](./src/NTangle/Console/CodeGenConsole.cs) to manage. This internally leverages [OnRamp](https://github.com/Avanade/onramp) to enable the underlying code-generation capabilities. 
 
 Additionally, the code-generator inspects (queries) the database to infer the underlying table schema for all tables and their columns. This is used as a source in which the configuration references to validate, whilst also minimizes configuration where the inferred schema information can be used. The code-generation adopts a gen-many philosophy, therefore where schema changes are made, the code-generation can be executed again to update accordingly.
 
@@ -97,10 +97,9 @@ Documentation related to each of the above are as follows:
 
 An example [ntangle.yaml](./samples/SqlServerDemo/SqlServerDemo.CodeGen/ntangle.yaml) configuration file exists within the [`SqlServerDemo`](./samples/SqlServerDemo) sample. The [`SqlServerDemo.CodeGen`](./samples/SqlServerDemo/SqlServerDemo.CodeGen) sample also demonstrates how to invoke the code generator from the underlying [`Program`](./samples/SqlServerDemo/SqlServerDemo.CodeGen/Program.cs).
 
-The code-generator will output a number of generated artefacts ; these will be either database-related (see [`SqlServerDemo.Database`](./samples/SqlServerDemo/SqlServerDemo.Database) sample) or corresponding .NET runtime components (see [`SqlServerDemo.Publisher`](./samples/SqlServerDemo/SqlServerDemo.Publisher) sample).
+The code-generator will output a number of generated artefacts; these will be either database-related (see [`SqlServerDemo.Database`](./samples/SqlServerDemo/SqlServerDemo.Database) sample) or corresponding .NET runtime components (see [`SqlServerDemo.Publisher`](./samples/SqlServerDemo/SqlServerDemo.Publisher) sample).
 
-
-The following [`NTangle`](./src/NTangle) namespaces provide code-generation capabilties:
+The following [`NTangle`](./src/NTangle) namespaces provide the code-generation capabilties:
 
 Namespace | Description
 -|-
@@ -114,14 +113,14 @@ Namespace | Description
 
 Generally, a runtime publisher is required to orchestrate the CDC-triggered aggregated entity publishing process (see [`SqlServerDemo.Publisher`](./samples/SqlServerDemo/SqlServerDemo.Publisher) sample). This in turn takes a dependency on the _nTangle_ runtime to enable.
 
-The following [`NTangle`](./src/NTangle) namespaces provide runtime capabilties:
+The following [`NTangle`](./src/NTangle) namespaces provide the runtime capabilties:
 
 Namespace | Description
 -|-
 [`Cdc`](./src/NTangle/Cdc) | CDC-orchestration capabilities, primarily [`EntityOrchestrator`](./src/NTangle/Cdc/EntityOrchestrator.cs).
 [`Data`](./src/NTangle/Data) | Database access capabilities to support the likes of batch tracking, identifier mapping and versioning.
-[`Events`](./src/NTangle/Events) | Event capabilities, extending the capabilities enabled by [`CoreEx`](https://github.com/Avanade/CoreEx/tree/main/src/CoreEx/Events).
-[`Services`](./src/NTangle/Services) | Service hosting capabilities, primarily [`HostedService`](./src/NTangle/Services/CdcHostedService.cs) and [`EventOutboxHostedService`](./src/NTangle/Services/EventOutboxHostedService.cs).
+[`Events`](./src/NTangle/Events) | Event capabilities, leveraging and extending the capabilities enabled by [`CoreEx`](https://github.com/Avanade/CoreEx/tree/main/src/CoreEx/Events).
+[`Services`](./src/NTangle/Services) | Service hosting capabilities, primarily the [`HostedService`](./src/NTangle/Services/CdcHostedService.cs).
 
 <br/>
 

@@ -32,25 +32,6 @@ namespace NTangle.Console
         public static void SetAppName(this ICodeGeneratorArgs args, string? appName) => (args ?? throw new ArgumentNullException(nameof(args))).AddParameter(AppNameParamName, appName);
 
         /// <summary>
-        /// Gets the 'DbProvider' <see cref="CodeGeneratorArgsBase.Parameters"/> key name.
-        /// </summary>
-        public const string DbProviderParamName = "DbProvider";
-
-        /// <summary>
-        /// Gets the <see cref="CodeGeneratorArgsBase.Parameters"/> value with a key of <see cref="DbProviderParamName"/>.
-        /// </summary>
-        /// <param name="args">The <see cref="ICodeGeneratorArgs"/>.</param>
-        /// <param name="throwWhereNotFound">Indicates to throw a <see cref="KeyNotFoundException"/> when the specified key is not found.</param>
-        public static string? GetDbProvider(this ICodeGeneratorArgs args, bool throwWhereNotFound = false) => (args ?? throw new ArgumentNullException(nameof(args))).GetParameter<string>(DbProviderParamName, throwWhereNotFound)!;
-
-        /// <summary>
-        /// Adds the <paramref name="DbProvider"/> value with a key of <see cref="DbProviderParamName"/> to the <see cref="CodeGeneratorArgsBase.Parameters"/>.
-        /// </summary>
-        /// <param name="args">The <see cref="ICodeGeneratorArgs"/>.</param>
-        /// <param name="DbProvider">The database provider.</param>
-        public static void SetDbProvider(this ICodeGeneratorArgs args, string? DbProvider) => (args ?? throw new ArgumentNullException(nameof(args))).AddParameter(DbProviderParamName, DbProvider);
-
-        /// <summary>
         /// Gets the 'CreateDatabase' <see cref="CodeGeneratorArgsBase.Parameters"/> key name.
         /// </summary>
         public const string CreateDatabaseParamName = "CreateDatabase";

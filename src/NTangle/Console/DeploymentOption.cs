@@ -5,7 +5,7 @@ namespace NTangle.Console
     /// <summary>
     /// Defines the Microsoft SQL Server deployment management options.
     /// </summary>
-    public enum SqlServerDeployment
+    public enum DeploymentOption
     {
         /// <summary>
         /// Use <b>DbEx</b> (<see href="https://github.com/Avanade/dbex"/>) to manage the database deployment.

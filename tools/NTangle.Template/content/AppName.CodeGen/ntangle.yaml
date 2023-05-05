@@ -2,7 +2,7 @@
 schema: Legacy                                       # Defaults the schema for the non-CDC related tables.
 cdcSchema: NTangle                                   # Defines the name of the schema to be used for CDC-related artefacts.
 cdcSchemaCreate: true                                # Indicates whether to create the CDC database schema via code-generation.
-cdcEnable: true                                      # Indicates whether to enable CDC for the referenced table(s) in the database.
+cdcEnable: false                                     # Indicates whether to enable CDC for the referenced table(s) in the database (recommend managing explicitly).
 eventSourceRoot: /database/cdc                       # Event source URI root prepended to all published events.
 eventSubjectRoot: Legacy                             # Event subject root prepended to all published events.
 outbox: true                                         # Indicates to include the generation of the event outbox artefacts.

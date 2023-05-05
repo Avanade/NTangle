@@ -5,13 +5,6 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx.Entities;
-using NTangle;
-using NTangle.Cdc;
-using System;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-
 namespace SqlServerDemo.Publisher.Entities
 {
     /// <summary>

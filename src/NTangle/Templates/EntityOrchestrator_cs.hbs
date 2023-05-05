@@ -6,41 +6,17 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx;
-using CoreEx.Database;
-using CoreEx.Entities;
-using CoreEx.Events;
-using CoreEx.Json;
-using CoreEx.Mapping;
-using Microsoft.Extensions.Logging;
-{{#ifeq Root.JsonSerializer 'Newtonsoft'}}
-using Newtonsoft.Json;
-{{/ifeq}}
-using NTangle;
-using NTangle.Cdc;
-using NTangle.Data;
-using NTangle.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-{{#ifeq Root.JsonSerializer 'SystemText'}}
-using System.Text.Json.Serialization;
-{{/ifeq}}
-using System.Threading;
-using System.Threading.Tasks;
-using {{Root.NamespacePublisher}}.Entities;
-
 namespace {{Root.NamespacePublisher}}.Data
 {
     /// <summary>
     /// Enables the Change Data Capture (CDC) <see cref="{{Model}}Cdc"/> entity (aggregate root) orchestration (database table '[{{Schema}}].[{{Name}}]').
     /// </summary>
-    public partial interface I{{Model}}CdcOrchestrator : IEntityOrchestrator<{{Model}}Cdc> { }
+    public partial interface I{{Model}}Orchestrator : IEntityOrchestrator<{{Model}}Cdc> { }
 
     /// <summary>
     /// Manages the Change Data Capture (CDC) <see cref="{{Model}}Cdc"/> entity (aggregate root) orchestration (database table '[{{Schema}}].[{{Name}}]').
     /// </summary>
-    public partial class {{Model}}CdcOrchestrator : EntityOrchestrator<{{Model}}Cdc, {{Model}}CdcOrchestrator.{{Model}}CdcEnvelopeCollection, {{Model}}CdcOrchestrator.{{Model}}CdcEnvelope, VersionTrackingMapper{{#if UsesGlobalIdentifier}}, {{Root.IdentifierMappingDotNetType}}{{/if}}>, I{{Model}}CdcOrchestrator
+    public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{Model}}Orchestrator.{{Model}}CdcEnvelopeCollection, {{Model}}Orchestrator.{{Model}}CdcEnvelope, VersionTrackingMapper{{#if UsesGlobalIdentifier}}, {{Root.IdentifierMappingDotNetType}}{{/if}}>, I{{Model}}Orchestrator
     {
         private static readonly {{Model}}CdcMapper _{{camel Model}}CdcMapper = new {{Model}}CdcMapper();
 {{#each DistinctModels}}
@@ -54,11 +30,12 @@ namespace {{Root.NamespacePublisher}}.Data
 {{/each}}
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="{{Model}}CdcOrchestrator"/> class.
+        /// Initializes a new instance of the <see cref="{{Model}}Orchestrator"/> class.
         /// </summary>
         /// <param name="db">The <see cref="{{Database}}"/>.</param>
         /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
         /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
+        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
 {{#if UsesGlobalIdentifier}}
         /// <param name="idGen">The <see cref="IIdentifierGenerator{T}"/>.</param>
@@ -66,18 +43,18 @@ namespace {{Root.NamespacePublisher}}.Data
 {{#each OrchestratorCtorParameters}}
         /// <param name="{{ArgumentName}}">{{{Text}}}</param>
 {{/each}}
-        public {{Model}}CdcOrchestrator({{Database}} db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger<{{Model}}CdcOrchestrator> logger{{#if UsesGlobalIdentifier}}, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen{{/if}}{{#each OrchestratorCtorParameters}}, {{Type}} {{ArgumentName}}{{/each}}) :
-            base(db, "[{{CdcSchema}}].[{{ExecuteStoredProcedure}}]", "[{{CdcSchema}}].[{{CompleteStoredProcedure}}]", eventPublisher, jsonSerializer, logger{{#if UsesGlobalIdentifier}}, "[{{Root.CdcSchema}}].[{{Root.IdentifierMappingStoredProcedure}}]", idGen, new IdentifierMappingMapper<{{Root.IdentifierMappingDotNetType}}>(){{/if}}){{#ifeq OrchestratorCtorParameters.Count 0}} => {{Model}}CdcOrchestratorCtor();{{/ifeq}}
+        public {{Model}}Orchestrator({{Database}} db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<{{Model}}Orchestrator> logger{{#if UsesGlobalIdentifier}}, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen{{/if}}{{#each OrchestratorCtorParameters}}, {{Type}} {{ArgumentName}}{{/each}}) :
+            base(db, "[{{CdcSchema}}].[{{ExecuteStoredProcedure}}]", "[{{CdcSchema}}].[{{CompleteStoredProcedure}}]", eventPublisher, jsonSerializer, settings, logger{{#if UsesGlobalIdentifier}}, "[{{Root.CdcSchema}}].[{{Root.IdentifierMappingStoredProcedure}}]", idGen, new IdentifierMappingMapper<{{Root.IdentifierMappingDotNetType}}>(){{/if}}){{#ifeq OrchestratorCtorParameters.Count 0}} => {{Model}}OrchestratorCtor();{{/ifeq}}
 {{#ifne OrchestratorCtorParameters.Count 0}}
         {
   {{#each OrchestratorCtorParameters}}
             {{PrivateName}} = {{ArgumentName}} ?? throw new ArgumentNullException(nameof({{ArgumentName}}));
   {{/each}}
-            {{Model}}CdcOrchestratorCtor();
+            {{Model}}OrchestratorCtor();
         }
 {{/ifne}}
 
-        partial void {{Model}}CdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
+        partial void {{Model}}OrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
         /// <inheritdoc/>
         protected override async Task<EntityOrchestratorResult<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
@@ -120,6 +97,9 @@ namespace {{Root.NamespacePublisher}}.Data
         /// <inheritdoc/>
         protected override EventActionFormat EventActionFormat => EventActionFormat.{{Root.EventActionFormat}};
 
+        /// <inheritdoc/>
+        protected override string? EventType => "{{#ifval Root.EventTypeRoot}}{{Root.EventTypeRoot}}.{{/ifval}}{{EventType}}";
+
 {{#ifne Root.EventSourceKind 'None'}}
         /// <inheritdoc/>
         protected override Uri? EventSource => new Uri("{{EventSourceUri}}", UriKind.{{Root.EventSourceKind}});
@@ -144,11 +124,15 @@ namespace {{Root.NamespacePublisher}}.Data
 
             /// <inheritdoc/>
             [JsonIgnore]
+            public byte[] DatabaseLsn { get; set; }
+
+            /// <inheritdoc/>
+            [JsonIgnore]
             public string? DatabaseTrackingHash { get; set; }
 
             /// <inheritdoc/>
             [JsonIgnore]
-            public byte[] DatabaseLsn { get; set; }
+            public bool IsDatabasePhysicallyDeleted { get; set; }
         }
 
         /// <summary>
@@ -175,9 +159,10 @@ namespace {{Root.NamespacePublisher}}.Data
                 {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"),
   {{/each}}
 {{/each}}
-                DatabaseOperationType = record.GetValue<CdcOperationType>("_OperationType"),
-                DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
-                DatabaseLsn = record.GetValue<byte[]>("_Lsn")
+                DatabaseOperationType = record.GetValue<CdcOperationType>(CdcOperationTypeColumnName),
+                DatabaseLsn = record.GetValue<byte[]>(CdcLsnColumnName),
+                DatabaseTrackingHash = record.GetValue<string?>(TrackingHashColumnName),
+                IsDatabasePhysicallyDeleted = record.GetValue<bool>(IsPhysicallyDeletedColumnName)
             };
 
             /// <inheritdoc/>

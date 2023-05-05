@@ -5,10 +5,6 @@
 #nullable enable
 #pragma warning disable
 
-using NTangle.Data;
-using System.Collections.Generic;
-using System.Data;
-
 namespace SqlServerDemo.Publisher.Data
 {
     /// <summary>

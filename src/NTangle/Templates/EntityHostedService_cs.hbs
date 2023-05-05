@@ -6,21 +6,12 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx.Configuration;
-using CoreEx.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using NTangle.Services;
-using System;
-using {{Root.NamespacePublisher}}.Data;
-using {{Root.NamespacePublisher}}.Entities;
-
 namespace {{Root.NamespacePublisher}}.Services
 {
     /// <summary>
     /// Provides the Change Data Capture (CDC) <see cref="{{Model}}Cdc"/> entity (aggregate root) <see cref="HostedService{T}"/> capabilities (database table '[{{Schema}}].[{{Name}}]').
     /// </summary>
-    public partial class {{Model}}HostedService : CdcHostedService<I{{Model}}CdcOrchestrator, {{Model}}Cdc>
+    public partial class {{Model}}HostedService : CdcHostedService<I{{Model}}Orchestrator, {{Model}}Cdc>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="{{Model}}HostedService"/> class.

@@ -5,36 +5,17 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx;
-using CoreEx.Database;
-using CoreEx.Entities;
-using CoreEx.Events;
-using CoreEx.Json;
-using CoreEx.Mapping;
-using Microsoft.Extensions.Logging;
-using NTangle;
-using NTangle.Cdc;
-using NTangle.Data;
-using NTangle.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
-using SqlServerDemo.Publisher.Entities;
-
 namespace SqlServerDemo.Publisher.Data
 {
     /// <summary>
     /// Enables the Change Data Capture (CDC) <see cref="PostCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Posts]').
     /// </summary>
-    public partial interface IPostCdcOrchestrator : IEntityOrchestrator<PostCdc> { }
+    public partial interface IPostOrchestrator : IEntityOrchestrator<PostCdc> { }
 
     /// <summary>
     /// Manages the Change Data Capture (CDC) <see cref="PostCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Posts]').
     /// </summary>
-    public partial class PostCdcOrchestrator : EntityOrchestrator<PostCdc, PostCdcOrchestrator.PostCdcEnvelopeCollection, PostCdcOrchestrator.PostCdcEnvelope, VersionTrackingMapper>, IPostCdcOrchestrator
+    public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestrator.PostCdcEnvelopeCollection, PostOrchestrator.PostCdcEnvelope, VersionTrackingMapper>, IPostOrchestrator
     {
         private static readonly PostCdcMapper _postCdcMapper = new PostCdcMapper();
         private static readonly CommentCdcMapper _commentCdcMapper = new CommentCdcMapper();
@@ -42,16 +23,17 @@ namespace SqlServerDemo.Publisher.Data
         private static readonly PostsTagsCdcMapper _postsTagsCdcMapper = new PostsTagsCdcMapper();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PostCdcOrchestrator"/> class.
+        /// Initializes a new instance of the <see cref="PostOrchestrator"/> class.
         /// </summary>
         /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
         /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
+        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        public PostCdcOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger<PostCdcOrchestrator> logger) :
-            base(db, "[NTangle].[spPostsBatchExecute]", "[NTangle].[spPostsBatchComplete]", eventPublisher, jsonSerializer, logger) => PostCdcOrchestratorCtor();
+        public PostOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<PostOrchestrator> logger) :
+            base(db, "[NTangle].[spPostsBatchExecute]", "[NTangle].[spPostsBatchComplete]", eventPublisher, jsonSerializer, settings, logger) => PostOrchestratorCtor();
 
-        partial void PostCdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
+        partial void PostOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
         /// <inheritdoc/>
         protected override async Task<EntityOrchestratorResult<PostCdcEnvelopeCollection, PostCdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
@@ -107,6 +89,9 @@ namespace SqlServerDemo.Publisher.Data
         protected override EventActionFormat EventActionFormat => EventActionFormat.PastTense;
 
         /// <inheritdoc/>
+        protected override string? EventType => "Legacy.Post";
+
+        /// <inheritdoc/>
         protected override Uri? EventSource => new Uri("/database/cdc/legacy/posts", UriKind.Relative);
 
         /// <inheritdoc/>
@@ -123,11 +108,15 @@ namespace SqlServerDemo.Publisher.Data
 
             /// <inheritdoc/>
             [JsonIgnore]
+            public byte[] DatabaseLsn { get; set; }
+
+            /// <inheritdoc/>
+            [JsonIgnore]
             public string? DatabaseTrackingHash { get; set; }
 
             /// <inheritdoc/>
             [JsonIgnore]
-            public byte[] DatabaseLsn { get; set; }
+            public bool IsDatabasePhysicallyDeleted { get; set; }
         }
 
         /// <summary>
@@ -146,9 +135,10 @@ namespace SqlServerDemo.Publisher.Data
                 PostsId = record.GetValue<int>("PostsId"),
                 Text = record.GetValue<string?>("Text"),
                 Date = record.GetValue<DateTime?>("Date"),
-                DatabaseOperationType = record.GetValue<CdcOperationType>("_OperationType"),
-                DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
-                DatabaseLsn = record.GetValue<byte[]>("_Lsn")
+                DatabaseOperationType = record.GetValue<CdcOperationType>(CdcOperationTypeColumnName),
+                DatabaseLsn = record.GetValue<byte[]>(CdcLsnColumnName),
+                DatabaseTrackingHash = record.GetValue<string?>(TrackingHashColumnName),
+                IsDatabasePhysicallyDeleted = record.GetValue<bool>(IsPhysicallyDeletedColumnName)
             };
 
             /// <inheritdoc/>

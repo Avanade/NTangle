@@ -83,6 +83,7 @@ Property | Description
 `eventSourceFormat` | The default formatting for the Source when an Event is published. Valid options are: `NameOnly`, `NameAndKey`, `NameAndTableKey`.<br/>&dagger; Defaults to `Root.EventSourceFormat`.
 `eventSubject` | The Event Subject.<br/>&dagger; Defaults to `ModelName`. Note: when used in code-generation the `Root.EventSubjectRoot` will be prepended where specified.
 `eventSubjectFormat` | The default formatting for the Subject when an Event is published. Valid options are: `NameOnly`, `NameAndKey`, `NameAndTableKey`.<br/>&dagger; Defaults to `Root.EventSubjectFormat`.
+`eventType` | The Event Type.<br/>&dagger; Defaults to `ModelName`. Note: when used in code-generation the `Root.EventTypeRoot` will be prepended where specified.
 
 <br/>
 

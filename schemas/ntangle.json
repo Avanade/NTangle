@@ -148,6 +148,11 @@
             "NameAndTableKey"
           ]
         },
+        "eventTypeRoot": {
+          "type": "string",
+          "title": "The root for the event type by prepending to all event type names via CDC.",
+          "description": "Used to enable the sending of messages to the likes of EventHubs, Service Broker, Kafka, etc. Defaults to 'EventSubjectRoot'."
+        },
         "outbox": {
           "type": "boolean",
           "title": "Indicates whether to generate the event outbox SQL and .NET artefacts.",
@@ -393,6 +398,11 @@
             "NameAndKey",
             "NameAndTableKey"
           ]
+        },
+        "eventType": {
+          "type": "string",
+          "title": "The Event Type.",
+          "description": "Defaults to 'ModelName'. Note: when used in code-generation the 'Root.EventTypeRoot' will be prepended where specified."
         },
         "identifierMapping": {
           "type": "boolean",

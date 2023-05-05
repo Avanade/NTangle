@@ -2,6 +2,7 @@
 
 using CoreEx;
 using CoreEx.Abstractions;
+using CoreEx.Configuration;
 using CoreEx.Database;
 using CoreEx.Database.SqlServer;
 using CoreEx.Entities;
@@ -37,6 +38,26 @@ namespace NTangle.Cdc
         private const string ContinueWithDataLossParamName = "ContinueWithDataLoss";
         private const string BatchTrackingIdParamName = "BatchTrackingId";
         private const string VersionTrackingListParamName = "@VersionTrackingList";
+        
+        /// <summary>
+        /// Gets the <see cref="IEntityEnvelope.DatabaseOperationType"/> column name.
+        /// </summary>
+        protected const string CdcOperationTypeColumnName = "_OperationType";
+
+        /// <summary>
+        /// Gets the <see cref="IEntityEnvelope.DatabaseLsn"/> column name.
+        /// </summary>
+        protected const string CdcLsnColumnName = "_Lsn";
+        
+        /// <summary>
+        /// Gets the <see cref="IEntityEnvelope.DatabaseTrackingHash"/> column name.
+        /// </summary>
+        protected const string TrackingHashColumnName = "_TrackingHash";
+
+        /// <summary>
+        /// Gets the <see cref="IEntityEnvelope.IsDatabasePhysicallyDeleted"/> column name.
+        /// </summary>
+        protected const string IsPhysicallyDeletedColumnName = "_IsPhysicallyDeleted";
 
         private static readonly BatchTrackerMapper _batchTrackerMapper = new();
         private static readonly TVersionTrackerMapper _versionTrackerMapper = new();
@@ -51,15 +72,20 @@ namespace NTangle.Cdc
         /// <param name="completeStoredProcedureName">The name of the batch complete stored procedure.</param>
         /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
         /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
+        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        internal EntityOrchestratorBase(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger logger)
+        internal EntityOrchestratorBase(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger logger)
         {
             Db = db ?? throw new ArgumentNullException(nameof(db));
             ExecuteStoredProcedureName = executeStoredProcedureName ?? throw new ArgumentNullException(nameof(executeStoredProcedureName));
             CompleteStoredProcedureName = completeStoredProcedureName ?? throw new ArgumentNullException(nameof(completeStoredProcedureName));
             EventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
             JsonSerializer = jsonSerializer ?? throw new ArgumentNullException(nameof(jsonSerializer));
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            MaxQuerySize = Settings.GetCdcValue<int?>(ServiceName, MaxQuerySizeParamName) ?? 100;
+            ContinueWithDataLoss = Settings.GetCdcValue<bool?>(ServiceName, ContinueWithDataLossParamName) ?? false;
         }
 
         /// <summary>
@@ -91,6 +117,11 @@ namespace NTangle.Cdc
         /// Gets the <see cref="ILogger"/>.
         /// </summary>
         public ILogger Logger { get; }
+
+        /// <summary>
+        /// Gets the <see cref="SettingsBase"/>.
+        /// </summary>
+        public SettingsBase Settings { get; }
 
         /// <summary>
         /// Gets the Execution Identifier for the current execution.
@@ -127,6 +158,11 @@ namespace NTangle.Cdc
         /// Gets the <see cref="EventDataBase.Source"/> <see cref="Events.EventSourceFormat"/>.
         /// </summary>
         protected virtual EventSourceFormat EventSourceFormat { get; } = EventSourceFormat.NameAndKey;
+
+        /// <summary>
+        /// Gets the <see cref="EventDataBase.Type"/>.
+        /// </summary>
+        protected virtual string? EventType { get; }
 
         /// <summary>
         /// Gets the list of property names that should be excluded from the serialized JSON <see cref="IETag"/> generation.
@@ -276,16 +312,14 @@ namespace NTangle.Cdc
             {
                 // Find delete and use.
                 var item = grp.Where(x => x.DatabaseOperationType == CdcOperationType.Delete).FirstOrDefault();
-                if (item != null && grp.Any(x => x.DatabaseOperationType == CdcOperationType.Create))
-                    continue;  // Created and deleted in quick succession; no need to publish.
 
-                // Where there is no delete then just use the first.
+                // Where there is no delete operation then just use the first.
                 if (item == null)
                 {
                     item = grp.First();
 
-                    // Where the table key is initial (being the actual table primary key columns versus from CDC) then it has been _subsequently_ deleted (physically) so skip.
-                    if (item is IGlobalIdentifier gi && gi.TableKey.IsInitial)
+                    // Confirm whether the record has been _subsequently_ deleted (physically), if so then skip for now as will be picked up later (this will maintain some semblance of the order of operations).
+                    if (item.IsDatabasePhysicallyDeleted)
                         continue;
                 }
 
@@ -334,6 +368,10 @@ namespace NTangle.Cdc
                     coll2.Add(item);
                     tracking.Add(new VersionTracker { Key = entity.EntityKey.ToString(), Hash = entity.ETag });
                 }
+
+                // Clear ETag where delete; i.e. non sensical.
+                if (item.DatabaseOperationType == CdcOperationType.Delete && entity is IETag etag)
+                    etag.ETag = null;
             }
 
             result.ExecuteStatus.PublishCount = coll2.Count;
@@ -347,17 +385,17 @@ namespace NTangle.Cdc
 
             // Publish & send the events.
             if (coll2.Count == 0)
-                Logger.LogInformation("Batch '{BatchId}': No event(s) were published; no unique version tracking hash found. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
+                Logger.LogInformation("Batch '{BatchId}': No event(s) were published; non-unique version tracking hash and/or underlying data is physically deleted. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
                     result.Batch.Id, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
             else
             {
-                var events = (await CreateEventsAsync(coll2, result.Batch.CorrelationId, cancellationToken).ConfigureAwait(false)).ToArray();
+                await CreateEventsAsync(EventPublisher, coll2, result.Batch.CorrelationId, cancellationToken).ConfigureAwait(false);
                 sw = Stopwatch.StartNew();
-                await EventPublisher.Publish(events).SendAsync(cancellationToken).ConfigureAwait(false);
+                await EventPublisher.SendAsync(cancellationToken).ConfigureAwait(false);
                 sw.Stop();
 
                 Logger.LogInformation("Batch '{BatchId}': {EventCount} event(s) were published successfully. [Publisher={Publisher}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                    result.Batch.Id, events.Length, EventPublisher.GetType().Name, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
+                    result.Batch.Id, result.ExecuteStatus.PublishCount, EventPublisher.GetType().Name, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
             }
 
             // Complete the batch (ignore any further 'cancel' as event(s) have been published and we *must* complete to minimise chance of sending more than once).
@@ -402,87 +440,45 @@ namespace NTangle.Cdc
         protected abstract Task<EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Provides the capability to create none or more <see cref="EventData">events</see> from the entity <paramref name="coll">collection.</paramref> using the <paramref name="getEntityFunc"/>
-        /// to get the entity value to publish. A <c>null</c> function response indicates entity is not found and/or do not publish (i.e. skip).
+        /// Creates and published none or more <see cref="EventData">events</see> from the entity <paramref name="coll">collection.</paramref>.
         /// </summary>
-        /// <param name="coll">The entity envelope collection.</param>
-        /// <param name="getEntityFunc">The function to get the entity value to publish.</param>
-        /// <param name="correlationId">The correlarion identifier.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        /// <returns>None or more <see cref="EventData">events</see> to be published.</returns>
-        protected async Task<IEnumerable<EventData>> CreateEventsWithGetAsync(TEntityEnvelopeColl coll, Func<TEntityEnvelope, Task<TEntity>> getEntityFunc, string? correlationId, CancellationToken cancellationToken = default)
-        {
-            var events = new List<EventData>();
-
-            foreach (var item in coll ?? throw new ArgumentNullException(nameof(coll)))
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    await Task.FromCanceled(cancellationToken).ConfigureAwait(false);
-
-                switch (item.DatabaseOperationType)
-                {
-                    case CdcOperationType.Delete:
-                        events.Add(CreateEvent(item, CdcOperationType.Delete, correlationId));
-                        break;
-
-                    default:
-                        var entity = await getEntityFunc(item).ConfigureAwait(false);
-                        if (entity != null)
-                            events.Add(CreateEvent(entity, item.DatabaseOperationType, correlationId));
-
-                        break;
-                }
-            }
-
-            return events;
-        }
-
-        /// <summary>
-        /// Creates none or more <see cref="EventData">events</see> from the entity <paramref name="coll">collection.</paramref>.
-        /// </summary>
+        /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
         /// <param name="coll">The entity envelope collection.</param>
         /// <param name="correlationId">The correlarion identifier.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        /// <returns>None or more <see cref="EventData">events</see> to be published.</returns>
-        protected virtual Task<IEnumerable<EventData>> CreateEventsAsync(TEntityEnvelopeColl coll, string? correlationId, CancellationToken cancellationToken = default)
+        /// <remarks><para>This invokes the <see cref="CreateEventAsync{T}(IEventPublisher, T, CdcOperationType, string?, CancellationToken)"/> which does the <see cref="IEventPublisher.Publish(EventData[])"/> per item.</para>
+        /// The <see cref="IEventPublisher.SendAsync(CancellationToken)"/> must <b>not</b> be performed as this will result in data publishing inconsistencies; this is managed internally by the <see cref="ExecuteAsync(CancellationToken)"/>.</remarks>
+        protected virtual async Task CreateEventsAsync(IEventPublisher eventPublisher, TEntityEnvelopeColl coll, string? correlationId, CancellationToken cancellationToken = default)
         {
-            var events = new List<EventData>();
-
             foreach (var item in coll ?? throw new ArgumentNullException(nameof(coll)))
             {
-                events.Add(CreateEvent(item, item.DatabaseOperationType, correlationId));
+                await CreateEventAsync(eventPublisher, item, item.DatabaseOperationType, correlationId, cancellationToken).ConfigureAwait(false);
             }
-
-            return Task.FromResult(events.AsEnumerable());
         }
 
         /// <summary>
-        /// Creates an <see cref="EventData"/> for the specified <paramref name="value"/>.
+        /// Creates (and <see cref="IEventPublisher.Publish(EventData[])">publishes</see>) an <see cref="EventData"/> for the specified <paramref name="value"/>.
         /// </summary>
         /// <typeparam name="T">The <paramref name="value"/> <see cref="Type"/>.</typeparam>
+        /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
         /// <param name="value">The value.</param>
         /// <param name="operationType">The <see cref="CdcOperationType"/> to infer the <see cref="EventDataBase.Action"/>.</param>
         /// <param name="correlationId">The correlarion identifier.</param>
-        /// <returns>The <see cref="EventData"/>.</returns>
-        protected virtual EventData CreateEvent<T>(T value, CdcOperationType operationType, string? correlationId) where T : IEntityKey
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <remarks>The <see cref="IEventPublisher.SendAsync(CancellationToken)"/> must <b>not</b> be performed as this will result in data publishing inconsistencies; this is managed internally by the <see cref="ExecuteAsync(CancellationToken)"/>.</remarks>
+        protected virtual Task CreateEventAsync<T>(IEventPublisher eventPublisher, T value, CdcOperationType operationType, string? correlationId, CancellationToken cancellationToken = default) where T : IEntityKey
         {
-            var ed = new EventData<T>
-            {
-                Subject = EventSubjectFormatter.Format(EventSubject, value, EventSubjectFormat),
-                Action = EventActionFormatter.Format(operationType, EventActionFormat),
-                Source = EventSourceFormatter.Format(EventSource, value, EventSourceFormat),
-                CorrelationId = correlationId,
-                Value = value,
-            };
+            var subject = EventSubjectFormatter.Format(eventPublisher.EventDataFormatter, EventSubject, value, EventSubjectFormat);
+            var action = EventActionFormatter.Format(operationType, EventActionFormat);
+            var source = EventSourceFormatter.Format(eventPublisher.EventDataFormatter, EventSource, value, EventSourceFormat);
 
-            if (value is ITenantId ti)
-                ed.TenantId = ti.TenantId;
+            var @event = source is null ? eventPublisher.CreateValueEvent(value, subject, action) : eventPublisher.CreateValueEvent(value, source, subject, action);
+            @event.Type = EventType;
+            @event.CorrelationId = correlationId;
 
-            if (value is IPartitionKey pk)
-                ed.PartitionKey = pk.PartitionKey;
+            eventPublisher.Publish(@event);
 
-            ed.Type = $"{EventSubject}.{ed.Action}";
-            return ed;
+            return Task.CompletedTask;
         }
     }
 }

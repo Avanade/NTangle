@@ -51,7 +51,7 @@ namespace SqlServerDemo.Test
         public async Task GenerateAllIdentifiers()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<ContactCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<ContactOrchestrator>();
 
             // Update contact 1.
             var script = "UPDATE [Legacy].[Contact] SET [Phone] = '000' WHERE [ContactId] = 1";
@@ -60,7 +60,7 @@ namespace SqlServerDemo.Test
 
             // Execute should pick up and allocate all new global identifiers.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new ContactCdcOrchestrator(db, imp, JsonSerializer.Default, logger, new IdentifierGenerator());
+            var cdc = new ContactOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger, new IdentifierGenerator());
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 
@@ -123,7 +123,7 @@ namespace SqlServerDemo.Test
         public async Task UsePreassignedIdentifiers()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<ContactCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<ContactOrchestrator>();
 
             // Update contact 1 and pre-assign some global identifiers.
             var script =
@@ -137,7 +137,7 @@ namespace SqlServerDemo.Test
 
             // Execute should pick up and reuse all the previous global identifiers.
             var imp = new InMemoryPublisher(logger);
-            var cdc = new ContactCdcOrchestrator(db, imp, JsonSerializer.Default, logger, new IdentifierGenerator());
+            var cdc = new ContactOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger, new IdentifierGenerator());
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, imp);
 

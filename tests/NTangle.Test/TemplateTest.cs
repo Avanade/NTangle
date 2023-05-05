@@ -109,13 +109,13 @@ namespace NTangle.Test
             Assert.GreaterOrEqual(0, ExecuteCommand("powershell", $"{Path.Combine(_rootDir.FullName, "nuget-publish.ps1")} -configuration 'Debug' -IncludeSymbols -IncludeSource").exitCode, "nuget publish");
 
             // Uninstall any previous beef templates (failure is ok here)
-            ExecuteCommand("dotnet", "new -u NTangle.Template");
+            ExecuteCommand("dotnet", "new uninstall NTangle.Template");
 
             // Uninstall the template solution from local package.
             //ExecuteCommand("dotnet", $"new -u NTangle.Template --nuget-source {_nugetDir.FullName}", _rootDir.FullName);
 
             // Install the template solution from local package.
-            Assert.GreaterOrEqual(0, ExecuteCommand("dotnet", $"new -i ntangle.template --nuget-source {_nugetDir.FullName}", _rootDir.FullName).exitCode, "install ntangle.template");
+            Assert.GreaterOrEqual(0, ExecuteCommand("dotnet", $"new install ntangle.template --nuget-source {_nugetDir.FullName}", _rootDir.FullName).exitCode, "install ntangle.template");
         }
 
         [Test]
@@ -164,6 +164,12 @@ namespace NTangle.Test
             var sql = string.Join(Environment.NewLine, lines[i..]);
             Assert.Zero(ExecuteCommand("dotnet", $"run execute \"{sql}\"", Path.Combine(dir, $"{appName}.Database")).exitCode, "dotnet run execute [execute create-database.sql]");
 
+            // Update the enabled flag.
+            var fn = Path.Combine(dir, $"{appName}.CodeGen", "ntangle.yaml");
+            var yaml = File.ReadAllText(fn);
+            yaml = yaml.Replace("cdcEnable: false", "cdcEnable: true");
+            File.WriteAllText(fn, yaml);
+
             // CodeGen: Execute code-generation.
             Assert.Zero(ExecuteCommand("dotnet", "run", Path.Combine(dir, $"{appName}.CodeGen")).exitCode, "dotnet run all [codegen]");
 
@@ -172,7 +178,7 @@ namespace NTangle.Test
 
             // Publisher : Execute publisher and check event sent.
             await ChangeSomeData(appName).ConfigureAwait(false);
-            var (_, stdOut) = ExecuteCommand("dotnet", "run Interval=00:00:01 OutboxInterval=00:00:02", Path.Combine(dir, $"{appName}.Publisher"), 15000);
+            var (exitCode, stdOut) = ExecuteCommand("dotnet", "run", Path.Combine(dir, $"{appName}.Publisher"), 30000);
             Assert.IsTrue(stdOut.Contains("\"source\": \"/database/cdc/legacy/contact/1\""), "Expected published event content not found in stdout.");
         }
 
@@ -180,7 +186,7 @@ namespace NTangle.Test
         {
             var cs = $"Data Source=.;Initial Catalog={appName};Integrated Security=True;TrustServerCertificate=true";
             var db = new SqlServerDatabase(() => new SqlConnection(cs));
-            await db.SqlStatement("UPDATE [Legacy].[Contact] SET [Phone] = '000' WHERE [ContactId] = 1").NonQueryAsync().ConfigureAwait(false);
+            await db.SqlStatement("UPDATE [Legacy].[Contact] SET [Phone] = '000111' WHERE [ContactId] = 1").NonQueryAsync().ConfigureAwait(false);
         }
 
         [Test]

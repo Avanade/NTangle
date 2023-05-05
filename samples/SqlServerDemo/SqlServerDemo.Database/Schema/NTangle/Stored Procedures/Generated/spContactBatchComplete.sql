@@ -39,15 +39,15 @@ BEGIN
       WHERE BatchTrackingId = @BatchTrackingId 
 
     MERGE INTO [NTangle].[VersionTracking] WITH (HOLDLOCK) AS [_vt]
-      USING @VersionTrackingList AS [_list] ON ([_vt].[Object] = 'Legacy_Contact' AND [_vt].[Key] = [_list].[Key])
+      USING @VersionTrackingList AS [_list] ON ([_vt].[Schema] = N'Legacy' AND [_vt].[Table] = N'Contact' AND [_vt].[Key] = [_list].[Key])
       WHEN MATCHED AND EXISTS (
           SELECT [_list].[Key], [_list].[Hash]
           EXCEPT
           SELECT [_vt].[Key], [_vt].[Hash])
         THEN UPDATE SET [_vt].[Hash] = [_list].[Hash], [_vt].[BatchTrackingId] = @BatchTrackingId
       WHEN NOT MATCHED BY TARGET
-        THEN INSERT ([Object], [Key], [Hash], [BatchTrackingId])
-          VALUES ('Legacy_Contact', [_list].[Key], [_list].[Hash], @BatchTrackingId);
+        THEN INSERT ([Schema], [Table], [Key], [Hash], [BatchTrackingId])
+          VALUES (N'Legacy', N'Contact', [_list].[Key], [_list].[Hash], @BatchTrackingId);
 
     SELECT [_batch].[BatchTrackingId], [_batch].[CreatedDate], [_batch].[IsComplete], [_batch].[CompletedDate], [_batch].[CorrelationId], [_batch].[HasDataLoss]
       FROM [NTangle].[ContactBatchTracking] AS [_batch]

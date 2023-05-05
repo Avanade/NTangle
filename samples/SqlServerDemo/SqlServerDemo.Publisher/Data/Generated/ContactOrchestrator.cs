@@ -5,52 +5,34 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx;
-using CoreEx.Database;
-using CoreEx.Entities;
-using CoreEx.Events;
-using CoreEx.Json;
-using CoreEx.Mapping;
-using Microsoft.Extensions.Logging;
-using NTangle;
-using NTangle.Cdc;
-using NTangle.Data;
-using NTangle.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
-using SqlServerDemo.Publisher.Entities;
-
 namespace SqlServerDemo.Publisher.Data
 {
     /// <summary>
     /// Enables the Change Data Capture (CDC) <see cref="ContactCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Contact]').
     /// </summary>
-    public partial interface IContactCdcOrchestrator : IEntityOrchestrator<ContactCdc> { }
+    public partial interface IContactOrchestrator : IEntityOrchestrator<ContactCdc> { }
 
     /// <summary>
     /// Manages the Change Data Capture (CDC) <see cref="ContactCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Contact]').
     /// </summary>
-    public partial class ContactCdcOrchestrator : EntityOrchestrator<ContactCdc, ContactCdcOrchestrator.ContactCdcEnvelopeCollection, ContactCdcOrchestrator.ContactCdcEnvelope, VersionTrackingMapper, string>, IContactCdcOrchestrator
+    public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, ContactOrchestrator.ContactCdcEnvelopeCollection, ContactOrchestrator.ContactCdcEnvelope, VersionTrackingMapper, string>, IContactOrchestrator
     {
         private static readonly ContactCdcMapper _contactCdcMapper = new ContactCdcMapper();
         private static readonly AddressCdcMapper _addressCdcMapper = new AddressCdcMapper();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContactCdcOrchestrator"/> class.
+        /// Initializes a new instance of the <see cref="ContactOrchestrator"/> class.
         /// </summary>
         /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
         /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
+        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="idGen">The <see cref="IIdentifierGenerator{T}"/>.</param>
-        public ContactCdcOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger<ContactCdcOrchestrator> logger, IIdentifierGenerator<string> idGen) :
-            base(db, "[NTangle].[spContactBatchExecute]", "[NTangle].[spContactBatchComplete]", eventPublisher, jsonSerializer, logger, "[NTangle].[spIdentifierMappingCreate]", idGen, new IdentifierMappingMapper<string>()) => ContactCdcOrchestratorCtor();
+        public ContactOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<ContactOrchestrator> logger, IIdentifierGenerator<string> idGen) :
+            base(db, "[NTangle].[spContactBatchExecute]", "[NTangle].[spContactBatchComplete]", eventPublisher, jsonSerializer, settings, logger, "[NTangle].[spIdentifierMappingCreate]", idGen, new IdentifierMappingMapper<string>()) => ContactOrchestratorCtor();
 
-        partial void ContactCdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
+        partial void ContactOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
         /// <inheritdoc/>
         protected override async Task<EntityOrchestratorResult<ContactCdcEnvelopeCollection, ContactCdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
@@ -84,6 +66,9 @@ namespace SqlServerDemo.Publisher.Data
         protected override EventActionFormat EventActionFormat => EventActionFormat.PastTense;
 
         /// <inheritdoc/>
+        protected override string? EventType => "Legacy.Contact";
+
+        /// <inheritdoc/>
         protected override Uri? EventSource => new Uri("/database/cdc/legacy/contact", UriKind.Relative);
 
         /// <inheritdoc/>
@@ -100,11 +85,15 @@ namespace SqlServerDemo.Publisher.Data
 
             /// <inheritdoc/>
             [JsonIgnore]
+            public byte[] DatabaseLsn { get; set; }
+
+            /// <inheritdoc/>
+            [JsonIgnore]
             public string? DatabaseTrackingHash { get; set; }
 
             /// <inheritdoc/>
             [JsonIgnore]
-            public byte[] DatabaseLsn { get; set; }
+            public bool IsDatabasePhysicallyDeleted { get; set; }
         }
 
         /// <summary>
@@ -131,9 +120,10 @@ namespace SqlServerDemo.Publisher.Data
                 AlternateContactId = record.GetValue<int?>("AlternateContactId"),
                 GlobalAlternateContactId = record.GetValue<string?>("GlobalAlternateContactId"),
                 UniqueId = record.GetValue<Guid>("UniqueId"),
-                DatabaseOperationType = record.GetValue<CdcOperationType>("_OperationType"),
-                DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
-                DatabaseLsn = record.GetValue<byte[]>("_Lsn")
+                DatabaseOperationType = record.GetValue<CdcOperationType>(CdcOperationTypeColumnName),
+                DatabaseLsn = record.GetValue<byte[]>(CdcLsnColumnName),
+                DatabaseTrackingHash = record.GetValue<string?>(TrackingHashColumnName),
+                IsDatabasePhysicallyDeleted = record.GetValue<bool>(IsPhysicallyDeletedColumnName)
             };
 
             /// <inheritdoc/>

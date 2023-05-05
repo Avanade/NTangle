@@ -79,6 +79,7 @@ Property | Description
 `eventSourceKind` | The URI kind for the event source URIs for CDC. Valid options are: `None`, `Absolute`, `Relative`, `RelativeOrAbsolute`.<br/>&dagger; Defaults to `Relative` (being a relative path).
 `eventSourceRoot` | The URI root for the event source by prepending to all event source URIs for CDC.<br/>&dagger; The event source is only updated where an `EventSourceKind` is not `None`.
 `eventSourceFormat` | The default formatting for the Source when an Event is published via CDC. Valid options are: `NameOnly`, `NameAndKey`, `NameAndTableKey`.<br/>&dagger; Defaults to `NameAndTableKey` (being the child `Cdc.ModelName` appended with the corresponding table key).
+**`eventTypeRoot`** | The root for the event type by prepending to all event type names via CDC.<br/>&dagger; Used to enable the sending of messages to the likes of EventHubs, Service Broker, Kafka, etc. Defaults to `EventSubjectRoot`.
 
 <br/>
 

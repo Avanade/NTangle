@@ -13,7 +13,6 @@ namespace NTangle.Console
     /// <summary>
     /// <b>NTangle</b>-specific code-generation console that inherits from <see cref="OnRamp.Console.CodeGenConsole"/>.
     /// </summary>
-    /// <remarks>The <b>NTangle</b> capabilities are designed to be database provider agnostic, as such the underlying database access will need to be specified; e.g. <see cref="UseSqlServer(SqlServerDeployment, Func{string, SqlServerDatabase}?)"/>.</remarks>
     public class CodeGenConsole : OnRamp.Console.CodeGenConsole
     {
         /// <summary>
@@ -50,6 +49,9 @@ namespace NTangle.Console
             Args.CreateConnectionStringEnvironmentVariableName ??= _ => $"{Args.GetAppName()?.Replace(".", "_", StringComparison.InvariantCulture)}_ConnectionString";
             Args.ConfigFileName ??= DefaultConfigFileName;
             MastheadText = DefaultMastheadText;
+
+            Args.SetCreateDatabase((cs) => new SqlServerDatabase(() => new SqlConnection(cs)));
+            UseDeploymentOption(DeploymentOption.DbEx);
         }
 
         /// <summary>
@@ -75,18 +77,14 @@ namespace NTangle.Console
         }
 
         /// <summary>
-        /// Uses (overrides) the database connection creation to leverage the SQL Server <see cref="SqlConnection"/> and sets the <see cref="UseScript(string)">script</see> according to the <paramref name="deploymentOption"/>.
+        /// Uses (overrides) the <see cref="UseScript(string)">script</see> according to the <paramref name="deploymentOption"/>.
         /// </summary>
-        /// <param name="deploymentOption">The <see cref="SqlServerDeployment"/> option.</param>
-        /// <param name="sqlDatabaseCreator">The optional <paramref name="sqlDatabaseCreator"/> to enable advanced <see cref="SqlServerDatabase"/> creation; otherwise, defaults.</param>
+        /// <param name="deploymentOption">The <see cref="DeploymentOption"/> option.</param>
         /// <returns>The current instance to support fluent-style method-chaining.</returns>
-        /// <remarks>Also invokes <see cref="CodeGeneratorArgsExtensions.SetDbProvider(ICodeGeneratorArgs, string?)"/> passing '<c>SqlServer</c>'.</remarks>
-        public CodeGenConsole UseSqlServer(SqlServerDeployment deploymentOption, Func<string, SqlServerDatabase>? sqlDatabaseCreator = null)
+        /// <remarks>Defaults to <see cref="DeploymentOption.DbEx"/>.</remarks>
+        public CodeGenConsole UseDeploymentOption(DeploymentOption deploymentOption)
         {
             UseScript($"SqlServer{deploymentOption}.yaml");
-            sqlDatabaseCreator ??= (cs) => new SqlServerDatabase(() => new SqlConnection(cs));
-            Args.SetCreateDatabase(sqlDatabaseCreator);
-            Args.SetDbProvider("SqlServer");
             return this;
         }
 
@@ -95,9 +93,6 @@ namespace NTangle.Console
         {
             if (string.IsNullOrEmpty(Args.GetAppName()))
                 Args.SetAppName(Args.OutputDirectory?.Name ?? "APP-NAME-UNKNOWN");
-
-            if (Args.GetCreateDatabase() == null)
-                throw new CodeGenException("A database provider must be specified during application startup, consider using the likes of 'UseSqlServer()' to specify; e.g: 'CodeGenConsole.Create(\"...\").UseSqlServer(...).RunAsync(args)'.");
 
             return base.OnValidation(context);
         }

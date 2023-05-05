@@ -5,50 +5,32 @@
 #nullable enable
 #pragma warning disable
 
-using CoreEx;
-using CoreEx.Database;
-using CoreEx.Entities;
-using CoreEx.Events;
-using CoreEx.Json;
-using CoreEx.Mapping;
-using Microsoft.Extensions.Logging;
-using NTangle;
-using NTangle.Cdc;
-using NTangle.Data;
-using NTangle.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
-using SqlServerDemo.Publisher.Entities;
-
 namespace SqlServerDemo.Publisher.Data
 {
     /// <summary>
     /// Enables the Change Data Capture (CDC) <see cref="CustomerCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Customer]').
     /// </summary>
-    public partial interface ICustomerCdcOrchestrator : IEntityOrchestrator<CustomerCdc> { }
+    public partial interface ICustomerOrchestrator : IEntityOrchestrator<CustomerCdc> { }
 
     /// <summary>
     /// Manages the Change Data Capture (CDC) <see cref="CustomerCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Customer]').
     /// </summary>
-    public partial class CustomerCdcOrchestrator : EntityOrchestrator<CustomerCdc, CustomerCdcOrchestrator.CustomerCdcEnvelopeCollection, CustomerCdcOrchestrator.CustomerCdcEnvelope, VersionTrackingMapper>, ICustomerCdcOrchestrator
+    public partial class CustomerOrchestrator : EntityOrchestrator<CustomerCdc, CustomerOrchestrator.CustomerCdcEnvelopeCollection, CustomerOrchestrator.CustomerCdcEnvelope, VersionTrackingMapper>, ICustomerOrchestrator
     {
         private static readonly CustomerCdcMapper _customerCdcMapper = new CustomerCdcMapper();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CustomerCdcOrchestrator"/> class.
+        /// Initializes a new instance of the <see cref="CustomerOrchestrator"/> class.
         /// </summary>
         /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
         /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
+        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        public CustomerCdcOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, ILogger<CustomerCdcOrchestrator> logger) :
-            base(db, "[NTangle].[spCustomerBatchExecute]", "[NTangle].[spCustomerBatchComplete]", eventPublisher, jsonSerializer, logger) => CustomerCdcOrchestratorCtor();
+        public CustomerOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<CustomerOrchestrator> logger) :
+            base(db, "[NTangle].[spCustomerBatchExecute]", "[NTangle].[spCustomerBatchComplete]", eventPublisher, jsonSerializer, settings, logger) => CustomerOrchestratorCtor();
 
-        partial void CustomerCdcOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
+        partial void CustomerOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
         /// <inheritdoc/>
         protected override async Task<EntityOrchestratorResult<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
@@ -73,6 +55,9 @@ namespace SqlServerDemo.Publisher.Data
         protected override EventActionFormat EventActionFormat => EventActionFormat.PastTense;
 
         /// <inheritdoc/>
+        protected override string? EventType => "Legacy.Customer";
+
+        /// <inheritdoc/>
         protected override Uri? EventSource => new Uri("/database/cdc/legacy/cust", UriKind.Relative);
 
         /// <inheritdoc/>
@@ -92,11 +77,15 @@ namespace SqlServerDemo.Publisher.Data
 
             /// <inheritdoc/>
             [JsonIgnore]
+            public byte[] DatabaseLsn { get; set; }
+
+            /// <inheritdoc/>
+            [JsonIgnore]
             public string? DatabaseTrackingHash { get; set; }
 
             /// <inheritdoc/>
             [JsonIgnore]
-            public byte[] DatabaseLsn { get; set; }
+            public bool IsDatabasePhysicallyDeleted { get; set; }
         }
 
         /// <summary>
@@ -117,9 +106,10 @@ namespace SqlServerDemo.Publisher.Data
                 Email = record.GetValue<string?>("Email"),
                 IsDeleted = record.GetValue<bool?>("IsDeleted"),
                 RowVersion = record.GetValue<byte[]?>("RowVersion"),
-                DatabaseOperationType = record.GetValue<CdcOperationType>("_OperationType"),
-                DatabaseTrackingHash = record.GetValue<string>("_TrackingHash"),
-                DatabaseLsn = record.GetValue<byte[]>("_Lsn")
+                DatabaseOperationType = record.GetValue<CdcOperationType>(CdcOperationTypeColumnName),
+                DatabaseLsn = record.GetValue<byte[]>(CdcLsnColumnName),
+                DatabaseTrackingHash = record.GetValue<string?>(TrackingHashColumnName),
+                IsDatabasePhysicallyDeleted = record.GetValue<bool>(IsPhysicallyDeletedColumnName)
             };
 
             /// <inheritdoc/>

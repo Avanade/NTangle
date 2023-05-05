@@ -31,7 +31,7 @@ namespace SqlServerDemo.Test
         public async Task OutboxDequeuePublisher()
         {
             using var db = SqlServerUnitTest.GetDatabase();
-            var logger = UnitTest.GetLogger<ContactCdcOrchestrator>();
+            var logger = UnitTest.GetLogger<ContactOrchestrator>();
 
             // Update contact 1.
             var script = "UPDATE [Legacy].[Contact] SET [Phone] = '000' WHERE [ContactId] = 1";
@@ -41,7 +41,7 @@ namespace SqlServerDemo.Test
             // Execute should pick up and allocate all new global identifiers.
             var eoe = new EventOutboxEnqueue(db, UnitTest.GetLogger<EventOutboxEnqueue>());
             var ep = new EventPublisher(null, new CoreEx.Text.Json.CloudEventSerializer(), eoe);
-            var cdc = new ContactCdcOrchestrator(db, ep, JsonSerializer.Default, logger, new IdentifierGenerator());
+            var cdc = new ContactOrchestrator(db, ep, JsonSerializer.Default, UnitTest.GetSettings(), logger, new IdentifierGenerator());
             var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
             UnitTest.WriteResult(cdcr, null);
 

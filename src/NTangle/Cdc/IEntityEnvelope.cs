@@ -13,13 +13,18 @@ namespace NTangle.Cdc
         CdcOperationType DatabaseOperationType { get; set; }
 
         /// <summary>
+        /// Gets or sets the database log sequence number (LSN).
+        /// </summary>
+        byte[] DatabaseLsn { get; set; }
+
+        /// <summary>
         /// Gets or sets the database tracking hash code.
         /// </summary>
         string? DatabaseTrackingHash { get; set; }
 
         /// <summary>
-        /// Gets or sets the database log sequence number (LSN).
+        /// Indicates whether the underlying database record has been physically deleted.
         /// </summary>
-        byte[] DatabaseLsn { get; set; }
+        bool IsDatabasePhysicallyDeleted { get; set; }
     }
 }

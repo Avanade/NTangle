@@ -252,6 +252,14 @@ namespace NTangle.Config
             Description = "Defaults to `Root.EventSubjectFormat`.")]
         public string? EventSubjectFormat { get; set; }
 
+        /// <summary>
+        /// Gets or sets the event type.
+        /// </summary>
+        [JsonProperty("eventType", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Event", Title = "The Event Type.",
+            Description = "Defaults to `ModelName`. Note: when used in code-generation the `Root.EventTypeRoot` will be prepended where specified.")]
+        public string? EventType { get; set; }
+
         #endregion
 
         #region IdentifierMapping
@@ -439,6 +447,7 @@ namespace NTangle.Config
             EventSourceFormat = DefaultWhereNull(EventSourceFormat, () => Root!.EventSourceFormat);
             EventSubject = DefaultWhereNull(EventSubject, () => Model);
             EventSubjectFormat = DefaultWhereNull(EventSubjectFormat, () => Root!.EventSubjectFormat);
+            EventType = DefaultWhereNull(EventType, () => Model);
             Database = DefaultWhereNull(Database, () => "IDatabase");
             Service = DefaultWhereNull(Service, () => Root.Service);
             IsDeletedColumn = DefaultWhereNull(IsDeletedColumn, () => Root!.IsDeletedColumn);
@@ -546,10 +555,7 @@ namespace NTangle.Config
             {
                 foreach (var cn in TenantIdColumns)
                 {
-                    var col = SelectedColumns.Where(x => x.Name == cn).FirstOrDefault();
-                    if (col == null)
-                        throw new CodeGenException(this, nameof(TenantIdColumns), $"TenantId column '[{cn}]' must be a _selected_ column within table '[{Schema}].[{Name}]'.");
-
+                    var col = SelectedColumns.Where(x => x.Name == cn).FirstOrDefault() ?? throw new CodeGenException(this, nameof(TenantIdColumns), $"TenantId column '[{cn}]' must be a _selected_ column within table '[{Schema}].[{Name}]'.");
                     SelectedTenantIdColumns.Add(col);
                 }
             }
@@ -563,10 +569,7 @@ namespace NTangle.Config
             {
                 foreach (var cn in PartitionKeyColumns)
                 {
-                    var col = SelectedColumns.Where(x => x.Name == cn).FirstOrDefault();
-                    if (col == null)
-                        throw new CodeGenException(this, nameof(PartitionKeyColumns), $"PartitionKey column '[{cn}]' must be a _selected_ column within table '[{Schema}].[{Name}]'.");
-
+                    var col = SelectedColumns.Where(x => x.Name == cn).FirstOrDefault() ?? throw new CodeGenException(this, nameof(PartitionKeyColumns), $"PartitionKey column '[{cn}]' must be a _selected_ column within table '[{Schema}].[{Name}]'.");
                     SelectedPartitionKeyColumns.Add(col);
                     HasPartitionKey = true;
                 }
