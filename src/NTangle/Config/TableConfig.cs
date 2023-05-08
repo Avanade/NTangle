@@ -128,7 +128,7 @@ namespace NTangle.Config
         /// <summary>
         /// Gets or sets the corresponding `Cdc` Batch tracking table name.
         /// </summary>
-        [JsonProperty("outboxTableName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty("batchTrackingTable", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("Database", Title = "The corresponding `CDC` Batch tracking table name.",
             Description = "Defaults to `Name` + `BatchTracking` (literal).")]
         public string? BatchTrackingTable { get; set; }

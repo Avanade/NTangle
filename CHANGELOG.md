@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v2.0.1
+- *Fixed:* `TableConfig.BatchTrackingTable` JSON serialization name corrected.
+- *Fixed:* Commented Azure Service Bus event publishing code in template solution corrected.
+
 ## v2.0.0
 - **Note:** This version contains a number of breaking changes and generated artefact file name changes; all existing generated artefacts should be deleted and re-generated. Where possible it is recommended to create new using the template solution and copy across existing non-generated artefacts, such as the NTangle YAML etc.
 - *Enhancement:* Removed need for `UseSqlServer` for `CodeGenConsole` as this is the only supported database option. New `UseDeploymentOption` to enable deployment option override; defaults to `DeploymentOption.DbEx`.

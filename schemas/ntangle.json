@@ -296,7 +296,7 @@
           "title": "The schema name for the generated 'CDC'-related database artefacts.",
           "description": "Defaults to 'Root.CdcSchema'."
         },
-        "outboxTableName": {
+        "batchTrackingTable": {
           "type": "string",
           "title": "The corresponding 'CDC' Batch tracking table name.",
           "description": "Defaults to 'Name' + 'BatchTracking' (literal)."

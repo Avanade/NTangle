@@ -27,7 +27,7 @@ namespace NTangle.Config
     [CodeGenCategory("JoinTo", Title = "Provides the _join to_ configuration.")]
     [CodeGenCategory("Database", Title = "Provides the _database_ configuration.")]
     [CodeGenCategory("Columns", Title = "Provides the _Columns_ configuration.")]
-    [CodeGenCategory("DotNet", Title = "Provides the _.NET_ configuration.")]
+    [CodeGenCategory(".NET", Title = "Provides the _.NET_ configuration.")]
     [CodeGenCategory("IdentifierMapping", Title = "Provides the _identifier mapping_ configuration.")]
     [CodeGenCategory("Collections", Title = "Provides related child (hierarchical) configuration.")]
     public class JoinConfig : ConfigBase<RootConfig, TableConfig>, ITableReference
@@ -155,13 +155,13 @@ namespace NTangle.Config
 
         #endregion
 
-        #region DotNet
+        #region .NET
 
         /// <summary>
         /// Gets or sets the .NET model name.
         /// </summary>
         [JsonProperty("model", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("DotNet", Title = "The .NET model name.",
+        [CodeGenProperty(".NET", Title = "The .NET model name.",
             Description = "Defaults to `Name`.")]
         public string? Model { get; set; }
 
@@ -169,7 +169,7 @@ namespace NTangle.Config
         /// Gets or sets the .NET property name.
         /// </summary>
         [JsonProperty("property", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("DotNet", Title = "The .NET property name.",
+        [CodeGenProperty(".NET", Title = "The .NET property name.",
             Description = "Defaults to `Model` where `JoinCardinality` is `OneToOne`; otherwise, it will be the `Model` pluralized.")]
         public string? Property { get; set; }
 
@@ -177,7 +177,7 @@ namespace NTangle.Config
         /// Gets or sets the list of `Column` names that should be included (in addition to the primary key) for a logical delete.
         /// </summary>
         [JsonProperty("includeColumnsOnDelete", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenPropertyCollection("DotNet", Title = "The list of `Column` names that should be included (in addition to the primary key) for a logical delete.",
+        [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that should be included (in addition to the primary key) for a logical delete.",
            Description = "Where a column is not specified in this list its corresponding .NET property will be automatically cleared by the `CdcDataOrchestrator` as the data is technically considered as non-existing.")]
         public List<string>? IncludeColumnsOnDelete { get; set; }
 
@@ -185,7 +185,7 @@ namespace NTangle.Config
         /// Gets or sets the list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).
         /// </summary>
         [JsonProperty("excludeColumnsFromETag", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenPropertyCollection("DotNet", Title = "The list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).",
+        [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).",
             Description = "Defaults to `CodeGeneration.CdcExcludeColumnsFromETag`.")]
         public List<string>? ExcludeColumnsFromETag { get; set; }
 

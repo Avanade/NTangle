@@ -53,7 +53,7 @@ Property | Description
 `executeStoredProcedure` | The `CDC` _execute_ batch stored procedure name.<br/>&dagger; Defaults to `sp` (literal) + `Name` + `BatchExecute` (literal); e.g. `spNameBatchExecute`.
 `completeStoredProcedure` | The `CDC` _complete_ batch stored procedure name.<br/>&dagger; Defaults to `sp` (literal) + `Name` + `BatchComplete` (literal); e.g. `spNameBatchComplete`.
 `cdcSchema` | The schema name for the generated `CDC`-related database artefacts.<br/>&dagger; Defaults to `Root.CdcSchema`.
-`outboxTableName` | The corresponding `CDC` Batch tracking table name.<br/>&dagger; Defaults to `Name` + `BatchTracking` (literal).
+`batchTrackingTable` | The corresponding `CDC` Batch tracking table name.<br/>&dagger; Defaults to `Name` + `BatchTracking` (literal).
 `cdcEnable` | Indicates whether to enable `Cdc` within the database for the tables that participate.<br/>&dagger; Defaults to `false`. This option can be overridden for each underlying table referenced.
 
 <br/>
