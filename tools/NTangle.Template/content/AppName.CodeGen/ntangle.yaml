@@ -21,7 +21,7 @@ tables:
         ]
       },
       # Set up non CDC inner join between Address and AddressType, and include only Code column as Type.
-      { name: AddressType, joinTo: Address, type: Inner, includeColumns: [ Code ], aliasColumns: [ Code^Type],
+      { name: AddressType, joinTo: Address, type: Inner, includeColumns: [ Code ], aliasColumns: [ Code^Type ],
         on: [
           { name: AddressTypeId }
         ]

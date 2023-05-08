@@ -37,7 +37,7 @@ internal class Program
                     .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), sp.GetRequiredService<LoggerEventSender>(), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()));
 
             // Adds the ServiceBusSender to publish the events to Azure Service Bus, and starts the event outbox dequeue hosted service.
-            //services.AddSingleton(sp => new Az.ServiceBusClient(sp.GetRequiredService<AppNameSettings>().ServiceBusConnectionString)))
+            //services.AddSingleton(sp => new Az.ServiceBusClient(sp.GetRequiredService<AppNameSettings>().ServiceBusConnectionString))
             //        .AddScoped<ServiceBusSender>()
             //        .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), sp.GetRequiredService<ServiceBusSender>(), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()));
         })

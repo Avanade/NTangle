@@ -36,6 +36,12 @@ Given the above, it is generally _recommended_ that CDC enablement is explicity 
 
 <br/>
 
+### CDC vs Change Tracking
+
+Microsoft SQL Server provides two change tracking capabilities, namely CDC and [Change Tracking](https://learn.microsoft.com/en-us/sql/relational-databases/track-changes/track-data-changes-sql-server#Tracking). Change Tracking differs in that it _only_ captures the fact that rows in a table were changed, but doesn't capture the data that was changed. Given the multiple related table hierarchy triggering that _nTangle_ enables the joining columns as well as the primary key columns are required to be captured; this is not possible with Change Tracking as it only captures the primary key columns; therefore, making it unsuitable for walking back up the join hierarchy to determine the primary entity (aggregate root) that was changed. And largely impossible where a child table row has been physically deleted.
+
+<br/>
+
 ## Architecture
 
 The following represents the high-level conceptual run-time architecture for a solution leveraging _nTangle_.
