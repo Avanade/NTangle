@@ -13,7 +13,7 @@ Category | Description
 [`JoinTo`](#JoinTo) | Provides the _join to_ configuration.
 [`Database`](#Database) | Provides the _database_ configuration.
 [`Columns`](#Columns) | Provides the _Columns_ configuration.
-[`DotNet`](#DotNet) | Provides the _.NET_ configuration.
+[`.NET`](#NET) | Provides the _.NET_ configuration.
 [`IdentifierMapping`](#IdentifierMapping) | Provides the _identifier mapping_ configuration.
 [`Collections`](#Collections) | Provides related child (hierarchical) configuration.
 
@@ -66,7 +66,7 @@ Property | Description
 
 <br/>
 
-## DotNet
+## .NET
 Provides the _.NET_ configuration.
 
 Property | Description
