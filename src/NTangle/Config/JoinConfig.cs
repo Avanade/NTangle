@@ -261,12 +261,12 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the list of joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinCdcChildren => Parent!.Joins.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinCdcChildren => Parent!.Joins!.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Gets the list of non-CDC joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinNonCdcChildren => Parent!.Joins.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && !CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinNonCdcChildren => Parent!.Joins!.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && !CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Inidicates whether it is first in the JoinHierarchy.
@@ -319,10 +319,7 @@ namespace NTangle.Config
 
             Table = DefaultWhereNull(Table, () => Name);
             Schema = DefaultWhereNull(Schema, () => Parent!.Schema);
-            DbTable = Root!.DbTables.Where(x => x.Name == Table && x.Schema == Schema).SingleOrDefault();
-            if (DbTable == null)
-                throw new CodeGenException(this, nameof(Table), $"Specified table '[{Schema}].[{Table}]' not found in database.");
-
+            DbTable = Root!.DbTables?.Where(x => x.Name == Table && x.Schema == Schema).SingleOrDefault() ?? throw new CodeGenException(this, nameof(Table), $"Specified table '[{Schema}].[{Table}]' not found in database.");
             if (DbTable.IsAView)
                 throw new CodeGenException(this, nameof(Table), $"Specified table '[{Schema}].[{Table}]' cannot be a view.");
 
@@ -369,15 +366,20 @@ namespace NTangle.Config
                 JoinColumnConfig? cc = null;
                 if (c.IsPrimaryKey)
                 {
-                    cc = new JoinColumnConfig { Name = c.Name, DbColumn = c, IncludeColumnOnDelete = IncludeColumnsOnDelete != null && IncludeColumnsOnDelete.Contains(c.Name!) };
-                    cc.IgnoreSerialization = IdentifierMapping == true || (ExcludeColumns != null && ExcludeColumns.Contains(c.Name!));
+                    cc = new JoinColumnConfig
+                    {
+                        Name = c.Name,
+                        DbColumn = c,
+                        IncludeColumnOnDelete = IncludeColumnsOnDelete != null && IncludeColumnsOnDelete.Contains(c.Name!),
+                        IgnoreSerialization = IdentifierMapping == true || (ExcludeColumns != null && ExcludeColumns.Contains(c.Name!))
+                    };
+
                     await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
                     PrimaryKeyColumns.Add(cc);
                 }
 
                 // Handle as a standard column.
-                if (cc == null)
-                    cc = new JoinColumnConfig { Name = c.Name, DbColumn = c, IncludeColumnOnDelete = IncludeColumnsOnDelete != null && IncludeColumnsOnDelete.Contains(c.Name!) };
+                cc ??= new JoinColumnConfig { Name = c.Name, DbColumn = c, IncludeColumnOnDelete = IncludeColumnsOnDelete != null && IncludeColumnsOnDelete.Contains(c.Name!) };
 
                 var ca = AliasColumns?.Where(x => x.StartsWith(c.Name + "^", StringComparison.Ordinal)).FirstOrDefault();
                 if (ca != null)
@@ -423,8 +425,7 @@ namespace NTangle.Config
             }
 
             // Update the Join ons.
-            if (On == null)
-                On = new List<JoinOnConfig>();
+            On ??= new List<JoinOnConfig>();
 
             foreach (var on in On)
             {

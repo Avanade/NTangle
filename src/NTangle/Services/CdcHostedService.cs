@@ -14,7 +14,7 @@ namespace NTangle.Services
     /// <summary>
     /// Provides the base Change Data Capture (CDC) <see cref="TimerHostedServiceBase"/> capabilities.
     /// </summary>
-    public abstract class CdcHostedService<TOrchestrator, TEntity> : SynchronizedTimerHostedServiceBase<TEntity>, ICdcHostedService where TOrchestrator : IEntityOrchestrator<TEntity> where TEntity : IEntity
+    public abstract class CdcHostedService<TOrchestrator, TEntity> : SynchronizedTimerHostedServiceBase<TEntity>, ICdcHostedService where TOrchestrator : notnull, IEntityOrchestrator<TEntity> where TEntity : IEntity
     {
         private TimeSpan? _interval;
 
@@ -57,8 +57,8 @@ namespace NTangle.Services
                 CoreEx.ExecutionContext.Reset();
 
                 // Instantiate the orchestrator.
-                var eo = (TOrchestrator)scope.ServiceProvider.GetService(typeof(TOrchestrator))
-                    ?? throw new InvalidOperationException($"Attempted to get service '{typeof(TOrchestrator).FullName}' but null was returned; this would indicate that the service has not been configured correctly.");
+                var eo = (TOrchestrator)(scope.ServiceProvider.GetService(typeof(TOrchestrator))
+                    ?? throw new InvalidOperationException($"Attempted to get service '{typeof(TOrchestrator).FullName}' but null was returned; this would indicate that the service has not been configured correctly."));
 
                 // Execute the orchestrator.
                 var result = await eo.ExecuteAsync(cancellationToken).ConfigureAwait(false);

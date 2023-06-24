@@ -77,10 +77,7 @@ namespace NTangle.Config
             if (Name != null && Name.StartsWith("@", StringComparison.OrdinalIgnoreCase))
                 Name = Name[1..];
 
-            var c = Parent!.DbTable!.Columns.Where(x => x.Name == Name).SingleOrDefault();
-            if (c == null)
-                throw new CodeGenException(this, nameof(Name), $"Column '{Name}' (table '[{Parent!.Schema}].[{Parent!.Name}]') not found in database.");
-
+            var c = Parent!.DbTable!.Columns.Where(x => x.Name == Name).SingleOrDefault() ?? throw new CodeGenException(this, nameof(Name), $"Column '{Name}' (table '[{Parent!.Schema}].[{Parent!.Name}]') not found in database.");
             var cc = Parent!.Columns.Where(x => x.Name == Name).Single();
             cc.IsUsedInJoinOn = true;
             NameAlias = cc.NameAlias ?? Name;
@@ -88,7 +85,7 @@ namespace NTangle.Config
             if (string.IsNullOrEmpty(ToStatement))
             {
                 ToColumn = DefaultWhereNull(ToColumn, () => Name);
-                ToDbColumn = Root!.DbTables.Where(x => x.Schema == Parent.JoinToSchema && x.Name == Parent.JoinTo).SingleOrDefault()?.Columns.Where(x => x.Name == ToColumn).SingleOrDefault();
+                ToDbColumn = Root!.DbTables!.Where(x => x.Schema == Parent.JoinToSchema && x.Name == Parent.JoinTo).SingleOrDefault()?.Columns.Where(x => x.Name == ToColumn).SingleOrDefault();
                 if (ToDbColumn == null)
                     throw new CodeGenException(this, nameof(ToColumn), $"ToColumn '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in database.");
 

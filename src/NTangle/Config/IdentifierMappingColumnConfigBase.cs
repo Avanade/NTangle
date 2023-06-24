@@ -74,9 +74,7 @@ namespace NTangle.Config
             if (DbColumn.IsPrimaryKey)
                 throw new CodeGenException(this, null, $"Column '[{Name}]' is part of the primary key for '[{Parent!.Schema}].[{Parent!.Table}]'; the primary key identifier mapping can only be configured using the parent `IdentifierMapping` feature.");
 
-            DbTable = Root!.DbTables.FirstOrDefault(x => x.Schema == Schema && x.Name == Table);
-            if (DbTable == null)
-                throw new CodeGenException(this, nameof(Table), $"References table '[{Schema}].[{Table}]' that does not exist.");
+            DbTable = Root!.DbTables?.FirstOrDefault(x => x.Schema == Schema && x.Name == Table) ?? throw new CodeGenException(this, nameof(Table), $"References table '[{Schema}].[{Table}]' that does not exist.");
 
             if (DbTable.Columns.Count(x => x.IsPrimaryKey) != 1)
                 throw new CodeGenException(this, nameof(Table), $"References table '[{Schema}].[{Table}]' which must only have a single column representing the primary key.");
