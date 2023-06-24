@@ -58,6 +58,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NTangle.Template", "tools\N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlServerDemo.Database", "samples\SqlServerDemo\SqlServerDemo.Database\SqlServerDemo.Database.csproj", "{467C4732-8A67-435C-9AB4-697CB89C4EE4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github Actions", "Github Actions", "{A06B7DBF-3FD5-452F-935D-9AFD8ADEA291}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\CI.yml = .github\workflows\CI.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
