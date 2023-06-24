@@ -2,6 +2,11 @@
 
 Represents the **NuGet** versions.
 
+## v2.0.2
+- *Enhancement:* Updated `CoreEx` (`v3.0.0`) and `DbEx` (`v2.3.5`).
+- *Enhancement:* Added `net6.0` and `net7.0` support in addition to [.NET Standard](https://learn.microsoft.com/en-us/dotnet/standard/net-standard#when-to-target-net50-or-net60-vs-netstandard) to the `NTangle` package. This will allow access to additional features per version where required, and overall performance improvements.
+- *Enhancement:* Included C# code-generation templates updated; target `net6.0`+ only.
+
 ## v2.0.1
 - *Fixed:* `TableConfig.BatchTrackingTable` JSON serialization name corrected.
 - *Fixed:* Commented Azure Service Bus event publishing code in template solution corrected.

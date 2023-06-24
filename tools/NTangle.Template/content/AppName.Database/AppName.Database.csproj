@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NTangle" Version="2.0.1" />
+    <PackageReference Include="NTangle" Version="2.0.2" />
   </ItemGroup>
 
   <ItemGroup>

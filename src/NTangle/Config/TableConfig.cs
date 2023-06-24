@@ -359,12 +359,12 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the list of CDC joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinCdcChildren => Joins.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinCdcChildren => Joins!.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Gets the list of non-CDC joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinNonCdcChildren => Joins.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && !CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinNonCdcChildren => Joins!.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && !CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Gets the Orchestrator constructor parameters.
@@ -546,7 +546,7 @@ namespace NTangle.Config
             if (PrimaryKeyColumns.Count == 1 && PrimaryKeyColumns[0].NameAlias == "Id")
                 IdentifierColumn = PrimaryKeyColumns[0];
 
-            UsesGlobalIdentifier = IdentifierMapping == true || Mappings!.Count > 0 || Joins.Any(x => x.IdentifierMapping == true || (x.Mappings!.Count > 0));
+            UsesGlobalIdentifier = IdentifierMapping == true || Mappings!.Count > 0 || Joins!.Any(x => x.IdentifierMapping == true || (x.Mappings!.Count > 0));
             SetUpExcludePropertiesFromETag();
 
             ColumnConfigIsDeleted = await GetSpecialColumn(IsDeletedColumn).ConfigureAwait(false);

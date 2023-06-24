@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>NTangle</RootNamespace>
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>
@@ -88,8 +88,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoreEx.Database.SqlServer" Version="2.10.1" />
-    <PackageReference Include="DbEx.SqlServer" Version="2.3.4" />
+    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.0.0" />
+    <PackageReference Include="DbEx.SqlServer" Version="2.3.5" />
   </ItemGroup>
 
 </Project>
