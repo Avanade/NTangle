@@ -46,22 +46,22 @@ The foundations of the `NewApp` will be introduced.
 
 ## Implementation steps
 
-This sample will walk through the implementation in a numner of logical steps.
+This sample will walk through the implementation in a number of logical steps.
 
 <br/>
 
 ### Old App
 
-1. _NTangle_ - solution setup, configuration and code-generation.
-2. Database - apply CDC and schema changes.
-3. Publish - publish events to Azure Service Bus leveraging Azure Functions.
+1. [_NTangle_]() - solution setup, configuration and code-generation.
+2. [Database]() - apply CDC and schema changes.
+3. [Publish]() - publish events to Azure Service Bus leveraging Azure Functions.
 
 <br/>
 
 ### New App
 
-4. Database - create new database and schema.
-5. Subscribe -  subscribe to events from Azure Service Bus leveraging Azure Function.
+4. [Database]() - create new database and schema.
+5. [Subscribe]() -  subscribe to events from Azure Service Bus leveraging Azure Function.
 
 <br/>
 

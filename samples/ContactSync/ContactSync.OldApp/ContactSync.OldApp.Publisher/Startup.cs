@@ -17,11 +17,10 @@ public class Startup : FunctionsStartup
         builder.Services
             .AddSettings<OldAppSettings>()
             .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<OldAppSettings>().DatabaseConnectionString)))
-            .AddStringIdentifierGenerator()
             .AddExecutionContext()
             .AddJsonSerializer();
 
-        // Adds underlying orchestrator services.
+        // Adds underlying CDC orchestrator/services.
         builder.Services
             .AddGeneratedCdcOrchestratorServices()
             .AddGeneratedCdcServices();

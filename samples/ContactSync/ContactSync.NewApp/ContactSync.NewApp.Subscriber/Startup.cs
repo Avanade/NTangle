@@ -17,16 +17,16 @@ public class Startup : FunctionsStartup
         builder.Services
             .AddSettings<NewAppSettings>()
             .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<NewAppSettings>().DatabaseConnectionString)))
-            .AddExecutionContext()
-            .AddJsonSerializer()
-            .AddCloudEventSerializer()
-            .AddEventSubscribers<Startup>()
-            .AddEventSubscriberOrchestrator((_, o) =>
+            .AddExecutionContext()                                                          // Registers the execution context (AsyncLocal).
+            .AddJsonSerializer()                                                            // Registers the System.Text.Json serializer/deserializer.
+            .AddCloudEventSerializer()                                                      // Registers the CloudEvent serializer/deserializer.
+            .AddEventSubscribers<Startup>()                                                 // Registers the event subscribers from the specified assembly.
+            .AddEventSubscriberOrchestrator((_, o) =>                                       // Registers the event subscriber orchestrator
             {
-                o.NotSubscribedHandling = ErrorHandling.CompleteAsSilent;
-                o.AddSubscribers(EventSubscriberOrchestrator.GetSubscribers<Startup>());
+                o.NotSubscribedHandling = ErrorHandling.CompleteAsSilent;                   // Where event is not subscribed, complete the message without error/warn/info; i.e. silently.
+                o.AddSubscribers(EventSubscriberOrchestrator.GetSubscribers<Startup>());    // Links the subscribers from the specified assembly using EventSubscriberAttribute.
             })
-            .AddAzureServiceBusOrchestratedSubscriber((_, o) =>
+            .AddAzureServiceBusOrchestratedSubscriber((_, o) =>                             // Register the AzureServiceBusOrchestratedSubscriber (uses EventSubscriberOrchestrator above); this is what is used in the Azure Function.
             {
                 o.EventDataDeserializationErrorHandling = ErrorHandling.ThrowSubscriberException;
                 o.InvalidDataHandling = ErrorHandling.CompleteWithError;
