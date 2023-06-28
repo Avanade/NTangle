@@ -43,9 +43,9 @@ public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, Contac
             // Join table: '[Legacy].[Address]' (unique name 'Address')
             new MultiSetCollArgs<ContactCdc.AddressCdcCollection, ContactCdc.AddressCdc>(_addressCdcMapper, __result =>
             {
-                foreach (var a in __result.GroupBy(x => new { x.AddressId }).Select(g => new { g.Key.AddressId, Coll = g.ToCollection<ContactCdc.AddressCdcCollection, ContactCdc.AddressCdc>() }))
+                foreach (var a in __result.GroupBy(x => new { x.AID }).Select(g => new { g.Key.AID, Coll = g.ToCollection<ContactCdc.AddressCdcCollection, ContactCdc.AddressCdc>() }))
                 {
-                    cColl.Where(x => x.AddressId == a.AddressId).ForEach(x => x.Address = a.Coll.FirstOrDefault());
+                    cColl.Where(x => x.AddressId == a.AID).ForEach(x => x.Address = a.Coll.FirstOrDefault());
                 }
             })), cancellationToken).ConfigureAwait(false);
 
@@ -135,7 +135,7 @@ public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, Contac
         /// <inheritdoc/>
         public ContactCdc.AddressCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
-            AddressId = record.GetValue<int>("AddressId"),
+            AID = record.GetValue<int>("AID"),
             Street1 = record.GetValue<string?>("Street1"),
             Street2 = record.GetValue<string?>("Street2"),
             AlternateAddressId = record.GetValue<int?>("AlternateAddressId"),

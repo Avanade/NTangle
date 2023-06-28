@@ -1,7 +1,7 @@
 ﻿using DbEx.SqlServer.Console;
 using System.Threading.Tasks;
 
-namespace AppName.CodeGen;
+namespace AppName.Database;
 
 /// <summary>
 /// <see href="https://github.com/Avanade/DbEx">DbEx</see>-based database deployment migration console program.

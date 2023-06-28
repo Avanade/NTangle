@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>NTangle</RootNamespace>
-    <Version>2.0.2</Version>
+    <Version>2.1.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>
@@ -39,45 +39,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Scripts\SqlServerDatabase.yaml" />
-    <None Remove="Scripts\SqlServerDbEx.yaml" />
-    <None Remove="Templates\EntityHostedService_cs.hbs" />
-    <None Remove="Templates\EntityOrchestrator_cs.hbs" />
-    <None Remove="Templates\Entity_cs.hbs" />
-    <None Remove="Templates\IdentifierMappingMapper_cs.hb" />
-    <None Remove="Templates\IServiceCollectionExtensions_cs.hbs" />
-    <None Remove="Templates\SchemaCdc_sql.hb" />
-    <None Remove="Templates\SpCompleteBatch_sql.hb" />
-    <None Remove="Templates\SpExecuteBatch_sql.hb" />
-    <None Remove="Templates\SpIdentifierMappingCreate_sql.hb" />
-    <None Remove="Templates\TableBatchTracking_sql.hb" />
-    <None Remove="Templates\TableIdentifierMapping_sql.hb" />
-    <None Remove="Templates\TableVersionTracking_sql.hb" />
-    <None Remove="Templates\UdtIdentifierMapping_sql.hb" />
-    <None Remove="Templates\UdtVersionTracking_sql.hb" />
-    <None Remove="Templates\VersionTrackingMapper_cs.hb" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\SqlServerDbEx.yaml" />
-    <EmbeddedResource Include="Scripts\SqlServerDacpac.yaml" />
-    <EmbeddedResource Include="Scripts\SqlServerDatabase.yaml" />
-    <EmbeddedResource Include="Templates\EntityHostedService_cs.hbs" />
-    <EmbeddedResource Include="Templates\EntityOrchestrator_cs.hbs" />
-    <EmbeddedResource Include="Templates\IServiceCollectionExtensions_cs.hbs" />
-    <EmbeddedResource Include="Templates\SchemaCdc_sql.hbs" />
-    <EmbeddedResource Include="Templates\CdcEnable_sql.hbs" />
-    <EmbeddedResource Include="Templates\TableBatchTracking_sql.hbs" />
-    <EmbeddedResource Include="Templates\TableIdentifierMapping_sql.hbs" />
-    <EmbeddedResource Include="Templates\TableVersionTracking_sql.hbs" />
-    <EmbeddedResource Include="Templates\Entity_cs.hbs" />
-    <EmbeddedResource Include="Templates\SpIdentifierMappingCreate_sql.hbs" />
-    <EmbeddedResource Include="Templates\UdtIdentifierMapping_sql.hbs" />
-    <EmbeddedResource Include="Templates\SpCompleteBatch_sql.hbs" />
-    <EmbeddedResource Include="Templates\SpExecuteBatch_sql.hbs" />
-    <EmbeddedResource Include="Templates\UdtVersionTracking_sql.hbs" />
-    <EmbeddedResource Include="Templates\IdentifierMappingMapper_cs.hbs" />
-    <EmbeddedResource Include="Templates\VersionTrackingMapper_cs.hbs" />
+    <EmbeddedResource Include="Scripts\**\*" />
+    <EmbeddedResource Include="Templates\**\*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -88,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.0.0" />
+    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.1.1" />
     <PackageReference Include="DbEx.SqlServer" Version="2.3.5" />
   </ItemGroup>
 

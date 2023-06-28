@@ -2,6 +2,12 @@
 
 Represents the **NuGet** versions.
 
+## v2.1.0
+- *Enhancement:* Added `CdcService<TOrchestrator, TEntity>` that provides the base Change Data Capture (CDC) self-orchestrated service capabilities; used for the likes of Azure Functions.
+- *Enhancement:* Added `service: Service` YAML configuration to enable the new  `CdcService<TOrchestrator, TEntity>` code-generation. The `IServiceCollectionExtensions` code-generation also updated to include.
+- *Fixed:* Primary table `excludeColumns` did not previously allow exclusion of columns used in join or key.
+- *Fixed:* Where `name` and `table` were different the correct value was not always being used for the YAML validation.
+
 ## v2.0.2
 - *Enhancement:* Updated `CoreEx` (`v3.0.0`) and `DbEx` (`v2.3.5`).
 - *Enhancement:* Added `net6.0` and `net7.0` support in addition to [.NET Standard](https://learn.microsoft.com/en-us/dotnet/standard/net-standard#when-to-target-net50-or-net60-vs-netstandard) to the `NTangle` package. This will allow access to additional features per version where required, and overall performance improvements.

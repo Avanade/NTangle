@@ -1,0 +1,24 @@
+﻿# Documentation: https://github.com/Avanade/NTangle/blob/main/docs/generated/root.md
+schema: old                                          # Defaults the schema for the non-CDC related tables.
+cdcSchema: NTangle                                   # Defines the name of the schema to be used for CDC-related artefacts.
+cdcSchemaCreate: true                                # Indicates whether to create the CDC database schema via code-generation.
+cdcEnable: true                                      # Indicates whether to enable CDC for the referenced table(s) in the database (recommend managing explicitly).
+eventSourceRoot: /database/cdc                       # Event source URI root prepended to all published events.
+eventSubjectRoot: old                                # Event subject root prepended to all published events.
+outbox: true                                         # Indicates to include the generation of the event outbox artefacts.
+outboxSchemaCreate: true                             # Indicates whether to create the Outbox database schema via code-generation.
+identifierMapping: false                             # Indicates to include the generation of the global identifier mapping artefacts.
+excludeColumnsFromETag: [ RowVersion ]               # Default list of columns to exclude from the generated ETag (exclude from version tracking).
+service: Service                                     # Create the entity-based "Service" type to be executed by the likes of an Azure Function.
+tables:
+  # Set up CDC-entity for primary table old.contact.
+- { name: Contact, table: contact, eventSubject: Contact, aliasColumns: [ contact_id^Id, contact_name^Name, contact_phone^Phone, contact_email^Email, contact_active^IsActive, contact_no_calling^NoCallList ], excludeColumns: [ contact_addressid ],
+    joins: [
+      # Set up secondary CDC One-To-One relationship from old.contact to old.contact_address.
+      { name: Address, table: contact_address, joinCardinality: OneToOne, excludeColumns: [ contact_address_id ], aliasColumns: [ contact_address_id^Id, address_street_1^Street1, address_street_2^Street2 ],
+        on: [
+          { name: contact_address_id, toColumn: contact_addressid }
+        ]
+      }
+    ]
+  }

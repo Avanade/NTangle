@@ -58,7 +58,7 @@ tables:
       # Dynamically adjust the query size using the specified multiplier.
       # Add global identifier mapping.
       # Alias, change name of, Id column to AID.
-      { name: Address, joinCardinality: OneToOne, querySizeMultiplier: 1.5, identifierMapping: true, identifierMappingColumns: [ AlternateAddressId^Address ], aliasColumns: [ Id^AID ],
+      { name: Address, joinCardinality: OneToOne, querySizeMultiplier: 1.5, identifierMapping: true, identifierMappingColumns: [ AlternateAddressId^Address ], aliasColumns: [ AddressId^AID ],
         on: [
           { name: AddressId }
         ],

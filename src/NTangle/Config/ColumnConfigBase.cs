@@ -61,7 +61,7 @@ namespace NTangle.Config
         /// <summary>
         /// Indicates whether the column is the "IsDeleted" column.
         /// </summary>
-        public bool IsIsDeletedColumn { get; }
+        public bool IsIsDeletedColumn { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier mapping schema name.

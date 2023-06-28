@@ -86,7 +86,7 @@ namespace NTangle.Config
         /// </summary>
         [JsonProperty("joinTo", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("JoinTo", Title = "The name of the table to join to (must be previously specified).", IsImportant = true,
-            Description = "Defaults to parent `Cdc.Name`.")]
+            Description = "Defaults to parent `Table.Name`.")]
         public string? JoinTo { get; set; }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace NTangle.Config
         /// </summary>
         [JsonProperty("joinToSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("JoinTo", Title = "The schema name of the table to join to.", IsImportant = true,
-            Description = "Defaults to parent `Cdc.Schema`.")]
+            Description = "Defaults to parent `Table.Schema`.")]
         public string? JoinToSchema { get; set; }
 
         /// <summary>
@@ -325,7 +325,7 @@ namespace NTangle.Config
 
             Type = DefaultWhereNull(Type, () => "Cdc");
             Model = DefaultWhereNull(Model, () => StringConverter.ToPascalCase(Name));
-            JoinTo = DefaultWhereNull(JoinTo, () => Parent!.Name);
+            JoinTo = DefaultWhereNull(JoinTo, () => Parent!.Table);
             JoinToSchema = DefaultWhereNull(JoinToSchema, () => Parent!.Schema);
             JoinCardinality = DefaultWhereNull(JoinCardinality, () => "OneToMany");
             CdcEnable = DefaultWhereNull(CdcEnable, () => Root.CdcEnable);
@@ -342,7 +342,7 @@ namespace NTangle.Config
 
             // Get the JoinTo CdcJoinConfig.
             JoinConfig? jtc = null;
-            if (JoinTo != Parent!.Name || JoinToSchema != Parent!.Schema)
+            if (JoinTo != Parent!.Table || JoinToSchema != Parent!.Schema)
             {
                 var tables = Parent!.Joins!.Where(x => x.Table == JoinTo && x.Schema == JoinToSchema).ToList();
                 if (tables.Count == 0 || Parent!.Joins!.IndexOf(this) < Parent!.Joins!.IndexOf(tables[0]))
@@ -358,6 +358,37 @@ namespace NTangle.Config
 
             // Prepare the identifier mappings.
             Mappings = await PrepareCollectionAsync(Mappings).ConfigureAwait(false);
+
+            if (IncludeColumns != null)
+            {
+                foreach (var ic in IncludeColumns)
+                {
+                    if (DbTable.Columns.Where(x => x.Name == ic).SingleOrDefault() == null)
+                        throw new CodeGenException(this, nameof(IncludeColumns), $"Specified column '{ic}' not found in table '[{Schema}].[{Table}]'.");
+                }
+            }
+
+            if (ExcludeColumns != null)
+            {
+                foreach (var ec in ExcludeColumns)
+                {
+                    if (DbTable.Columns.Where(x => x.Name == ec).SingleOrDefault() == null)
+                        throw new CodeGenException(this, nameof(ExcludeColumns), $"Specified column '{ec}' not found in table '[{Schema}].[{Table}]'.");
+                }
+            }
+
+            if (AliasColumns != null)
+            {
+                foreach (var ac in AliasColumns)
+                {
+                    var parts = ac.Split("^", StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length != 2 || string.IsNullOrEmpty(parts[0]) || string.IsNullOrEmpty(parts[1]))
+                        throw new CodeGenException(this, nameof(AliasColumns), $"Invalid alias column '{ac}' format.");
+
+                    if (DbTable.Columns.Where(x => x.Name == parts[0]).SingleOrDefault() == null)
+                        throw new CodeGenException(this, nameof(AliasColumns), $"Specified column '{parts[0]}' not found in table '[{Schema}].[{Table}]'.");
+                }
+            }
 
             // Deal with the columns.
             foreach (var c in DbTable.Columns)

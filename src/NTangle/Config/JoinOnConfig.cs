@@ -89,20 +89,26 @@ namespace NTangle.Config
                 if (ToDbColumn == null)
                     throw new CodeGenException(this, nameof(ToColumn), $"ToColumn '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in database.");
 
-                if (Parent.JoinToSchema == Parent!.Parent!.Schema && Parent.JoinTo == Parent!.Parent!.Name)
+                if (Parent.JoinToSchema == Parent!.Parent!.Schema && Parent.JoinTo == Parent!.Parent!.Table)
                 {
                     if (Parent!.Parent!.DbTable!.Columns.Where(x => x.Name == ToColumn).SingleOrDefault() == null)
                         throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in Table/Join configuration.");
 
-                    ToColumnAlias = Parent!.Parent!.Columns.SingleOrDefault(x => x.Name == ToColumn)?.NameAlias ?? Name;
+                    var jtc = Parent!.Parent!.Columns.SingleOrDefault(x => x.Name == ToColumn);
+                    ToColumnAlias = jtc?.NameAlias ?? Name;
+                    if (jtc != null)
+                        jtc.IsUsedInJoinOn = true;
                 }
                 else
                 {
-                    var t = Parent!.Parent!.Joins!.Where(x => Parent.JoinToSchema == x.Schema && Parent.JoinTo == x.Name).SingleOrDefault();
+                    var t = Parent!.Parent!.Joins!.Where(x => Parent.JoinToSchema == x.Schema && Parent.JoinTo == x.Table).SingleOrDefault();
                     if (t == null || t.DbTable!.Columns.Where(x => x.Name == ToColumn).SingleOrDefault() == null)
                         throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in Table/Join configuration.");
 
-                    ToColumnAlias = t.Columns.SingleOrDefault(x => x.Name == ToColumn)?.NameAlias ?? Name;
+                    var jtc = t.Columns.SingleOrDefault(x => x.Name == ToColumn);
+                    ToColumnAlias = jtc?.NameAlias ?? Name;
+                    if (jtc != null)
+                        jtc.IsUsedInJoinOn = true;
                 }
             }
 
