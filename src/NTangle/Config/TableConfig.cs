@@ -181,8 +181,8 @@ namespace NTangle.Config
         /// Gets or sets the type of service that manages the underlying orchestrator.
         /// </summary>
         [JsonProperty("service", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = new string[] { "None", "HostedService" },
-            Description = "Defaults to `Root.Service`.")]
+        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = new string[] { "None", "HostedService", "Service" },
+            Description = "Defaults to `Root.Service`. A `HostedService` is an `IHostedService` implementation enabling long-running execution; whereas, `Service` is intended for self-managed execution.")]
         public string? Service { get; set; }
 
         /// <summary>
@@ -359,12 +359,12 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the list of CDC joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinCdcChildren => Joins!.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinCdcChildren => Joins!.Where(x => x.JoinTo == Table && x.JoinToSchema == Schema && CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Gets the list of non-CDC joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinNonCdcChildren => Joins!.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && !CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinNonCdcChildren => Joins!.Where(x => x.JoinTo == Table && x.JoinToSchema == Schema && !CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Gets the Orchestrator constructor parameters.
@@ -460,6 +460,37 @@ namespace NTangle.Config
             Where = await PrepareCollectionAsync(Where).ConfigureAwait(false);
             Mappings = await PrepareCollectionAsync(Mappings).ConfigureAwait(false);
 
+            if (IncludeColumns != null)
+            {
+                foreach (var ic in IncludeColumns)
+                {
+                    if (DbTable.Columns.Where(x => x.Name == ic).SingleOrDefault() == null)
+                        throw new CodeGenException(this, nameof(IncludeColumns), $"Specified column '{ic}' not found in table '[{Schema}].[{Table}]'.");
+                }
+            }
+
+            if (ExcludeColumns != null)
+            {
+                foreach (var ec in ExcludeColumns)
+                {
+                    if (DbTable.Columns.Where(x => x.Name == ec).SingleOrDefault() == null)
+                        throw new CodeGenException(this, nameof(ExcludeColumns), $"Specified column '{ec}' not found in table '[{Schema}].[{Table}]'.");
+                }
+            }
+
+            if (AliasColumns != null)
+            {
+                foreach (var ac in AliasColumns)
+                {
+                    var parts = ac.Split("^", StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length != 2 || string.IsNullOrEmpty(parts[0]) || string.IsNullOrEmpty(parts[1]))
+                        throw new CodeGenException(this, nameof(AliasColumns), $"Invalid alias column '{ac}' format.");
+
+                    if (DbTable.Columns.Where(x => x.Name == parts[0]).SingleOrDefault() == null)
+                        throw new CodeGenException(this, nameof(AliasColumns), $"Specified column '{parts[0]}' not found in table '[{Schema}].[{Table}]'.");
+                }
+            }
+
             foreach (var c in DbTable.Columns)
             {
                 var cc = new ColumnConfig { Name = c.Name, DbColumn = c };
@@ -492,20 +523,29 @@ namespace NTangle.Config
                             cc.IdentifierMappingSchema = cm.Schema;
                             cc.IdentifierMappingTable = cm.Table;
                         }
-
-                        await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
-                        Columns.Add(cc);
                     }
                 }
-
-                // Always include IsDeleted!
-                if (cc.Name == ColumnConfigIsDeleted?.Name)
+                else if (cc.Name == ColumnConfigIsDeleted?.Name)
                 {
+                    // Always include IsDeleted!
+                    cc.IsIsDeletedColumn = true;
                     cc.NameAlias = "IsDeleted";
-                    await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
-                    Columns.Add(cc);
                 }
+                else
+                {
+                    // Mark for exclusion.
+                    cc.IsExcluded = true;
+                    cc.IgnoreSerialization = true;
+                }
+
+                await cc.PrepareAsync(Root!, this).ConfigureAwait(false);
+                Columns.Add(cc);
             }
+
+            await PrepareCtorParams().ConfigureAwait(false);
+            await PrepareJoins().ConfigureAwait(false);
+
+            Columns.RemoveAll(x => x.IsExcluded && !x.IsIsDeletedColumn && !x.IsUsedInJoinOn);
 
             // Build up the selected columns list.
             foreach (var c in Columns)
@@ -539,9 +579,6 @@ namespace NTangle.Config
                     SelectedColumns.Add(cc);
                 }
             }
-
-            await PrepareCtorParams();
-            await PrepareJoins();
 
             if (PrimaryKeyColumns.Count == 1 && PrimaryKeyColumns[0].NameAlias == "Id")
                 IdentifierColumn = PrimaryKeyColumns[0];

@@ -204,7 +204,7 @@ BEGIN
     -- Related table: '[Legacy].[Address]' - unique name 'Address' - only use INNER JOINS to get what is actually there right now (where applicable).
     SELECT DISTINCT
         [_im].[GlobalId] AS [GlobalId],
-        [a].[AddressId] AS [AddressId],
+        [a].[AddressId] AS [AID],
         [a].[Street1] AS [Street1],
         [a].[Street2] AS [Street2],
         [a].[AlternateAddressId] AS [AlternateAddressId],

@@ -160,8 +160,8 @@ namespace NTangle.Config
         /// Gets or sets the type of service that manages the underlying orchestrator.
         /// </summary>
         [JsonProperty("service", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = new string[] { "None", "HostedService" },
-            Description = "Defaults to `None`.")]
+        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = new string[] { "None", "HostedService", "Service" },
+            Description = "Defaults to `None`. A `HostedService` is an `IHostedService` implementation enabling long-running execution; whereas, `Service` is intended for self-managed execution.")]
         public string? Service { get; set; }
 
         #endregion
@@ -410,6 +410,16 @@ namespace NTangle.Config
         /// Gets the list of hosted services.
         /// </summary>
         public List<TableConfig> HostedServices => Tables!.Where(x => x.Service == "HostedService").ToList();
+
+        /// <summary>
+        /// Gets the list of services.
+        /// </summary>
+        public List<TableConfig> Services => Tables!.Where(x => x.Service == "Service").ToList();
+
+        /// <summary>
+        /// Indicates whether there are any <see cref="Services"/> or <see cref="HostedServices"/>.
+        /// </summary>
+        public bool HasAnyServices => Services.Count > 0 || HostedServices.Count > 0;
 
         #endregion
 

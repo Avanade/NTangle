@@ -16,3 +16,4 @@ generators:
 - { type: 'NTangle.Generators.OutboxCodeGenerator, NTangle', template: 'EventOutboxDequeue_cs', file: 'EventOutboxDequeue.cs', directory: '{{Root.PathDotNetPublisher}}/Data/Generated', text: 'OutboxCodeGenerator: Publisher/Events' }
 - { type: 'NTangle.Generators.RootCodeGenerator, NTangle', template: 'IServiceCollectionExtensions_cs', file: 'IServiceCollectionExtensions.cs', directory: '{{Root.PathDotNetPublisher}}/Generated', text: 'RootCodeGenerator: Publisher' }
 - { type: 'NTangle.Generators.HostedServiceCodeGenerator, NTangle', template: 'EntityHostedService_cs', file: '{{Model}}HostedService.cs', directory: '{{Root.PathDotNetPublisher}}/Services/Generated', text: 'RootCodeGenerator: Publisher/Services' }
+- { type: 'NTangle.Generators.ServiceCodeGenerator, NTangle', template: 'EntityService_cs', file: '{{Model}}Service.cs', directory: '{{Root.PathDotNetPublisher}}/Services/Generated', text: 'RootCodeGenerator: Publisher/Services' }

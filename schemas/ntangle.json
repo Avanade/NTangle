@@ -92,10 +92,11 @@
         "service": {
           "type": "string",
           "title": "The type of service that manages the underlying orchestrator.",
-          "description": "Defaults to 'None'.",
+          "description": "Defaults to 'None'. A 'HostedService' is an 'IHostedService' implementation enabling long-running execution; whereas, 'Service' is intended for self-managed execution.",
           "enum": [
             "None",
-            "HostedService"
+            "HostedService",
+            "Service"
           ]
         },
         "eventSubjectRoot": {
@@ -335,10 +336,11 @@
         "service": {
           "type": "string",
           "title": "The type of service that manages the underlying orchestrator.",
-          "description": "Defaults to 'Root.Service'.",
+          "description": "Defaults to 'Root.Service'. A 'HostedService' is an 'IHostedService' implementation enabling long-running execution; whereas, 'Service' is intended for self-managed execution.",
           "enum": [
             "None",
-            "HostedService"
+            "HostedService",
+            "Service"
           ]
         },
         "excludeColumnsFromETag": {
@@ -482,12 +484,12 @@
         "joinTo": {
           "type": "string",
           "title": "The name of the table to join to (must be previously specified).",
-          "description": "Defaults to parent 'Cdc.Name'."
+          "description": "Defaults to parent 'Table.Name'."
         },
         "joinToSchema": {
           "type": "string",
           "title": "The schema name of the table to join to.",
-          "description": "Defaults to parent 'Cdc.Schema'."
+          "description": "Defaults to parent 'Table.Schema'."
         },
         "joinCardinality": {
           "type": "string",

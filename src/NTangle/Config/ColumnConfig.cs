@@ -12,5 +12,10 @@ namespace NTangle.Config
         /// Initializes a new instance of the <see cref="ColumnConfig"/> class.
         /// </summary>
         internal ColumnConfig() { }
+
+        /// <summary>
+        /// Indicates whether the column has been marked for exclusion.
+        /// </summary>
+        public bool IsExcluded { get; set; }
     }
 }

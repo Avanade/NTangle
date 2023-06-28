@@ -19,6 +19,18 @@ public static class ServiceCollectionExtensions
 {{#each Tables}}
         {{#if @first}}=> services{{else}}           {{/if}}.AddScoped<I{{Model}}Orchestrator, {{Model}}Orchestrator>(){{#if @last}};{{/if}}
 {{/each}}
+{{#ifne Services.Count 0}}
+
+    /// <summary>
+    /// Adds the generated <see cref="NTangle.Services.CdcService{TOrchestrator, TEntity}"/> scoped services.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/>.</returns>
+    public static IServiceCollection AddGeneratedCdcServices(this IServiceCollection services)
+  {{#each Services}}
+        {{#if @first}}=> services{{else}}           {{/if}}.AddScoped<{{Model}}Service>(){{#if @last}};{{/if}}
+  {{/each}}
+{{/ifne}}
 {{#ifne HostedServices.Count 0}}
 
     /// <summary>

@@ -55,7 +55,7 @@ public partial class PostCdc : IEntity
     public partial class CommentCdc : IPrimaryKey
     {
         /// <summary>
-        /// Gets or sets the Comments Id '[Legacy].[Comments].[CommentsId]' column value.
+        /// Gets or sets the Comments Id '[Legacy].[Comments].[CommentsId]' column value. This column is used within the join.
         /// </summary>
         [JsonPropertyName("commentsId")]
         public int CommentsId { get; set; }

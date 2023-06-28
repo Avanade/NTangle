@@ -123,10 +123,10 @@ public partial class ContactCdc : IEntity, IPartitionKey, IGlobalIdentifier<stri
         public string? GlobalId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Address Id '[Legacy].[Address].[AddressId]' column value. This column is used within the join.
+        /// Gets or sets the AID '[Legacy].[Address].[AddressId]' column value. This column is used within the join.
         /// </summary>
         [JsonIgnore]
-        public int AddressId { get; set; }
+        public int AID { get; set; }
 
         /// <summary>
         /// Gets or sets the Street1 '[Legacy].[Address].[Street1]' column value.
@@ -154,11 +154,11 @@ public partial class ContactCdc : IEntity, IPartitionKey, IGlobalIdentifier<stri
 
         /// <inheritdoc/>
         [JsonIgnore]
-        public CompositeKey PrimaryKey => new(AddressId);
+        public CompositeKey PrimaryKey => new(AID);
 
         /// <inheritdoc/>
         [JsonIgnore]
-        public CompositeKey TableKey => new(AddressId);
+        public CompositeKey TableKey => new(AID);
 
         /// <inheritdoc/>
         public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<string> coll, IIdentifierGenerator<string> idGen)

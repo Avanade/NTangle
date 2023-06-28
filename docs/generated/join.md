@@ -39,8 +39,8 @@ Provides the _join to_ configuration.
 
 Property | Description
 -|-
-**`joinTo`** | The name of the table to join to (must be previously specified).<br/>&dagger; Defaults to parent `Cdc.Name`.
-**`joinToSchema`** | The schema name of the table to join to.<br/>&dagger; Defaults to parent `Cdc.Schema`.
+**`joinTo`** | The name of the table to join to (must be previously specified).<br/>&dagger; Defaults to parent `Table.Name`.
+**`joinToSchema`** | The schema name of the table to join to.<br/>&dagger; Defaults to parent `Table.Schema`.
 `joinCardinality` | The join cardinality being whether there is a One-to-Many or One-to-One relationship. Valid options are: `OneToMany`, `OneToOne`.<br/>&dagger; Defaults to `OneToMany`. This represents the Parent (`JoinTo`) to child (_this_) relationship.
 
 <br/>
