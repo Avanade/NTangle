@@ -14,5 +14,5 @@ public class Program
     /// <param name="args">>The command-line arguments.</param>
     /// <returns><b>Zero</b> indicates success; otherwise, unsuccessful.</returns>
     /// <remarks>The specified connection string is for default development purposes only; this can be overriden using a command line argument ('<c>-cs|--connection-string</c>' or '<c>-cv|--connection-varname</c>').</remarks>
-    public static async Task Main(string[] args) => await new CodeGenConsole("Data Source=.;Initial Catalog=AppName;Integrated Security=True;TrustServerCertificate=true").RunAsync(args).ConfigureAwait(false);
+    public static async Task Main(string[] args) => await new CodeGenConsole("Data Source=.;Initial Catalog=DomainName;Integrated Security=True;TrustServerCertificate=true").RunAsync(args).ConfigureAwait(false);
 }

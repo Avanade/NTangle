@@ -52,16 +52,17 @@ This sample will walk through the implementation in a number of logical steps.
 
 ### Old App
 
-1. [_NTangle_]() - solution setup, configuration and code-generation.
-2. [Database]() - apply CDC and schema changes.
-3. [Publish]() - publish events to Azure Service Bus leveraging Azure Functions.
+1. [Setup](./docs/old-app-setup.md) - solution setup, configuration, and database baseline.
+2. [Code-gen](./docs/old-app-code-gen.md) - code-generation and database management. 
+2. [Publish]() - publish events to Azure Service Bus leveraging Azure Functions.
 
 <br/>
 
 ### New App
 
+3. [SetUp]() - solution setup and configuration.
 4. [Database]() - create new database and schema.
-5. [Subscribe]() -  subscribe to events from Azure Service Bus leveraging Azure Function.
+5. [Subscribe]() - subscribe to events from Azure Service Bus leveraging an Azure Function.
 
 <br/>
 

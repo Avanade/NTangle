@@ -1,4 +1,4 @@
-namespace ContactSync.OldApp.Publisher.Functions;
+namespace AppName.Publisher.Functions;
 
 public class ContactFunction
 {

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>NTangle</RootNamespace>
-    <Version>2.1.0</Version>
+    <Version>2.2.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>

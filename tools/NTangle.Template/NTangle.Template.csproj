@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Version>2.1.0</Version>
+    <Version>2.2.0</Version>
     <Authors>NTangle Developers</Authors>
     <Company>Avanade</Company>
     <Description>NTangle template solution for use with 'dotnet new'.</Description>
@@ -35,14 +35,27 @@
     <None Remove="content\AppName.Database\Post.Deploy.sql" />
     <None Remove="content\AppName.Database\Program.cs" />
     <None Remove="content\AppName.Publisher\AppName.Publisher.csproj" />
-    <None Remove="content\AppName.Publisher\AppNameSettings.cs" />
     <None Remove="content\AppName.Publisher\appsettings.json" />
+    <None Remove="content\AppName.Publisher\DomainNameSettings.cs" />
+    <None Remove="content\AppName.Publisher\Functions\ContactFunction.cs" />
+    <None Remove="content\AppName.Publisher\Functions\RelayFunction.cs" />
     <None Remove="content\AppName.Publisher\GlobalUsings.cs" />
+    <None Remove="content\AppName.Publisher\host.json" />
+    <None Remove="content\AppName.Publisher\local.settings.json" />
     <None Remove="content\AppName.sln" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\images\Logo256x256.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="content\AppName.Publisher\host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="content\AppName.Publisher\local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

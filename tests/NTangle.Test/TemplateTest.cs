@@ -226,5 +226,43 @@ namespace NTangle.Test
             // Inconclusive from here on in I am afraid :-(
             Assert.Inconclusive("Stopped after code-gen. The test does not build or publish the Database project. It also does not run the Publisher; only validates the build.");
         }
+
+        [Test]
+        public void DbProject_Function()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Assert.Inconclusive("This test is *only* supported on the Windows platform; otherwise, the Process.Start results in the following error: A fatal error was encountered. The library 'libhostpolicy.so' required to execute the application was not found in '/home/runner/.dotnet'.");
+
+            OneTimeSetUp();
+
+            var appName = "TestDbEx.TestFunction";
+
+            // Make directory and create solution from/using template. 
+            var dir = Path.Combine(_unitTestsDir.FullName, appName);
+            Directory.CreateDirectory(dir);
+            Assert.Zero(ExecuteCommand("dotnet", $"new ntangle --dbproject dbex --publisher Function", dir).exitCode, "dotnet new ntangle");
+
+            // Restore nuget packages from our repository.
+            Assert.Zero(ExecuteCommand("dotnet", $"restore -s {_nugetDir.FullName}", dir).exitCode, "dotnet restore");
+
+            // Get the database script.
+            var cfn = Path.Combine(_rootDir.FullName, "tools", "NTangle.Template", "create-database.sql");
+            if (!File.Exists(cfn))
+                Assert.Fail($"Unable to find database create script: {cfn}");
+
+            var nfn = Path.Combine(dir, "create-database.sql");
+            File.WriteAllText(nfn, File.ReadAllText(cfn).Replace("FooBar", "TestFunction"));
+
+            Assert.Zero(ExecuteCommand("sqlcmd", $"/i\"{nfn}\"").exitCode, "sqlcmd create-database.sql");
+
+            // CodeGen: Execute code-generation.
+            Assert.Zero(ExecuteCommand("dotnet", "run", Path.Combine(dir, $"{appName}.CodeGen")).exitCode, "dotnet run all [codegen]");
+
+            // Publisher : Build successfully.
+            Assert.Zero(ExecuteCommand("dotnet", "build", Path.Combine(dir, $"{appName}.Publisher")).exitCode, "dotnet build [publisher]");
+
+            // Inconclusive from here on in I am afraid :-(
+            Assert.Inconclusive("Stopped after code-gen. The test does not build or publish the Database project. It also does not run the Publisher; only validates the build.");
+        }
     }
 }

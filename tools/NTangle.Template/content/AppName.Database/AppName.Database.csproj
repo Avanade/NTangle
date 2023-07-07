@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NTangle" Version="2.1.0" />
+    <PackageReference Include="NTangle" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+    <Folder Include="Schema\" />
   </ItemGroup>
 
   <ItemGroup>
