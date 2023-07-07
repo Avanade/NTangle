@@ -62,6 +62,53 @@
     "implement_dbproject_dacpac": {
       "type": "computed",
       "value": "(dbproject == \"Dacpac\")"
+    },
+    "publisher": {
+      "type": "parameter",
+      "datatype": "choice",
+      "replaces": "AppPublisher",
+      "choices": [
+        {
+          "choice": "Console",
+          "description": "Indicates to use a .NET Console application for the publishing."
+        },
+        {
+          "choice": "Function",
+          "description": "Indicates to use an Azure Function for the publishing."
+        },
+        {
+          "choice": "None",
+          "description": "Indicates that a publishing project is not required."
+        }
+      ],
+      "defaultValue": "Console",
+      "description": "The publisher project option."
+    },
+    "implement_publisher": {
+      "type": "computed",
+      "value": "(publisher != \"None\")"
+    },
+    "implement_publisher_console": {
+      "type": "computed",
+      "value": "(publisher == \"Console\")"
+    },
+    "implement_publisher_function": {
+      "type": "computed",
+      "value": "(publisher == \"Function\")"
+    },
+    "domain_name": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "ValueAfterLastDot",
+      "fileRename": "DomainName",
+      "replaces": "DomainName"
+    }
+  },
+  "forms": {
+    "ValueAfterLastDot": {
+      "identifier": "replace",
+      "pattern": "^.*\\.(?=[^\\.]+$)", // regex to match everything up to and including the final "."
+      "replacement": "" // replace it with empty string
     }
   },
   "sources": [
@@ -78,6 +125,18 @@
         {
           "condition": "!(implement_dbproject_dacpac)",
           "exclude": [ "AppName.Database/AppName.Database.sqlproj", "AppName.Database/Post.Deploy.sql" ]
+        },
+        {
+          "condition": "!(implement_publisher)",
+          "exclude": [ "AppName.Publisher/**/*" ]
+        },
+        {
+          "condition": "!(implement_publisher_function)",
+          "exclude": [ "AppName.Publisher/Functions/**/*", "AppName.Publisher/Startup.cs", "AppName.Publisher/host.json", "AppName.Publisher/local.settings.json" ]
+        },
+        {
+          "condition": "!(implement_publisher_console)",
+          "exclude": [ "AppName.Publisher/Program.cs" ]
         }
       ]
     }

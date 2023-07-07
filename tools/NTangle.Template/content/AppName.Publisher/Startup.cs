@@ -1,6 +1,6 @@
-﻿[assembly: FunctionsStartup(typeof(ContactSync.OldApp.Publisher.Startup))]
+﻿[assembly: FunctionsStartup(typeof(AppName.Publisher.Startup))]
 
-namespace ContactSync.OldApp.Publisher;
+namespace AppName.Publisher;
 
 /// <summary>
 /// The Azure Functions runtime startup leveraging <see href="https://learn.microsoft.com/en-us/azure/azure-functions/functions-dotnet-dependency-injection"/>.
@@ -9,14 +9,14 @@ public class Startup : FunctionsStartup
 {
     public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder) => builder.ConfigurationBuilder
         .AddJsonFile(System.IO.Path.Combine(builder.GetContext().ApplicationRootPath ?? "", "appsettings.json"), optional: true)
-        .AddEnvironmentVariables("OldApp_");
+        .AddEnvironmentVariables("DomainName_");
 
     public override void Configure(IFunctionsHostBuilder builder)
     {
         // Adds the required _CoreEx_ services.
         builder.Services
-            .AddSettings<OldAppSettings>()
-            .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<OldAppSettings>().DatabaseConnectionString)))
+            .AddSettings<DomainNameSettings>()
+            .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<DomainNameSettings>().DatabaseConnectionString)))
             .AddExecutionContext()
             .AddJsonSerializer();
 
@@ -34,7 +34,7 @@ public class Startup : FunctionsStartup
 
         //  Adds the ServiceBusSender to publish the events to Azure Service Bus, and adds the event outbox dequeue service.
         builder.Services
-            .AddSingleton(sp => new Az.ServiceBusClient(sp.GetRequiredService<OldAppSettings>().ServiceBusConnectionString))
+            .AddSingleton(sp => new Az.ServiceBusClient(sp.GetRequiredService<DomainNameSettings>().ServiceBusConnectionString))
             .AddScoped<ServiceBusSender>()
             .AddScoped(sp => new EventOutboxService(sp, sp.GetRequiredService<ILogger<EventOutboxService>>())
             {

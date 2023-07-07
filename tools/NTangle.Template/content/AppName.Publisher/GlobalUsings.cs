@@ -10,6 +10,10 @@ global using CoreEx.Hosting;
 global using CoreEx.Json;
 global using CoreEx.Mapping;
 global using Microsoft.Data.SqlClient;
+#if (implement_publisher_function)
+global using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+global using Microsoft.Azure.WebJobs;
+#endif
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;

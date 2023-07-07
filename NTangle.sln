@@ -79,9 +79,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContactSync.OldApp.Publishe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewApp", "NewApp", "{6855FFC2-39E7-48D4-AB5D-079D406390FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContactSync.NewApp.Database", "samples\ContactSync\ContactSync.NewApp\ContactSync.NewApp.Database\ContactSync.NewApp.Database.csproj", "{4BADE51C-EA1C-4A68-B591-8F148F5FF975}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContactSync.NewApp.Database", "samples\ContactSync\ContactSync.NewApp\ContactSync.NewApp.Database\ContactSync.NewApp.Database.csproj", "{4BADE51C-EA1C-4A68-B591-8F148F5FF975}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContactSync.NewApp.Subscriber", "samples\ContactSync\ContactSync.NewApp\ContactSync.NewApp.Subscriber\ContactSync.NewApp.Subscriber.csproj", "{D6364CFB-DAAA-41E7-996F-8F1654EECF10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContactSync.NewApp.Subscriber", "samples\ContactSync\ContactSync.NewApp\ContactSync.NewApp.Subscriber\ContactSync.NewApp.Subscriber.csproj", "{D6364CFB-DAAA-41E7-996F-8F1654EECF10}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7596959A-8A5E-409D-BED5-006950299A4E}"
+	ProjectSection(SolutionItems) = preProject
+		samples\ContactSync\docs\old-app-code-gen.md = samples\ContactSync\docs\old-app-code-gen.md
+		samples\ContactSync\docs\old-app-publish.md = samples\ContactSync\docs\old-app-publish.md
+		samples\ContactSync\docs\old-app-setup.md = samples\ContactSync\docs\old-app-setup.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -163,6 +170,7 @@ Global
 		{6855FFC2-39E7-48D4-AB5D-079D406390FC} = {240EFA31-7366-47BD-8A56-B3312D06BB13}
 		{4BADE51C-EA1C-4A68-B591-8F148F5FF975} = {6855FFC2-39E7-48D4-AB5D-079D406390FC}
 		{D6364CFB-DAAA-41E7-996F-8F1654EECF10} = {6855FFC2-39E7-48D4-AB5D-079D406390FC}
+		{7596959A-8A5E-409D-BED5-006950299A4E} = {240EFA31-7366-47BD-8A56-B3312D06BB13}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B97E5639-3430-4AD7-9942-D35EF26F263B}

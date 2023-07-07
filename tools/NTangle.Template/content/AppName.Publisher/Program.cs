@@ -10,13 +10,13 @@ internal class Program
     /// </summary>
     /// <param name="args">The console arguments.</param>
     internal static void Main(string[] args) => Host.CreateDefaultBuilder(args)
-        .ConfigureHostConfiguration(c => c.AddEnvironmentVariables(prefix: "AppName_"))
+        .ConfigureHostConfiguration(c => c.AddEnvironmentVariables(prefix: "DomainName_"))
         .ConfigureServices((services) =>
         {
             // Adds the required _CoreEx_ services.
-            services.AddSettings<AppNameSettings>()
+            services.AddSettings<DomainNameSettings>()
                     .AddLogging(b => b.AddSimpleConsole())
-                    .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<AppNameSettings>().DatabaseConnectionString)))
+                    .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<DomainNameSettings>().DatabaseConnectionString)))
                     .AddStringIdentifierGenerator()
                     .AddExecutionContext()
                     .AddJsonSerializer();
@@ -36,8 +36,8 @@ internal class Program
             services.AddScoped<LoggerEventSender>()
                     .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), sp.GetRequiredService<LoggerEventSender>(), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()));
 
-            // Adds the ServiceBusSender to publish the events to Azure Service Bus, and starts the event outbox dequeue hosted service.
-            //services.AddSingleton(sp => new Az.ServiceBusClient(sp.GetRequiredService<AppNameSettings>().ServiceBusConnectionString))
+            // Adds the ServiceBusSender to publish the events to Azure Service Bus, and starts the event outbox dequeue (relay) hosted service.
+            //services.AddSingleton(sp => new Az.ServiceBusClient(sp.GetRequiredService<DomainNameSettings>().ServiceBusConnectionString))
             //        .AddScoped<ServiceBusSender>()
             //        .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), sp.GetRequiredService<ServiceBusSender>(), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()));
         })

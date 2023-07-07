@@ -1,16 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!--#if (implement_publisher_console) -->
     <OutputType>Exe</OutputType>
+    <!--#endif -->
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <!--#if (implement_publisher_function) -->
+    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
+    <!-- Following needed as per: https://github.com/Azure/azure-functions-core-tools/issues/2872 -->
+    <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    <!--#endif -->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NTangle" Version="2.1.0" />
+    <PackageReference Include="NTangle" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <!--#if (implement_publisher_function) -->
+    <None Update="host.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <!--#endif -->
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
@@ -18,7 +33,14 @@
     <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CoreEx.Azure" Version="3.1.0" />
+    <PackageReference Include="CoreEx.Azure" Version="3.1.1" />
+    <!--#if (implement_publisher_console) -->
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <!--#endif -->
+    <!--#if (implement_publisher_function) -->
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.11.0" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />
+    <!--#endif -->
   </ItemGroup>
 </Project>

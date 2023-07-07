@@ -34,10 +34,14 @@ To create the _Solution_ you must first be in the directory that you intend to c
 
 The `dotnet new` command is used to create the initial solution artefacts that will leverage Microsoft SQL Server. When creating the database project type can be specified; either using [`DbEx`](https://github.com/Avanade/dbex) (default) or traditional [`Dacpac`](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/data-tier-applications).
 
+Additionally, a `publisher` option can be specified to indicate what type of _Publisher_ project should be created; the values are `Console` (default), `Function` ([Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview)), or `None`.
+
 ```
 dotnet new ntangle
-dotnet new ntangle -db DbEx
-dotnet new ntangle -db Dacpac
+dotnet new ntangle -dbproject DbEx
+dotnet new ntangle -dbproject Dacpac
+dotnet new ntangle -publisher Console
+dotnet new ntangle -dbproject DbEx -publisher Function
 ```
 
 <br/>

@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v2.2.0
+- *Enhancement:* Added `publisher` option with values `Console|Function|None`, where `Console` is the default, and `Function` represents [Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview), for the `NTangle.Template` package.
+- *Fixed:* The `IdentifierMappingMapper.cs` file was incorrrectly being generated when not required.
+
 ## v2.1.0
 - *Enhancement:* Added `CdcService<TOrchestrator, TEntity>` that provides the base Change Data Capture (CDC) self-orchestrated service capabilities; used for the likes of Azure Functions.
 - *Enhancement:* Added `service: Service` YAML configuration to enable the new  `CdcService<TOrchestrator, TEntity>` code-generation. The `IServiceCollectionExtensions` code-generation also updated to include.
