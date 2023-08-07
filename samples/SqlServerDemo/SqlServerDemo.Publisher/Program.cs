@@ -10,7 +10,7 @@ internal class Program
     /// </summary>
     /// <param name="args">The console arguments.</param>
     internal static void Main(string[] args) => Host.CreateDefaultBuilder(args)
-        .ConfigureHostConfiguration(c => c.AddEnvironmentVariables(prefix: "SqlServerDemo_"))
+        .ConfigureAppConfiguration(c => c.AddEnvironmentVariables(prefix: "SqlServerDemo_"))
         .ConfigureServices((services) =>
         {
             services.AddSettings<SqlServerDemoSettings>()

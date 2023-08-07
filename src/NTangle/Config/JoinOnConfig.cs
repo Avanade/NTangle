@@ -85,14 +85,14 @@ namespace NTangle.Config
             if (string.IsNullOrEmpty(ToStatement))
             {
                 ToColumn = DefaultWhereNull(ToColumn, () => Name);
-                ToDbColumn = Root!.DbTables!.Where(x => x.Schema == Parent.JoinToSchema && x.Name == Parent.JoinTo).SingleOrDefault()?.Columns.Where(x => x.Name == ToColumn).SingleOrDefault();
+                ToDbColumn = Root!.DbTables!.Where(x => x.Schema == Parent.JoinToSchema && x.Name == Parent.JoinToTable).SingleOrDefault()?.Columns.Where(x => x.Name == ToColumn).SingleOrDefault();
                 if (ToDbColumn == null)
-                    throw new CodeGenException(this, nameof(ToColumn), $"ToColumn '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in database.");
+                    throw new CodeGenException(this, nameof(ToColumn), $"ToColumn '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinToTable}]') not found in database.");
 
-                if (Parent.JoinToSchema == Parent!.Parent!.Schema && Parent.JoinTo == Parent!.Parent!.Table)
+                if (Parent.JoinToSchema == Parent!.Parent!.Schema && Parent.JoinToTable == Parent!.Parent!.Table)
                 {
                     if (Parent!.Parent!.DbTable!.Columns.Where(x => x.Name == ToColumn).SingleOrDefault() == null)
-                        throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in Table/Join configuration.");
+                        throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinToTable}]') not found in Table/Join configuration.");
 
                     var jtc = Parent!.Parent!.Columns.SingleOrDefault(x => x.Name == ToColumn);
                     ToColumnAlias = jtc?.NameAlias ?? Name;
@@ -101,9 +101,9 @@ namespace NTangle.Config
                 }
                 else
                 {
-                    var t = Parent!.Parent!.Joins!.Where(x => Parent.JoinToSchema == x.Schema && Parent.JoinTo == x.Table).SingleOrDefault();
+                    var t = Parent!.Parent!.Joins!.Where(x => Parent.JoinToSchema == x.Schema && Parent.JoinToTable == x.Table).SingleOrDefault();
                     if (t == null || t.DbTable!.Columns.Where(x => x.Name == ToColumn).SingleOrDefault() == null)
-                        throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinTo}]') not found in Table/Join configuration.");
+                        throw new CodeGenException(this, nameof(ToColumn), $"JoinOn To '{ToColumn}' (table '[{Parent.JoinToSchema}].[{Parent.JoinToTable}]') not found in Table/Join configuration.");
 
                     var jtc = t.Columns.SingleOrDefault(x => x.Name == ToColumn);
                     ToColumnAlias = jtc?.NameAlias ?? Name;

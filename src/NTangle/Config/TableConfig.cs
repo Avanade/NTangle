@@ -359,12 +359,12 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the list of CDC joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinCdcChildren => Joins!.Where(x => x.JoinTo == Table && x.JoinToSchema == Schema && CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinCdcChildren => Joins!.Where(x => x.JoinToTable == Table && x.JoinToSchema == Schema && CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Gets the list of non-CDC joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinNonCdcChildren => Joins!.Where(x => x.JoinTo == Table && x.JoinToSchema == Schema && !CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinNonCdcChildren => Joins!.Where(x => x.JoinToTable == Table && x.JoinToSchema == Schema && !CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Gets the Orchestrator constructor parameters.
@@ -542,8 +542,8 @@ namespace NTangle.Config
                 Columns.Add(cc);
             }
 
-            await PrepareCtorParams().ConfigureAwait(false);
-            await PrepareJoins().ConfigureAwait(false);
+            await PrepareCtorParamsAsync().ConfigureAwait(false);
+            await PrepareJoinsAsync().ConfigureAwait(false);
 
             Columns.RemoveAll(x => x.IsExcluded && !x.IsIsDeletedColumn && !x.IsUsedInJoinOn);
 
@@ -586,7 +586,7 @@ namespace NTangle.Config
             UsesGlobalIdentifier = IdentifierMapping == true || Mappings!.Count > 0 || Joins!.Any(x => x.IdentifierMapping == true || (x.Mappings!.Count > 0));
             SetUpExcludePropertiesFromETag();
 
-            ColumnConfigIsDeleted = await GetSpecialColumn(IsDeletedColumn).ConfigureAwait(false);
+            ColumnConfigIsDeleted = await GetSpecialColumnAsync(IsDeletedColumn).ConfigureAwait(false);
 
             if (TenantIdColumns != null)
             {
@@ -616,7 +616,7 @@ namespace NTangle.Config
         /// <summary>
         /// Prepares the constructor parameters.
         /// </summary>
-        private async Task PrepareCtorParams()
+        private async Task PrepareCtorParamsAsync()
         {
             if (OrchestratorCtorParams == null || OrchestratorCtorParams.Count == 0)
                 return;
@@ -646,7 +646,7 @@ namespace NTangle.Config
         /// <summary>
         /// Prepares the joins.
         /// </summary>
-        private async Task PrepareJoins()
+        private async Task PrepareJoinsAsync()
         {
             Joins ??= new List<JoinConfig>();
 
@@ -717,7 +717,7 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the named special column.
         /// </summary>
-        private async Task<ColumnConfig?> GetSpecialColumn(string? name)
+        private async Task<ColumnConfig?> GetSpecialColumnAsync(string? name)
         {
             if (string.IsNullOrEmpty(name))
                 return null;

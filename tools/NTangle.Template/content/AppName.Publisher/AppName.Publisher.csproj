@@ -12,7 +12,7 @@
     <!--#endif -->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NTangle" Version="2.2.0" />
+    <PackageReference Include="NTangle" Version="2.2.1" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">

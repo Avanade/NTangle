@@ -10,7 +10,7 @@ internal class Program
     /// </summary>
     /// <param name="args">The console arguments.</param>
     internal static void Main(string[] args) => Host.CreateDefaultBuilder(args)
-        .ConfigureHostConfiguration(c => c.AddEnvironmentVariables(prefix: "DomainName_"))
+        .ConfigureAppConfiguration(c => c.AddEnvironmentVariables(prefix: "DomainName_"))
         .ConfigureServices((services) =>
         {
             // Adds the required _CoreEx_ services.
