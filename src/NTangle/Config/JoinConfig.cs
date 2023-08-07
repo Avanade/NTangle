@@ -90,14 +90,6 @@ namespace NTangle.Config
         public string? JoinTo { get; set; }
 
         /// <summary>
-        /// Gets or sets the schema name of the parent table to join to.
-        /// </summary>
-        [JsonProperty("joinToSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("JoinTo", Title = "The schema name of the table to join to.", IsImportant = true,
-            Description = "Defaults to parent `Table.Schema`.")]
-        public string? JoinToSchema { get; set; }
-
-        /// <summary>
         /// Get or sets the join cardinality.
         /// </summary>
         [JsonProperty("joinCardinality", DefaultValueHandling = DefaultValueHandling.Ignore)]
@@ -239,6 +231,16 @@ namespace NTangle.Config
         public DbTableSchema? DbTable { get; private set; }
 
         /// <summary>
+        /// Gets the <see cref="JoinTo"/> schema.
+        /// </summary>
+        public string? JoinToSchema { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="JoinTo"/> table.
+        /// </summary>
+        public string? JoinToTable { get; set; }
+
+        /// <summary>
         /// Gets the <see cref="JoinTo"/> alias.
         /// </summary>
         public string? JoinToAlias { get; private set; }
@@ -261,12 +263,12 @@ namespace NTangle.Config
         /// <summary>
         /// Gets the list of joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinCdcChildren => Parent!.Joins!.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinCdcChildren => Parent!.Joins!.Where(x => x.JoinTo == Name && CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Gets the list of non-CDC joined "directly related" children.
         /// </summary>
-        public List<JoinConfig> JoinNonCdcChildren => Parent!.Joins!.Where(x => x.JoinTo == Name && x.JoinToSchema == Schema && !CompareNullOrValue(x.Type, "Cdc")).ToList();
+        public List<JoinConfig> JoinNonCdcChildren => Parent!.Joins!.Where(x => x.JoinTo == Name && !CompareNullOrValue(x.Type, "Cdc")).ToList();
 
         /// <summary>
         /// Inidicates whether it is first in the JoinHierarchy.
@@ -325,8 +327,7 @@ namespace NTangle.Config
 
             Type = DefaultWhereNull(Type, () => "Cdc");
             Model = DefaultWhereNull(Model, () => StringConverter.ToPascalCase(Name));
-            JoinTo = DefaultWhereNull(JoinTo, () => Parent!.Table);
-            JoinToSchema = DefaultWhereNull(JoinToSchema, () => Parent!.Schema);
+            JoinTo = DefaultWhereNull(JoinTo, () => Parent!.Name);
             JoinCardinality = DefaultWhereNull(JoinCardinality, () => "OneToMany");
             CdcEnable = DefaultWhereNull(CdcEnable, () => Root.CdcEnable);
             Property = DefaultWhereNull(Property, () => JoinCardinality == "OneToMany" ? StringConverter.ToPlural(Model) : Model);
@@ -342,19 +343,25 @@ namespace NTangle.Config
 
             // Get the JoinTo CdcJoinConfig.
             JoinConfig? jtc = null;
-            if (JoinTo != Parent!.Table || JoinToSchema != Parent!.Schema)
+            if (JoinTo != Parent!.Name)
             {
-                var tables = Parent!.Joins!.Where(x => x.Table == JoinTo && x.Schema == JoinToSchema).ToList();
+                var tables = Parent!.Joins!.Where(x => x.Name == JoinTo).ToList();
                 if (tables.Count == 0 || Parent!.Joins!.IndexOf(this) < Parent!.Joins!.IndexOf(tables[0]))
-                    throw new CodeGenException(this, nameof(JoinTo), $"Specified JoinTo table '[{JoinToSchema}].[{JoinTo}]' must be previously specified.");
+                    throw new CodeGenException(this, nameof(JoinTo), $"Specified JoinTo name '{JoinTo}' must be previously specified.");
                 else if (tables.Count > 1)
-                    throw new CodeGenException(this, nameof(JoinTo), $"Specified JoinTo table '[{JoinToSchema}].[{JoinTo}]' is ambiguous (more than one found).");
+                    throw new CodeGenException(this, nameof(JoinTo), $"Specified JoinTo name '{JoinTo}' is ambiguous (more than one found).");
 
                 jtc = tables[0];
+                JoinToSchema = tables[0].Schema;
+                JoinToTable = tables[0].Table;
                 JoinToAlias = tables[0].Alias;
             }
             else
+            {
+                JoinToSchema = Parent!.Schema;
+                JoinToTable = Parent!.Table;
                 JoinToAlias = Parent!.Alias;
+            }
 
             // Prepare the identifier mappings.
             Mappings = await PrepareCollectionAsync(Mappings).ConfigureAwait(false);
@@ -514,7 +521,7 @@ namespace NTangle.Config
         {
             foreach (var jci in JoinHierarchy)
             {
-                if (jc.Name == jci.Name && jc.Schema == jci.Schema && jc.Table == jci.Table)
+                if (jc.Name == jci.Name)
                     throw new CodeGenException(this, nameof(JoinTo), $"Join table '{jc.Name} [{jc.Schema}].[{jc.Table}]' is self-referencing (within hierarchy) and has resulted in a circular reference.");
             }
 
@@ -534,6 +541,7 @@ namespace NTangle.Config
                 Alias = Alias,
                 JoinTo = JoinTo,
                 JoinToSchema = JoinToSchema,
+                JoinToTable = JoinToTable,
                 JoinToAlias = JoinToAlias,
                 JoinCardinality = JoinCardinality,
                 Model = Model,

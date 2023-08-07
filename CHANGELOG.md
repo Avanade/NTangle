@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.2.1
+- *Fixed:* Issue with `Joins` where the `JoinTo` property within the YAML was validating against an underlying table name versus the unqiue `Table.Name` property (as intended). The `JoinToSchema` property should have been internal only and has not been corrected.
+
 ## v2.2.0
 - *Enhancement:* Added `publisher` option with values `Console|Function|None`, where `Console` is the default, and `Function` represents [Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview), for the `NTangle.Template` package.
 - *Fixed:* The `IdentifierMappingMapper.cs` file was incorrrectly being generated when not required.
