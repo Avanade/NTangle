@@ -101,7 +101,7 @@ Provides the _identifier mapping_ configuration.
 
 Property | Description
 -|-
-**`identifierMapping`** | Indicates whether to perform Identifier Mapping (mapping to `GlobalId`) for the primary key.<br/>&dagger; This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s). Defaults to `Root.IdentifierMapping`.
+**`identifierMapping`** | Indicates whether to perform Identifier Mapping (mapping to `GlobalId`) for the primary key.<br/>&dagger; This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).
 
 <br/>
 
