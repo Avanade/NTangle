@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.2.3
+- *Fixed:* Joins without `IdentifierMapping` were incorrectly generated with mapping code where the root table has mapping, and the joined table did not. The `GlobalId` JSON name can now also be renamed.
+
 ## v2.2.2
 - *Fixed:* Updated `CoreEx` (`v3.3.0`) and `DbEx` (`v2.3.6`).
 

@@ -409,7 +409,12 @@
         "identifierMapping": {
           "type": "boolean",
           "title": "Indicates whether to perform Identifier Mapping (mapping to 'GlobalId') for the primary key.",
-          "description": "This indicates whether to create a new 'GlobalId' property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s). Defaults to 'Root.IdentifierMapping'."
+          "description": "This indicates whether to create a new 'GlobalId' property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
+        },
+        "identifierName": {
+          "type": "string",
+          "title": "The JSON name for the 'GlobalId' property where 'IdentifierMapping' is 'true'. Defaults to 'globalId'.",
+          "description": "This indicates whether to create a new 'GlobalId' property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
         },
         "isDeletedColumn": {
           "type": "string",
@@ -558,6 +563,11 @@
         "identifierMapping": {
           "type": "boolean",
           "title": "Indicates whether to perform Identifier Mapping (mapping to 'GlobalId') for the primary key.",
+          "description": "This indicates whether to create a new 'GlobalId' property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
+        },
+        "identifierName": {
+          "type": "string",
+          "title": "The JSON name for the 'GlobalId' property where 'IdentifierMapping' is 'true'. Defaults to 'globalId'.",
           "description": "This indicates whether to create a new 'GlobalId' property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
         },
         "on": {

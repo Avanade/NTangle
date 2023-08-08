@@ -193,6 +193,14 @@ namespace NTangle.Config
            Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).")]
         public bool? IdentifierMapping { get; set; }
 
+        /// <summary>
+        /// Gets or sets JSON name for the `GlobalId` property where `IdentifierMapping` is `true`. Defaults to `globalId`.
+        /// </summary>
+        [JsonProperty("identifierName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("IdentifierName", Title = "The JSON name for the `GlobalId` property where `IdentifierMapping` is `true`. Defaults to `globalId`.", IsImportant = true,
+           Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).")]
+        public string? IdentifierName { get; set; }
+
         #endregion
 
         #region Collections
@@ -331,6 +339,8 @@ namespace NTangle.Config
             JoinCardinality = DefaultWhereNull(JoinCardinality, () => "OneToMany");
             CdcEnable = DefaultWhereNull(CdcEnable, () => Root.CdcEnable);
             Property = DefaultWhereNull(Property, () => JoinCardinality == "OneToMany" ? StringConverter.ToPlural(Model) : Model);
+            IdentifierMapping = DefaultWhereNull(IdentifierMapping, () => false);
+            IdentifierName = DefaultWhereNull(IdentifierName, () => "globalId");
             if (ExcludeColumnsFromETag == null && Root!.ExcludeColumnsFromETag != null)
                 ExcludeColumnsFromETag = new List<string>(Root!.ExcludeColumnsFromETag!);
 

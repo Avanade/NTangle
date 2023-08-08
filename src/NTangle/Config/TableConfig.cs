@@ -269,9 +269,16 @@ namespace NTangle.Config
         /// </summary>
         [JsonProperty("identifierMapping", DefaultValueHandling = DefaultValueHandling.Ignore)]
         [CodeGenProperty("IdentifierMapping", Title = "Indicates whether to perform Identifier Mapping (mapping to `GlobalId`) for the primary key.", IsImportant = true,
-           Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)." 
-            + " Defaults to `Root.IdentifierMapping`.")]
+           Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).")]
         public bool? IdentifierMapping { get; set; }
+
+        /// <summary>
+        /// Gets or sets JSON name for the `GlobalId` property where `IdentifierMapping` is `true`. Defaults to `globalId`.
+        /// </summary>
+        [JsonProperty("identifierName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("IdentifierName", Title = "The JSON name for the `GlobalId` property where `IdentifierMapping` is `true`. Defaults to `globalId`.", IsImportant = true,
+           Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).")]
+        public string? IdentifierName { get; set; }
 
         #endregion
 
@@ -450,6 +457,7 @@ namespace NTangle.Config
             EventType = DefaultWhereNull(EventType, () => Model);
             Database = DefaultWhereNull(Database, () => "IDatabase");
             Service = DefaultWhereNull(Service, () => Root.Service);
+            IdentifierName = DefaultWhereNull(IdentifierName, () => "globalId");
             IsDeletedColumn = DefaultWhereNull(IsDeletedColumn, () => Root!.IsDeletedColumn);
             if (ExcludeColumnsFromETag == null && Root!.ExcludeColumnsFromETag != null)
                 ExcludeColumnsFromETag = new List<string>(Root!.ExcludeColumnsFromETag!);
