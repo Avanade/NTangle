@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DbEx.SqlServer" Version="2.3.5" />
+    <PackageReference Include="DbEx.SqlServer" Version="2.3.6" />
   </ItemGroup>
 
 </Project>

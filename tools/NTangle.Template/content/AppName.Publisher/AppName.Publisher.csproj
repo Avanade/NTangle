@@ -12,7 +12,7 @@
     <!--#endif -->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NTangle" Version="2.2.1" />
+    <PackageReference Include="NTangle" Version="2.2.2" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
@@ -33,7 +33,7 @@
     <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CoreEx.Azure" Version="3.1.1" />
+    <PackageReference Include="CoreEx.Azure" Version="3.3.0" />
     <!--#if (implement_publisher_console) -->
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <!--#endif -->
