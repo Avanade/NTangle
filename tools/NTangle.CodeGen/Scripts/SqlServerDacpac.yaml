@@ -1,0 +1,11 @@
+﻿configType: NTangle.Codegen.Config.RootConfig, NTangle.CodeGen
+inherits: [ 'SqlServerDatabase.yaml' ]
+generators:
+- { type: 'NTangle.CodeGen.Generators.CdcSchemaCreateCodeGenerator, NTangle.CodeGen', template: 'SchemaCdc_sql', file: '{{CdcSchema}}.sql', directory: '{{Root.PathDatabaseSchema}}/{{CdcSchema}}/Generated', text: 'CdcSchemaCreateCodeGenerator: Database/Schema/Xxx' }
+- { type: 'NTangle.CodeGen.Generators.RootCodeGenerator, NTangle.CodeGen', template: 'TableVersionTracking_sql', file: '{{VersionTrackingTable}}.sql', directory: '{{Root.PathDatabaseSchema}}/{{CdcSchema}}/Tables/Generated', text: 'RootCodeGenerator: Database/Schema/Xxx/Tables' }
+- { type: 'NTangle.CodeGen.Generators.TableCodeGenerator, NTangle.CodeGen', template: 'TableBatchTracking_sql', file: '{{BatchTrackingTable}}.sql', directory: '{{Root.PathDatabaseSchema}}/{{CdcSchema}}/Tables/Generated', text: 'TableCodeGenerator: Database/Schema/Xxx/Tables' }
+- { type: 'NTangle.CodeGen.Generators.OutboxSchemaCreateCodeGenerator, NTangle.CodeGen', template: 'SchemaEventOutbox_sql', file: '{{OutboxSchema}}.sql', directory: '{{Root.PathDatabaseSchema}}/{{OutboxSchema}}/Generated', text: 'OutboxCodeGenerator: Database/Schema/Xxx' }
+- { type: 'NTangle.CodeGen.Generators.OutboxCodeGenerator, NTangle.CodeGen', template: 'TableEventOutbox_sql', file: '{{OutboxTable}}.sql', directory: '{{Root.PathDatabaseSchema}}/{{OutboxSchema}}/Tables/Generated', text: 'OutboxCodeGenerator: Database/Schema/Xxx/Tables' }
+- { type: 'NTangle.CodeGen.Generators.OutboxCodeGenerator, NTangle.CodeGen', template: 'TableEventOutboxData_sql', file: '{{OutboxTable}}Data.sql', directory: '{{Root.PathDatabaseSchema}}/{{OutboxSchema}}/Tables/Generated', text: 'OutboxCodeGenerator: Database/Schema/Xxx/Tables' }
+- { type: 'NTangle.CodeGen.Generators.IdentifierMappingCodeGenerator, NTangle.CodeGen', template: 'TableIdentifierMapping_sql', file: '{{IdentifierMappingTable}}.sql', directory: '{{Root.PathDatabaseSchema}}/{{CdcSchema}}/Tables/Generated', text: 'IdentifierMappingCodeGenerator: Database/Schema/Xxx/Tables' }
+- { type: 'NTangle.CodeGen.Generators.CdcEnableCodeGenerator, NTangle.CodeGen', template: 'CdcEnable_sql', file: 'CdcEnable.post.deploy.sql', directory: '{{Root.PathDatabase}}/Generated', text: 'CdcEnableCodeGenerator: Database' }

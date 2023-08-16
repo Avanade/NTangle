@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
+    <RootNamespace>NTangle.CodeGen</RootNamespace>
+    <Product>NTangle Code-Gen</Product>
+    <Title>NTangle Change-Data-Capture code-generation.</Title>
+    <Description>NTangle Change-Data-Capture code-generation.</Description>
+    <PackageTags>untangle ntangle cdc change-data-capture sqlserver codegen</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\**\*" />
+    <EmbeddedResource Include="Templates\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.3.0" />
+    <PackageReference Include="DbEx.SqlServer" Version="2.3.6" />
+  </ItemGroup>
+
+  <Import Project="..\..\Common.targets" />
+</Project>

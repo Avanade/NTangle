@@ -104,25 +104,25 @@ public partial class PostCdc : IEntity
     public partial class CommentsTagsCdc : IPrimaryKey
     {
         /// <summary>
-        /// Gets or sets the Tags Id '[Legacy].[CommentsTags].[TagsId]' column value.
+        /// Gets or sets the Tags Id '[Legacy].[Tags].[TagsId]' column value.
         /// </summary>
         [JsonPropertyName("tagsId")]
         public int TagsId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Parent Type '[Legacy].[CommentsTags].[ParentType]' column value. This column is used within the join.
+        /// Gets or sets the Parent Type '[Legacy].[Tags].[ParentType]' column value. This column is used within the join.
         /// </summary>
         [JsonIgnore]
         public string? ParentType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Parent Id '[Legacy].[CommentsTags].[ParentId]' column value. This column is used within the join.
+        /// Gets or sets the Parent Id '[Legacy].[Tags].[ParentId]' column value. This column is used within the join.
         /// </summary>
         [JsonIgnore]
         public int ParentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Text '[Legacy].[CommentsTags].[Text]' column value.
+        /// Gets or sets the Text '[Legacy].[Tags].[Text]' column value.
         /// </summary>
         [JsonPropertyName("text")]
         public string? Text { get; set; }
@@ -139,7 +139,7 @@ public partial class PostCdc : IEntity
     }
 
     /// <summary>
-    /// Represents the CDC model collection for the related (child) database table '[Legacy].[CommentsTags]'.
+    /// Represents the CDC model collection for the related (child) database table '[Legacy].[Tags]'.
     /// </summary>
     public partial class CommentsTagsCdcCollection : List<CommentsTagsCdc> { }
 
@@ -153,25 +153,25 @@ public partial class PostCdc : IEntity
     public partial class PostsTagsCdc : IPrimaryKey
     {
         /// <summary>
-        /// Gets or sets the Tags Id '[Legacy].[PostsTags].[TagsId]' column value.
+        /// Gets or sets the Tags Id '[Legacy].[Tags].[TagsId]' column value.
         /// </summary>
         [JsonPropertyName("tagsId")]
         public int TagsId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Parent Type '[Legacy].[PostsTags].[ParentType]' column value. This column is used within the join.
+        /// Gets or sets the Parent Type '[Legacy].[Tags].[ParentType]' column value. This column is used within the join.
         /// </summary>
         [JsonIgnore]
         public string? ParentType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Posts Id '[Legacy].[PostsTags].[ParentId]' column value. This column is used within the join.
+        /// Gets or sets the Posts Id '[Legacy].[Tags].[ParentId]' column value. This column is used within the join.
         /// </summary>
         [JsonIgnore]
         public int PostsId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Text '[Legacy].[PostsTags].[Text]' column value.
+        /// Gets or sets the Text '[Legacy].[Tags].[Text]' column value.
         /// </summary>
         [JsonPropertyName("text")]
         public string? Text { get; set; }
@@ -182,7 +182,7 @@ public partial class PostCdc : IEntity
     }
 
     /// <summary>
-    /// Represents the CDC model collection for the related (child) database table '[Legacy].[PostsTags]'.
+    /// Represents the CDC model collection for the related (child) database table '[Legacy].[Tags]'.
     /// </summary>
     public partial class PostsTagsCdcCollection : List<PostsTagsCdc> { }
 

@@ -10,35 +10,12 @@ internal class Program
     /// </summary>
     /// <param name="args">The console arguments.</param>
     internal static void Main(string[] args) => Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration(c => c.AddEnvironmentVariables(prefix: "DomainName_"))
-        .ConfigureServices((services) =>
+        .ConfigurHostStartup<Startup>()
+        .ConfigureServices((_, services) =>
         {
-            // Adds the required _CoreEx_ services.
-            services.AddSettings<DomainNameSettings>()
-                    .AddLogging(b => b.AddSimpleConsole())
-                    .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<DomainNameSettings>().DatabaseConnectionString)))
-                    .AddStringIdentifierGenerator()
-                    .AddExecutionContext()
-                    .AddJsonSerializer();
-
-            // Adds the CDC-hosted service(s), including underlying orchestrator services, and local file synchronizer (to run-as singleton).
+            // Adds the CDC-triggered hosted service(s) and corresponding event outbox dequeue (relay) hosted service.
             services.AddGeneratedCdcHostedServices()
-                    .AddGeneratedCdcOrchestratorServices()
-                    .AddFileLockSynchronizer();
-
-            // Adds the EventPublisher, which will use the default EventDataFormatter, with CloudEventSerializer and EventOutbox enqueue as sender.
-            services.AddEventPublisher()
-                    .AddEventDataFormatter()
-                    .AddCloudEventSerializer()
-                    .AddScoped<IEventSender, EventOutboxEnqueue>();
-
-            // For demo/testing purposes uses the LoggerEventSender; remove usage and uncomment Azure Service Bus below.
-            services.AddScoped<LoggerEventSender>()
                     .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), sp.GetRequiredService<LoggerEventSender>(), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()));
-
-            // Adds the ServiceBusSender to publish the events to Azure Service Bus, and starts the event outbox dequeue (relay) hosted service.
-            //services.AddSingleton(sp => new Az.ServiceBusClient(sp.GetRequiredService<DomainNameSettings>().ServiceBusConnectionString))
-            //        .AddScoped<ServiceBusSender>()
             //        .AddSqlServerEventOutboxHostedService(sp => new EventOutboxDequeue(sp.GetRequiredService<IDatabase>(), sp.GetRequiredService<ServiceBusSender>(), sp.GetRequiredService<ILogger<EventOutboxDequeue>>()));
         })
         .Build().Run();

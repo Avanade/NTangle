@@ -1,0 +1,41 @@
+<Project>
+  <PropertyGroup>
+    <Version>2.3.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>NTangle Developers</Authors>
+    <Company>Avanade</Company>
+    <LangVersion>preview</LangVersion>
+    <Copyright>Avanade (c)</Copyright>
+    <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Avanade/NTangle</RepositoryUrl>
+    <Product>NTangle</Product>
+    <SignAssembly>true</SignAssembly>
+    <DelaySign>false</DelaySign>
+    <AssemblyOriginatorKeyFile>strong-name-key.snk</AssemblyOriginatorKeyFile>
+    <PackageIconUrl>https://github.com/Avanade/NTangle/raw/main/images/Logo256x256.png</PackageIconUrl>
+    <PackageIcon>Logo256x256.png</PackageIcon>
+    <RepositoryType>git</RepositoryType>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <Nullable>enable</Nullable>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IncludeSymbols>true</IncludeSymbols>
+    <EmbedAllSources>true</EmbedAllSources>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+  </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\images\Logo256x256.png" Link="Logo256x256.png">
+			<PackagePath>\</PackagePath>
+			<Pack>true</Pack>
+		</None>
+	</ItemGroup>
+</Project>
