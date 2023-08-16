@@ -38,10 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\images\Logo256x256.png" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Update="content\AppName.Publisher\host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
