@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NTangle\NTangle.csproj" />
+    <PackageReference Include="DbEx.SqlServer" Version="2.3.7" />
   </ItemGroup>
 
 </Project>

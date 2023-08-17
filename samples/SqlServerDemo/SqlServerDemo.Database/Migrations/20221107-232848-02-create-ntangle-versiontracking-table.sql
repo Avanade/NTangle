@@ -4,6 +4,7 @@ CREATE TABLE [NTangle].[VersionTracking] (
   [Table] VARCHAR(127) NOT NULL,
   [Key] NVARCHAR(255) NOT NULL,
   [Hash] NVARCHAR(127) NOT NULL,
+  [Timestamp] DATETIME2 NOT NULL,
   [BatchTrackingId] BIGINT NOT NULL,
   CONSTRAINT [IX_NTangle_VersionTracking_SchemaTableKey] UNIQUE CLUSTERED ([Schema], [Table], [Key])
 );

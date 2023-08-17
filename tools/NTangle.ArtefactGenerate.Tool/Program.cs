@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using NTangle.Config;
+using NTangle.CodeGen.Config;
 using OnRamp.Console;
 using OnRamp.Utility;
 using System;

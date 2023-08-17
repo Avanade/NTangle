@@ -3,56 +3,16 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>NTangle</RootNamespace>
-    <Version>2.2.3</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>NTangle Developers</Authors>
-    <Company>Avanade</Company>
-    <Description>NTangle Change-Data-Capture tooling and framework.</Description>
-    <LangVersion>preview</LangVersion>
-    <Copyright>Avanade (c)</Copyright>
-    <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Avanade/NTangle</RepositoryUrl>
     <Product>NTangle</Product>
-    <SignAssembly>true</SignAssembly>
-    <DelaySign>false</DelaySign>
-    <AssemblyOriginatorKeyFile>strong-name-key.snk</AssemblyOriginatorKeyFile>
-    <PackageIconUrl>https://github.com/Avanade/NTangle/raw/main/images/Logo256x256.png</PackageIconUrl>
-    <PackageIcon>Logo256x256.png</PackageIcon>
-    <RepositoryType>git</RepositoryType>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Title>NTangle Change-Data-Capture.</Title>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <PackageTags>ntangle cdc change-data-capture</PackageTags>
-    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
-    <Nullable>enable</Nullable>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <IncludeSymbols>true</IncludeSymbols>
-    <EmbedAllSources>true</EmbedAllSources>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Title>NTangle Change-Data-Capture framework/runtime.</Title>
+    <Description>NTangle Change-Data-Capture framework/runtime.</Description>
+    <PackageTags>untangle ntangle cdc change-data-capture sqlserver</PackageTags>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-  </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\**\*" />
-    <EmbeddedResource Include="Templates\**\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\images\Logo256x256.png" Link="Logo256x256.png">
-      <PackagePath>\</PackagePath>
-      <Pack>true</Pack>
-    </None>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CoreEx.Database.SqlServer" Version="3.3.0" />
-    <PackageReference Include="DbEx.SqlServer" Version="2.3.6" />
+    <PackageReference Include="OnRamp" Version="1.0.7" />
   </ItemGroup>
-
+  
+  <Import Project="..\..\Common.targets" />
 </Project>

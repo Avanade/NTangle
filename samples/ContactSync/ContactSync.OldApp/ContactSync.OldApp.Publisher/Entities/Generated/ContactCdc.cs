@@ -5,48 +5,48 @@
 namespace ContactSync.OldApp.Publisher.Entities;
 
 /// <summary>
-/// Represents the CDC model for the root (parent) database table '[old].[Contact]'.
+/// Represents the CDC model for the root (parent) database table '[old].[contact]'.
 /// </summary>
 public partial class ContactCdc : IEntity
 {
     /// <summary>
-    /// Gets or sets the Id '[old].[Contact].[contact_id]' column value.
+    /// Gets or sets the Id '[old].[contact].[contact_id]' column value.
     /// </summary>
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the Name '[old].[Contact].[contact_name]' column value.
+    /// Gets or sets the Name '[old].[contact].[contact_name]' column value.
     /// </summary>
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the Phone '[old].[Contact].[contact_phone]' column value.
+    /// Gets or sets the Phone '[old].[contact].[contact_phone]' column value.
     /// </summary>
     [JsonPropertyName("phone")]
     public string? Phone { get; set; }
 
     /// <summary>
-    /// Gets or sets the Email '[old].[Contact].[contact_email]' column value.
+    /// Gets or sets the Email '[old].[contact].[contact_email]' column value.
     /// </summary>
     [JsonPropertyName("email")]
     public string? Email { get; set; }
 
     /// <summary>
-    /// Gets or sets the Is Active '[old].[Contact].[contact_active]' column value.
+    /// Gets or sets the Is Active '[old].[contact].[contact_active]' column value.
     /// </summary>
     [JsonPropertyName("isActive")]
     public bool? IsActive { get; set; }
 
     /// <summary>
-    /// Gets or sets the No Call List '[old].[Contact].[contact_no_calling]' column value.
+    /// Gets or sets the No Call List '[old].[contact].[contact_no_calling]' column value.
     /// </summary>
     [JsonPropertyName("noCallList")]
     public bool? NoCallList { get; set; }
 
     /// <summary>
-    /// Gets or sets the Contact Addressid '[old].[Contact].[contact_addressid]' column value.
+    /// Gets or sets the Contact Addressid '[old].[contact].[contact_addressid]' column value.
     /// </summary>
     [JsonIgnore]
     public int? ContactAddressid { get; set; }
@@ -73,19 +73,19 @@ public partial class ContactCdc : IEntity
     public partial class AddressCdc : IPrimaryKey
     {
         /// <summary>
-        /// Gets or sets the Id '[old].[Address].[contact_address_id]' column value. This column is used within the join.
+        /// Gets or sets the Id '[old].[contact_address].[contact_address_id]' column value. This column is used within the join.
         /// </summary>
         [JsonIgnore]
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the Street1 '[old].[Address].[address_street_1]' column value.
+        /// Gets or sets the Street1 '[old].[contact_address].[address_street_1]' column value.
         /// </summary>
         [JsonPropertyName("street1")]
         public string? Street1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the Street2 '[old].[Address].[address_street_2]' column value.
+        /// Gets or sets the Street2 '[old].[contact_address].[address_street_2]' column value.
         /// </summary>
         [JsonPropertyName("street2")]
         public string? Street2 { get; set; }
@@ -96,7 +96,7 @@ public partial class ContactCdc : IEntity
     }
 
     /// <summary>
-    /// Represents the CDC model collection for the related (child) database table '[old].[Address]'.
+    /// Represents the CDC model collection for the related (child) database table '[old].[contact_address]'.
     /// </summary>
     public partial class AddressCdcCollection : List<AddressCdc> { }
 

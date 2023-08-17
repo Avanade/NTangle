@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NTangle\NTangle.csproj" />
+    <ProjectReference Include="..\..\tools\NTangle.CodeGen\NTangle.CodeGen.csproj" />
   </ItemGroup>
 
 </Project>

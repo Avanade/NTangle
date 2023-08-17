@@ -132,7 +132,7 @@
         },
         {
           "condition": "!(implement_publisher_function)",
-          "exclude": [ "AppName.Publisher/Functions/**/*", "AppName.Publisher/Startup.cs", "AppName.Publisher/host.json", "AppName.Publisher/local.settings.json" ]
+          "exclude": [ "AppName.Publisher/Functions/**/*", "AppName.Publisher/host.json", "AppName.Publisher/local.settings.json" ]
         },
         {
           "condition": "!(implement_publisher_console)",

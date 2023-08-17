@@ -49,6 +49,7 @@ param(
     [string]$NugetCacheFolder = "$($env:USERPROFILE)\.nuget\packages",
     [String[]]$ProjectsToPublish = @(
         "src\NTangle",
+        "tools\NTangle.CodeGen",
         "tools\NTangle.Template")
     )
 

@@ -5,36 +5,36 @@
 namespace SqlServerDemo.Publisher.Entities;
 
 /// <summary>
-/// Represents the CDC model for the root (parent) database table '[Legacy].[Customer]'.
+/// Represents the CDC model for the root (parent) database table '[Legacy].[Cust]'.
 /// </summary>
 public partial class CustomerCdc : IEntity, ILogicallyDeletedExtended
 {
     /// <summary>
-    /// Gets or sets the Id '[Legacy].[Customer].[CustId]' column value.
+    /// Gets or sets the Id '[Legacy].[Cust].[CustId]' column value.
     /// </summary>
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the Name '[Legacy].[Customer].[Name]' column value.
+    /// Gets or sets the Name '[Legacy].[Cust].[Name]' column value.
     /// </summary>
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the Email '[Legacy].[Customer].[Email]' column value.
+    /// Gets or sets the Email '[Legacy].[Cust].[Email]' column value.
     /// </summary>
     [JsonPropertyName("email")]
     public string? Email { get; set; }
 
     /// <summary>
-    /// Gets or sets the Is Deleted '[Legacy].[Customer].[is-deleted]' column value.
+    /// Gets or sets the Is Deleted '[Legacy].[Cust].[is-deleted]' column value.
     /// </summary>
     [JsonPropertyName("isDeleted")]
     public bool? IsDeleted { get; set; }
 
     /// <summary>
-    /// Gets or sets the Row Version '[Legacy].[Customer].[RowVersion]' column value.
+    /// Gets or sets the Row Version '[Legacy].[Cust].[RowVersion]' column value.
     /// </summary>
     [JsonPropertyName("rowVersion")]
     public byte[]? RowVersion { get; set; }

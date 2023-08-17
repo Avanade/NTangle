@@ -1,20 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Version>2.2.3</Version>
-    <Authors>NTangle Developers</Authors>
-    <Company>Avanade</Company>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <RootNamespace>NTangle.Template</RootNamespace>
+    <Product>NTangle Template</Product>
+    <Title>NTangle Template.</Title>
     <Description>NTangle template solution for use with 'dotnet new'.</Description>
-    <Copyright>Avanade (c)</Copyright>
-    <PackageProjectUrl>https://github.com/Avanade/NTangle</PackageProjectUrl>
-    <PackageIconUrl>https://github.com/Avanade/Tangle/raw/master/docs/images/Logo256x256.png</PackageIconUrl>
-    <PackageIcon>Logo256x256.png</PackageIcon>
-    <RepositoryUrl>https://github.com/Avanade/NTangle</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>ntangle cdc dotnet template solution</PackageTags>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageTags>untangle ntangle cdc change-data-capture sqlserver codegen</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -46,10 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\images\Logo256x256.png" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Update="content\AppName.Publisher\host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -57,5 +45,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
+  
+  <Import Project="..\..\Common.targets" />
 </Project>
