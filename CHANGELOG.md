@@ -4,6 +4,7 @@ Represents the **NuGet** versions.
 
 ## v2.3.0
 - *Enhancement:* Separated the code-generation tooling logic out into a separate package `NTangle.CodeGen` as this is not required to be deployed with the underlying runtime logic. This is a **breaking change**, in that previous references will need to be updated to the new package.
+- *Enhancement:* The version tracking table has had a timestamp column added.
 - *Fixed:* Entity code-generation now correctly references the actual underlying table name versus the alias.
 
 ## v2.2.3

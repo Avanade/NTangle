@@ -32,9 +32,12 @@ BEGIN
       THROW 56002, @Msg, 1;
     END
 
+    DECLARE @Timestamp DATETIME2
+    SET @Timestamp = GETUTCDATE()
+
     UPDATE [_batch] SET
         [_batch].[IsComplete] = 1,
-        [_batch].[CompletedDate] = GETUTCDATE()
+        [_batch].[CompletedDate] = @Timestamp
       FROM [NTangle].[ContactBatchTracking] AS [_batch]
       WHERE BatchTrackingId = @BatchTrackingId 
 
@@ -44,10 +47,10 @@ BEGIN
           SELECT [_list].[Key], [_list].[Hash]
           EXCEPT
           SELECT [_vt].[Key], [_vt].[Hash])
-        THEN UPDATE SET [_vt].[Hash] = [_list].[Hash], [_vt].[BatchTrackingId] = @BatchTrackingId
+        THEN UPDATE SET [_vt].[Hash] = [_list].[Hash], [_vt].[Timestamp] = @Timestamp, [_vt].[BatchTrackingId] = @BatchTrackingId
       WHEN NOT MATCHED BY TARGET
-        THEN INSERT ([Schema], [Table], [Key], [Hash], [BatchTrackingId])
-          VALUES (N'old', N'Contact', [_list].[Key], [_list].[Hash], @BatchTrackingId);
+        THEN INSERT ([Schema], [Table], [Key], [Hash], [Timestamp], [BatchTrackingId])
+          VALUES (N'old', N'Contact', [_list].[Key], [_list].[Hash], @Timestamp, @BatchTrackingId);
 
     SELECT [_batch].[BatchTrackingId], [_batch].[CreatedDate], [_batch].[IsComplete], [_batch].[CompletedDate], [_batch].[CorrelationId], [_batch].[HasDataLoss]
       FROM [NTangle].[ContactBatchTracking] AS [_batch]
