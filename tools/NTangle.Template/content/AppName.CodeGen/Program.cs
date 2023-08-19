@@ -1,4 +1,4 @@
-﻿using NTangle.Console;
+﻿using NTangle.CodeGen;
 using System.Threading.Tasks;
 
 namespace AppName.CodeGen;
