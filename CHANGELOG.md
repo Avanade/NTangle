@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.3.1
+- *Fixed:* Updated `DbEx` (`v2.3.8`) and `OnRamp` (`v1.0.8`).
+
 ## v2.3.0
 - *Enhancement:* Separated the code-generation tooling logic out into a separate package `NTangle.CodeGen` as this is not required to be deployed with the underlying runtime logic. This is a **breaking change**, in that previous references will need to be updated to the new package.
 - *Enhancement:* The version tracking table has had a timestamp column added.

@@ -10,7 +10,7 @@ internal class Program
     /// </summary>
     /// <param name="args">The console arguments.</param>
     internal static void Main(string[] args) => Host.CreateDefaultBuilder(args)
-        .ConfigurHostStartup<Startup>()
+        .ConfigureHostStartup<Startup>()
         .ConfigureServices((_, services) =>
         {
             // Adds the CDC-triggered hosted service(s) and corresponding event outbox dequeue (relay) hosted service.
