@@ -15,8 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.3.0" />
-    <PackageReference Include="DbEx.SqlServer" Version="2.3.8" />
+    <None Remove="Templates\SpResetBatch_sql.hbs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.3.1" />
+    <PackageReference Include="DbEx.SqlServer" Version="2.3.11" />
   </ItemGroup>
 
   <Import Project="..\..\Common.targets" />

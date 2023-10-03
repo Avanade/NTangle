@@ -118,6 +118,14 @@ namespace NTangle.CodeGen.Config
         public string? CompleteStoredProcedure { get; set; }
 
         /// <summary>
+        /// Gets or sets the `Cdc` reset batch stored procedure name.
+        /// </summary>
+        [JsonProperty("resetStoredProcedure", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [CodeGenProperty("Database", Title = "The `CDC` _reset_ batch stored procedure name.",
+            Description = "Defaults to `sp` (literal) + `Name` + `BatchReset` (literal); e.g. `spNameBatchReset`.")]
+        public string? ResetStoredProcedure { get; set; }
+
+        /// <summary>
         /// Gets or sets the schema name for the `Cdc`-related database artefacts.
         /// </summary>
         [JsonProperty("cdcSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
@@ -446,6 +454,7 @@ namespace NTangle.CodeGen.Config
 
             ExecuteStoredProcedure = DefaultWhereNull(ExecuteStoredProcedure, () => $"sp{StringConverter.ToPascalCase(Name)}BatchExecute");
             CompleteStoredProcedure = DefaultWhereNull(CompleteStoredProcedure, () => $"sp{StringConverter.ToPascalCase(Name)}BatchComplete");
+            ResetStoredProcedure = DefaultWhereNull(ResetStoredProcedure, () => $"sp{StringConverter.ToPascalCase(Name)}BatchReset");
             CdcSchema = DefaultWhereNull(CdcSchema, () => Root.CdcSchema);
             CdcEnable = DefaultWhereNull(CdcEnable, () => Root.CdcEnable);
             BatchTrackingTable = DefaultWhereNull(BatchTrackingTable, () => Name + "BatchTracking");

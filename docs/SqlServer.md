@@ -203,6 +203,7 @@ Script | [`CdcEnable`](../samples/SqlServerDemo/SqlServerDemo.Database/Migration
 Schema | [`NTangle`](../samples/SqlServerDemo/SqlServerDemo.Database/Migrations/20221107-232848-01-create-ntangle-schema.sql) | Creates the database schema.
 Stored procedure | [`spXxxBatchComplete`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Stored%20Procedures/Generated/spContactBatchComplete.sql) | Performs the batch completion for an entity.
 Stored procedure | [`spXxxBatchExecute`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Stored%20Procedures/Generated/spContactBatchExecute.sql) | Performs the batch execution for an entity.
+Stored procedure | [`spXxxBatchReset`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Stored%20Procedures/Generated/spContactBatchReset.sql) | Performs the batch LSN reset for an entity.
 Stored procedure | [`spEventOutboxDequeue`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/Outbox/Stored%20Procedures/Generated/spEventOutboxDequeue.sql) | Performs the event outbox dequeue.
 Stored procedure | [`spEventOutboxEnqueue`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/Outbox/Stored%20Procedures/Generated/spEventOutboxEnqueue.sql) | Performs the event outbox enqueue.
 Stored procedure | [`spIdentifierMappingCreate`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Stored%20Procedures/Generated/spIdentifierMappingCreate.sql) | Performs the indentifier mapping creation.
