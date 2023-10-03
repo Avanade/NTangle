@@ -1,8 +1,6 @@
 using CoreEx;
 using CoreEx.Events;
 using CoreEx.Json;
-using Microsoft.Data.SqlClient;
-using NTangle.Data;
 using NTangle.Test;
 using NUnit.Framework;
 using SqlServerDemo.Publisher.Data;
@@ -43,9 +41,7 @@ namespace SqlServerDemo.Test
             script =
                 "DELETE FROM [NTangle].[VersionTracking]" + Environment.NewLine +
                 "DELETE FROM [NTangle].[PostsBatchTracking]" + Environment.NewLine +
-                "DECLARE @Lsn BINARY(10)" + Environment.NewLine +
-                "SET @Lsn = sys.fn_cdc_get_max_lsn()" + Environment.NewLine +
-                "INSERT INTO [NTangle].[PostsBatchTracking] ([CreatedDate], [PostsMinLsn], [PostsMaxLsn], [CommentsMinLsn], [CommentsMaxLsn], [CommentsTagsMinLsn], [CommentsTagsMaxLsn], [PostsTagsMinLsn], [PostsTagsMaxLsn], [IsComplete], [CompletedDate], [HasDataLoss]) VALUES('2021-01-01T00:00:00', @Lsn, @Lsn, @Lsn, @Lsn, @Lsn, @Lsn, @Lsn, @Lsn, 1, '2021-01-01T00:00:00', 0)";
+                "EXEC [NTangle].[spPostsBatchReset]";
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
         }

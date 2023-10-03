@@ -292,6 +292,11 @@
           "title": "The 'CDC' _complete_ batch stored procedure name.",
           "description": "Defaults to 'sp' (literal) + 'Name' + 'BatchComplete' (literal); e.g. 'spNameBatchComplete'."
         },
+        "resetStoredProcedure": {
+          "type": "string",
+          "title": "The 'CDC' _reset_ batch stored procedure name.",
+          "description": "Defaults to 'sp' (literal) + 'Name' + 'BatchReset' (literal); e.g. 'spNameBatchReset'."
+        },
         "cdcSchema": {
           "type": "string",
           "title": "The schema name for the generated 'CDC'-related database artefacts.",

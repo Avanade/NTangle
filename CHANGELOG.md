@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v2.3.2
+- *Enhancement:* Added new `spXxxBatchReset` stored procedure to reset the bacth tracking to the latest lsn. Can be used to fix data loss batch by completing with the latest lsn. Also useful to support unit testing.
+- *Fixed:* Updated `DbEx` (`v2.3.11`) and `CoreEx` (`v3.3.1`).
+
 ## v2.3.1
 - *Fixed:* Updated `DbEx` (`v2.3.8`) and `OnRamp` (`v1.0.8`).
 
