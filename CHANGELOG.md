@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.3.3
+- *Fixed:* Stored procedure `spXxxBatchReset` updated to correctly set the completed date within the batch tracking table.
+
 ## v2.3.2
 - *Enhancement:* Added new `spXxxBatchReset` stored procedure to reset the bacth tracking to the latest lsn. Can be used to fix data loss batch by completing with the latest lsn. Also useful to support unit testing.
 - *Fixed:* Updated `DbEx` (`v2.3.11`) and `CoreEx` (`v3.3.1`).
