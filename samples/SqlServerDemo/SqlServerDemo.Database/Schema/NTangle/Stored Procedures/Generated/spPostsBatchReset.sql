@@ -12,8 +12,9 @@ BEGIN
     BEGIN TRANSACTION
 
     -- Get the maximum lsn.
-    DECLARE @MaxLsn BINARY(10)
+    DECLARE @MaxLsn BINARY(10), @CompletedDate DATETIME2;
     SET @MaxLsn = sys.fn_cdc_get_max_lsn();
+    SET @CompletedDate = GETUTCDATE();
 
     -- Complete any incomplete batch (with data loss) with max lsn.
     UPDATE [_batch] SET
@@ -22,7 +23,7 @@ BEGIN
         [_batch].[CommentsTagsMaxLsn] = @MaxLsn,
         [_batch].[PostsTagsMaxLsn] = @MaxLsn,
         [_batch].[IsComplete] = 1,
-        [_batch].[CompletedDate] = GETUTCDATE(),
+        [_batch].[CompletedDate] = @CompletedDate,
         [_batch].[HasDataLoss] = 1
       FROM [NTangle].[PostsBatchTracking] AS [_batch]
       WHERE [_batch].[IsComplete] = 0;
@@ -40,6 +41,7 @@ BEGIN
           [PostsTagsMinLsn],
           [PostsTagsMaxLsn],
           [CreatedDate],
+          [CompletedDate],
           [IsComplete],
           [CorrelationId],
           [HasDataLoss]
@@ -53,7 +55,8 @@ BEGIN
           @MaxLsn,
           @MaxLsn,
           @MaxLsn,
-          GETUTCDATE(),
+          @CompletedDate,
+          @CompletedDate,
           1,
           LOWER(CONVERT(NVARCHAR(64), NEWID())),
           1
