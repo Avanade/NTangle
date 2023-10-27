@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.3.1" />
+    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.4.1" />
     <PackageReference Include="OnRamp" Version="1.0.8" />
   </ItemGroup>
   
