@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.3.4
+- *Fixed:* Updated `DbEx` (`v2.3.12`) and `CoreEx` (`v3.4.1`).
+
 ## v2.3.3
 - *Fixed:* Stored procedure `spXxxBatchReset` updated to correctly set the completed date within the batch tracking table.
 

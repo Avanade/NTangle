@@ -28,7 +28,7 @@ public class Startup : FunctionsStartup
             })
             .AddAzureServiceBusOrchestratedSubscriber((_, o) =>                             // Register the AzureServiceBusOrchestratedSubscriber (uses EventSubscriberOrchestrator above); this is what is used in the Azure Function.
             {
-                o.EventDataDeserializationErrorHandling = ErrorHandling.ThrowSubscriberException;
+                o.EventDataDeserializationErrorHandling = ErrorHandling.Handle;
                 o.InvalidDataHandling = ErrorHandling.CompleteWithError;
             });
     }
