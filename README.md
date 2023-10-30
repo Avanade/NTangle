@@ -16,6 +16,14 @@ This has a key advantage of being an excellent candidate within event-streaming 
 
 <br/>
 
+## Demonstration
+
+The following video provides a high-level demonstration of _nTangle_ and its capabilities.
+
+https://github.com/Avanade/NTangle/assets/12836934/2894d753-d5b7-4e2a-bc6d-fbf41289027f
+
+<br/>
+
 ## Status
 
 [![CI](https://github.com/Avanade/NTangle/actions/workflows/CI.yml/badge.svg)](https://github.com/Avanade/NTangle/actions/workflows/CI.yml) [![NuGet version](https://badge.fury.io/nu/NTangle.svg)](https://badge.fury.io/nu/NTangle)
