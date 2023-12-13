@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>NTangle.CodeGen</RootNamespace>
     <Product>NTangle Code-Gen</Product>
     <Title>NTangle Change-Data-Capture code-generation.</Title>
@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.4.1" />
-    <PackageReference Include="DbEx.SqlServer" Version="2.3.12" />
+    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.6.1" />
+    <PackageReference Include="DbEx.SqlServer" Version="2.3.13" />
   </ItemGroup>
 
   <Import Project="..\..\Common.targets" />

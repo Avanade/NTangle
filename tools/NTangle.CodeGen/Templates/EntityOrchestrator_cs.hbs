@@ -187,7 +187,7 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
   {{/each}}
   {{#each JoinNonCdcChildren}}
       {{#each Columns}}
-            {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"){{#unless @last}},{{/unless}}
+            {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"){{#unless @last}},{{else}}{{#unless ../@last}},{{/unless}}{{/unless}}
       {{/each}}
   {{/each}}
         };

@@ -2,6 +2,11 @@
 
 Represents the **NuGet** versions.
 
+## v2.3.5
+- *Fixed:* Updated `DbEx` (`v2.3.13`) and`CoreEx` (`v3.6.1`) and other dependencies.
+- *Fixed:* Added `net8.0` support.
+- *Fixed:* The `EntityOrchestrator` mapping code generation for sub-classes was not always being generated correctly; non-compiling missing `,` formatting corrected.
+
 ## v2.3.4
 - *Fixed:* Updated `DbEx` (`v2.3.12`) and `CoreEx` (`v3.4.1`).
 
