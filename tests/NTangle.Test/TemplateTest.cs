@@ -108,7 +108,7 @@ namespace NTangle.Test
             // Build and package (nuget) - only local package, no deployment.
             Assert.GreaterOrEqual(0, ExecuteCommand("powershell", $"{Path.Combine(_rootDir.FullName, "nuget-publish.ps1")} -configuration 'Debug' -IncludeSymbols -IncludeSource").exitCode, "nuget publish");
 
-            // Uninstall any previous beef templates (failure is ok here)
+            // Uninstall any previous nTangle templates (failure is ok here)
             ExecuteCommand("dotnet", "new uninstall NTangle.Template");
 
             // Uninstall the template solution from local package.
