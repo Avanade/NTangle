@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using Newtonsoft.Json;
 using OnRamp.Config;
 
 namespace NTangle.CodeGen.Config
@@ -8,7 +7,6 @@ namespace NTangle.CodeGen.Config
     /// <summary>
     /// Represents the table join on condition configuration.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [CodeGenClass("TableMapping", Title = "'TableMapping' object (database-driven)",
         Description = "The `TableMapping` object defines one or more related table identifier mappings.",
         ExampleMarkdown = @"A YAML configuration example is as follows:

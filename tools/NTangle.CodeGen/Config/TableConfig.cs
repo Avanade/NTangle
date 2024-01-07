@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
 using DbEx.DbSchema;
@@ -10,13 +9,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace NTangle.CodeGen.Config
 {
     /// <summary>
     /// Represents a database query configuration.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [CodeGenClass("Table", Title = "'Table' object (database-driven)",
         Description = "The `Table` object enables the definition of the primary table, one-or-more child tables and their respective join relationships, to enable Change Data Capture (CDC) event publishing."
             + " The `IncludeColumns` and `ExcludeColumns` provide a shorthand to include or exclude selected columns; with the `AliasColumns` providing a means to rename where required.",
@@ -41,14 +40,14 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the name of the primary table.
         /// </summary>
-        [JsonProperty("name", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("name")]
         [CodeGenProperty("Key", Title = "The name of the primary table.",  IsMandatory = true, IsImportant = true, IsUnique = true)]
         public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the default schema name used where not otherwise explicitly specified.
         /// </summary>
-        [JsonProperty("schema", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("schema")]
         [CodeGenProperty("Key", Title = "The default schema name used where not otherwise explicitly specified.",
             Description = "Defaults to `Root.Schema`.")]
         public string? Schema { get; set; }
@@ -56,7 +55,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the name of the primary table.
         /// </summary>
-        [JsonProperty("table", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("table")]
         [CodeGenProperty("Key", Title = "The name of the primary table.",
             Description = "Defaults to `Name`. This is used to specify the actual underlying database table name (required where the `Name` has been changed to enable uniqueness).")]
         public string? Table { get; set; }
@@ -64,7 +63,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the table alias name.
         /// </summary>
-        [JsonProperty("alias", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("alias")]
         [CodeGenProperty("Key", Title = "The table alias name (must be unique).",
             Description = "Will automatically default where not specified; for example a table named `Person` will default to `p`.")]
         public string? Alias { get; set; }
@@ -76,7 +75,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` names to be included in the underlying generated output.
         /// </summary>
-        [JsonProperty("includeColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("includeColumns")]
         [CodeGenPropertyCollection("Columns", Title = "The list of `Column` names to be included in the underlying generated output.", IsImportant = true,
             Description = "Where not specified this indicates that all `Columns` are to be included.")]
         public List<string>? IncludeColumns { get; set; }
@@ -84,7 +83,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` names to be excluded from the underlying generated output.
         /// </summary>
-        [JsonProperty("excludeColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("excludeColumns")]
         [CodeGenPropertyCollection("Columns", Title = "The list of `Column` names to be excluded from the underlying generated output.", IsImportant = true,
             Description = "Where not specified this indicates no `Columns` are to be excluded.")]
         public List<string>? ExcludeColumns { get; set; }
@@ -92,7 +91,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` and `Alias` pairs to enable column renaming.
         /// </summary>
-        [JsonProperty("aliasColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("aliasColumns")]
         [CodeGenPropertyCollection("Columns", Title = "The list of `Column` and `Alias` pairs (split by a `^` lookup character) to enable column aliasing/renaming.", IsImportant = true,
             Description = "Each alias value should be formatted as `Column` + `^` + `Alias`; e.g. `PCODE^ProductCode`.")]
         public List<string>? AliasColumns { get; set; }
@@ -104,7 +103,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the `Cdc` execute batch stored procedure name.
         /// </summary>
-        [JsonProperty("executeStoredProcedure", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("executeStoredProcedure")]
         [CodeGenProperty("Database", Title = "The `CDC` _execute_ batch stored procedure name.",
             Description = "Defaults to `sp` (literal) + `Name` + `BatchExecute` (literal); e.g. `spNameBatchExecute`.")]
         public string? ExecuteStoredProcedure { get; set; }
@@ -112,7 +111,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the `Cdc` complete batch stored procedure name.
         /// </summary>
-        [JsonProperty("completeStoredProcedure", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("completeStoredProcedure")]
         [CodeGenProperty("Database", Title = "The `CDC` _complete_ batch stored procedure name.",
             Description = "Defaults to `sp` (literal) + `Name` + `BatchComplete` (literal); e.g. `spNameBatchComplete`.")]
         public string? CompleteStoredProcedure { get; set; }
@@ -120,7 +119,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the `Cdc` reset batch stored procedure name.
         /// </summary>
-        [JsonProperty("resetStoredProcedure", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("resetStoredProcedure")]
         [CodeGenProperty("Database", Title = "The `CDC` _reset_ batch stored procedure name.",
             Description = "Defaults to `sp` (literal) + `Name` + `BatchReset` (literal); e.g. `spNameBatchReset`.")]
         public string? ResetStoredProcedure { get; set; }
@@ -128,7 +127,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the schema name for the `Cdc`-related database artefacts.
         /// </summary>
-        [JsonProperty("cdcSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("cdcSchema")]
         [CodeGenProperty("Database", Title = "The schema name for the generated `CDC`-related database artefacts.",
             Description = "Defaults to `Root.CdcSchema`.")]
         public string? CdcSchema { get; set; }
@@ -136,7 +135,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the corresponding `Cdc` Batch tracking table name.
         /// </summary>
-        [JsonProperty("batchTrackingTable", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("batchTrackingTable")]
         [CodeGenProperty("Database", Title = "The corresponding `CDC` Batch tracking table name.",
             Description = "Defaults to `Name` + `BatchTracking` (literal).")]
         public string? BatchTrackingTable { get; set; }
@@ -144,7 +143,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Indicates whether to enable `Cdc` within the database for the tables that participate.
         /// </summary>
-        [JsonProperty("cdcEnable", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("cdcEnable")]
         [CodeGenProperty("Database", Title = "Indicates whether to enable `Cdc` within the database for the tables that participate.",
             Description = "Defaults to `false`. This option can be overridden for each underlying table referenced.")]
         public bool? CdcEnable { get; set; }
@@ -156,7 +155,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the `Cdc` .NET model name.
         /// </summary>
-        [JsonProperty("model", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("model")]
         [CodeGenProperty(".NET", Title = "The .NET model name.",
             Description = "Defaults to `Name`.")]
         public string? Model { get; set; }
@@ -164,7 +163,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of extended (non-default) Dependency Injection (DI) parameters for the generated CDC `Orchestrator` constructor.
         /// </summary>
-        [JsonProperty("orchestratorCtorParams", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("orchestratorCtorParams")]
         [CodeGenPropertyCollection(".NET", Title = "The list of additional (non-default) Dependency Injection (DI) parameters for the generated CDC `Orchestrator` constructor.",
             Description = "Each constructor parameter should be formatted as `Type` + `^` + `Name`; e.g. `IConfiguration^Config`. Where the `Name` portion is not specified it will be inferred.")]
         public List<string>? OrchestratorCtorParams { get; set; }
@@ -172,7 +171,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the CDC .NET <see cref="CoreEx.Database.IDatabase"/> interface name.
         /// </summary>
-        [JsonProperty("database", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("database")]
         [CodeGenProperty(".NET", Title = "The .NET database `IDatabase` Type name used in the constructor for Dependency Injection (DI).",
             Description = "Defaults to `IDatabase`.")]
         public string? Database { get; set; }
@@ -180,7 +179,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` names that should be included (in addition to the primary key) for a logical delete.
         /// </summary>
-        [JsonProperty("includeColumnsOnDelete", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("includeColumnsOnDelete")]
         [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that should be included (in addition to the primary key) for a logical delete.",
            Description = "Where a column is not specified in this list its corresponding .NET property will be automatically cleared by the `CdcDataOrchestrator` as the data is technically considered as non-existing.")]
         public List<string>? IncludeColumnsOnDelete { get; set; }
@@ -188,15 +187,15 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the type of service that manages the underlying orchestrator.
         /// </summary>
-        [JsonProperty("service", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = new string[] { "None", "HostedService", "Service" },
+        [JsonPropertyName("service")]
+        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = ["None", "HostedService", "Service"],
             Description = "Defaults to `Root.Service`. A `HostedService` is an `IHostedService` implementation enabling long-running execution; whereas, `Service` is intended for self-managed execution.")]
         public string? Service { get; set; }
 
         /// <summary>
         /// Gets or sets the list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).
         /// </summary>
-        [JsonProperty("excludeColumnsFromETag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("excludeColumnsFromETag")]
         [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).",
             Description = "Defaults to `Root.CdcExcludeColumnsFromETag`.")]
         public List<string>? ExcludeColumnsFromETag { get; set; }
@@ -204,14 +203,14 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` names that represent the tenant id.
         /// </summary>
-        [JsonProperty("tenantIdColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("tenantIdColumns")]
         [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that represent the tenant identifier.")]
         public List<string>? TenantIdColumns { get; set; }
 
         /// <summary>
         /// Gets or sets the partition key.
         /// </summary>
-        [JsonProperty("partitionKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("partitionKey")]
         [CodeGenProperty(".NET", Title = "The partition key.",
             Description = "A partition key can be specified using either `PartitionKey` or `PartitionKeyColumns`.")]
         public string? PartitionKey { get; set; }
@@ -219,7 +218,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` names that represent the partition key.
         /// </summary>
-        [JsonProperty("partitionKeyColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("partitionKeyColumns")]
         [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that represent the partition key.",
             Description = "A partition key can be specified using either `PartitionKey` or `PartitionKeyColumns`.")]
         public List<string>? PartitionKeyColumns { get; set; }
@@ -231,7 +230,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the URI event source.
         /// </summary>
-        [JsonProperty("eventSource", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("eventSource")]
         [CodeGenProperty("Event", Title = "The Event Source.",
             Description = "Defaults to `Schema` + `/` (literal) + `Name` (as lowercase). Note: when used in code-generation the `Root.EventSourceRoot` will be prepended where specified.")]
         public string? EventSource { get; set; }
@@ -239,15 +238,15 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the default formatting for the Source when an Event is published.
         /// </summary>
-        [JsonProperty("eventSourceFormat", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Event", Title = "The default formatting for the Source when an Event is published.", Options = new string[] { "NameOnly", "NameAndKey", "NameAndTableKey" },
+        [JsonPropertyName("eventSourceFormat")]
+        [CodeGenProperty("Event", Title = "The default formatting for the Source when an Event is published.", Options = ["NameOnly", "NameAndKey", "NameAndTableKey"],
             Description = "Defaults to `Root.EventSourceFormat`.")]
         public string? EventSourceFormat { get; set; }
 
         /// <summary>
         /// Gets or sets the event subject.
         /// </summary>
-        [JsonProperty("eventSubject", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("eventSubject")]
         [CodeGenProperty("Event", Title = "The Event Subject.",
             Description = "Defaults to `ModelName`. Note: when used in code-generation the `Root.EventSubjectRoot` will be prepended where specified.")]
         public string? EventSubject { get; set; }
@@ -255,15 +254,15 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the default formatting for the Subject when an Event is published.
         /// </summary>
-        [JsonProperty("eventSubjectFormat", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Event", Title = "The default formatting for the Subject when an Event is published.", Options = new string[] { "NameOnly", "NameAndKey", "NameAndTableKey" },
+        [JsonPropertyName("eventSubjectFormat")]
+        [CodeGenProperty("Event", Title = "The default formatting for the Subject when an Event is published.", Options = ["NameOnly", "NameAndKey", "NameAndTableKey"],
             Description = "Defaults to `Root.EventSubjectFormat`.")]
         public string? EventSubjectFormat { get; set; }
 
         /// <summary>
         /// Gets or sets the event type.
         /// </summary>
-        [JsonProperty("eventType", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("eventType")]
         [CodeGenProperty("Event", Title = "The Event Type.",
             Description = "Defaults to `ModelName`. Note: when used in code-generation the `Root.EventTypeRoot` will be prepended where specified.")]
         public string? EventType { get; set; }
@@ -275,7 +274,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Indicates whether to perform Identifier Mapping (mapping to `GlobalId`) for the primary key.
         /// </summary>
-        [JsonProperty("identifierMapping", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("identifierMapping")]
         [CodeGenProperty("IdentifierMapping", Title = "Indicates whether to perform Identifier Mapping (mapping to `GlobalId`) for the primary key.", IsImportant = true,
            Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).")]
         public bool? IdentifierMapping { get; set; }
@@ -283,7 +282,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets JSON name for the `GlobalId` property where `IdentifierMapping` is `true`. Defaults to `globalId`.
         /// </summary>
-        [JsonProperty("identifierName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("identifierName")]
         [CodeGenProperty("IdentifierName", Title = "The JSON name for the `GlobalId` property where `IdentifierMapping` is `true`. Defaults to `globalId`.", IsImportant = true,
            Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).")]
         public string? IdentifierName { get; set; }
@@ -295,7 +294,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the column name for the `IsDeleted` capability.
         /// </summary>
-        [JsonProperty("isDeletedColumn", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("isDeletedColumn")]
         [CodeGenProperty("Infer", Title = "The column name for the `IsDeleted` (logical delete) capability (if any).",
             Description = "Defaults to `Root.ColumnIsDeleted`.")]
         public string? IsDeletedColumn { get; set; }
@@ -307,7 +306,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the corresponding <see cref="JoinConfig"/> collection.
         /// </summary>
-        [JsonProperty("joins", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("joins")]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `Join` collection.", IsImportant = true,
             Description = "A `Join` object provides the configuration for a table join.")]
         public List<JoinConfig>? Joins { get; set; }
@@ -315,7 +314,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the corresponding <see cref="WhereConfig"/> collection.
         /// </summary>
-        [JsonProperty("where", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("where")]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `Where` collection.", IsImportant = true,
             Description = "A `Where` object provides the configuration for a table where clause.")]
         public List<WhereConfig>? Where { get; set; }
@@ -323,7 +322,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the corresponding <see cref="TableIdentifierMappingColumnConfig"/> collection.
         /// </summary>
-        [JsonProperty("mappings", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("mappings")]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `TableMapping` collection.")]
         public List<TableIdentifierMappingColumnConfig>? Mappings { get; set; }
 
@@ -334,12 +333,12 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets the selected columns.
         /// </summary>
-        public List<ColumnConfig> SelectedColumns { get; } = new List<ColumnConfig>();
+        public List<ColumnConfig> SelectedColumns { get; } = [];
 
         /// <summary>
         /// Gets the list of primary key columns.
         /// </summary>
-        public List<ColumnConfig> PrimaryKeyColumns { get; } = new List<ColumnConfig>();
+        public List<ColumnConfig> PrimaryKeyColumns { get; } = [];
 
         /// <summary>
         /// Gets the selected columns excluding the <see cref="PrimaryKeyColumns"/>.
@@ -354,7 +353,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets the selected column configurations.
         /// </summary>
-        public List<ColumnConfig> Columns { get; } = new List<ColumnConfig>();
+        public List<ColumnConfig> Columns { get; } = [];
 
         /// <summary>
         /// Gets the <see cref="JoinConfig"/> collection for "all" those that are also CDC monitored.
@@ -384,7 +383,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets the Orchestrator constructor parameters.
         /// </summary>
-        public List<CtorParameterConfig> OrchestratorCtorParameters { get; } = new List<CtorParameterConfig>();
+        public List<CtorParameterConfig> OrchestratorCtorParameters { get; } = [];
 
         /// <summary>
         /// Gets the corresponding (actual) database table configuration.
@@ -419,17 +418,17 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets the list of properties to exlcude from the ETag.
         /// </summary>
-        public List<string> ExcludePropertiesFromETag { get; set; } = new List<string>();
+        public List<string> ExcludePropertiesFromETag { get; set; } = [];
 
         /// <summary>
         /// Gets the selected tenant identitifer columns.
         /// </summary>
-        public List<ColumnConfig> SelectedTenantIdColumns { get; } = new List<ColumnConfig>();
+        public List<ColumnConfig> SelectedTenantIdColumns { get; } = [];
 
         /// <summary>
         /// Gets the selected partition key columns.
         /// </summary>
-        public List<ColumnConfig> SelectedPartitionKeyColumns { get; } = new List<ColumnConfig>();
+        public List<ColumnConfig> SelectedPartitionKeyColumns { get; } = [];
 
         /// <summary>
         /// Indicates whether the partition key has been specified.
@@ -665,7 +664,7 @@ namespace NTangle.CodeGen.Config
         /// </summary>
         private async Task PrepareJoinsAsync()
         {
-            Joins ??= new List<JoinConfig>();
+            Joins ??= [];
 
             // Prepare the Join and also make sure the alias is unique.
             var dict = new Dictionary<string, int> { { Alias!, 1 } };
