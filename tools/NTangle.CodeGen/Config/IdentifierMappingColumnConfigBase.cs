@@ -1,18 +1,17 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
 using DbEx.DbSchema;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace NTangle.CodeGen.Config
 {
     /// <summary>
     /// Represents the table join on condition configuration.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [CodeGenClass("JoinOn", Title = "'JoinOn' object (database-driven)",
         Description = "The `JoinOn` object defines the join on characteristics for a `Join` object.",
         ExampleMarkdown = @"A YAML configuration example is as follows:
@@ -27,14 +26,14 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the name of the existing column that requires identifier mapping.
         /// </summary>
-        [JsonProperty("name", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("name")]
         [CodeGenProperty("Key", Title = "The name of of the existing column that requires identifier mapping.", IsMandatory = true)]
         public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the schema name of the related table.
         /// </summary>
-        [JsonProperty("schema", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("schema")]
         [CodeGenProperty("Key", Title = "The schema name of the related table.",
             Description = "Defaults to the owning (parent) table schema.")]
         public string? Schema { get; set; }
@@ -42,7 +41,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the schema name of the related table.
         /// </summary>
-        [JsonProperty("table", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("table")]
         [CodeGenProperty("Key", Title = "The name of the related table.", IsMandatory = true)]
         public string? Table { get; set; }
 

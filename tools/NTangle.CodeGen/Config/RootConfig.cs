@@ -5,7 +5,6 @@ using DbEx.DbSchema;
 using DbEx.SqlServer;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
 using OnRamp.Utility;
@@ -14,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace NTangle.CodeGen.Config
@@ -21,7 +21,6 @@ namespace NTangle.CodeGen.Config
     /// <summary>
     /// Represents the global database code-generation configuration.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [CodeGenClass("Root", Title = "The `Root` object (database-driven)",
         Description = "The `RootConfig` object defines the global properties that are used to drive the underlying database-driven CDC-oriented code-generation.",
         ExampleMarkdown = @"A YAML configuration example is as follows:
@@ -38,12 +37,14 @@ namespace NTangle.CodeGen.Config
     [CodeGenCategory("Collections", Title = "Provides related child (hierarchical) configuration.")]
     public sealed class RootConfig : ConfigRootBase<RootConfig>
     {
+        private static readonly char[] _separators = ['_', '-'];
+
         #region Key
 
         /// <summary>
         /// Gets or sets the default `Schema` name of the where the existing tables are defined in the database.
         /// </summary>
-        [JsonProperty("schema", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("schema")]
         [CodeGenProperty("Key", Title = "The default `Schema` name where the existing tables are defined within the database.", IsImportant = true,
             Description = "This is used as the default `Schema` for all child objects. Defaults to `dbo` (literal).")]
         public string? Schema { get; set; }
@@ -51,7 +52,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the schema name for the `Cdc`-related database artefacts.
         /// </summary>
-        [JsonProperty("cdcSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("cdcSchema")]
         [CodeGenProperty("Key", Title = "The schema name for the _ntangle_ generated `CDC`-related database artefacts.",
             Description = "Defaults to `NTangle` (literal).")]
         public string? CdcSchema { get; set; }
@@ -59,7 +60,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Indicates whether to create the `Cdc`-Schema within the database.
         /// </summary>
-        [JsonProperty("cdcSchemaCreate", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("cdcSchemaCreate")]
         [CodeGenProperty("Key", Title = "Indicates whether to create the `CdcSchema` within the database.",
             Description = "Defaults to `false`.")]
         public bool? CdcSchemaCreate { get; set; }
@@ -67,7 +68,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the table name for the `Cdc`-VersionTracking.
         /// </summary>
-        [JsonProperty("versionTrackingTable", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("versionTrackingTable")]
         [CodeGenProperty("Key", Title = "The table name for the `Cdc`-VersionTracking.",
             Description = "Defaults to `VersionTracking` (literal).")]
         public string? VersionTrackingTable { get; set; }
@@ -75,7 +76,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Indicates whether to enable `Cdc` within the database for the tables that participate.
         /// </summary>
-        [JsonProperty("cdcEnable", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("cdcEnable")]
         [CodeGenProperty("Key", Title = "Indicates whether to enable `Cdc` within the database for the tables that participate.",
             Description = "Defaults to `false`. This option can be overridden for each underlying table referenced.")]
         public bool? CdcEnable { get; set; }
@@ -87,7 +88,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Indicates whether to include the generation of the generic `CDC`-IdentifierMapping database capabilities.
         /// </summary>
-        [JsonProperty("identifierMapping", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("identifierMapping")]
         [CodeGenProperty("Identifier", Title = "Indicates whether to include the generation of the generic `CDC`-IdentifierMapping database capabilities.",
             Description = "Where set to `true` each underlying `Table` and corresponding `Join` must set `IdentifierMapping` explicitly.")]
         public bool? IdentifierMapping { get; set; }
@@ -95,15 +96,15 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the identifier mapping <see cref="Type"/>.
         /// </summary>
-        [JsonProperty("identifierMappingType", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Identifier", Title = "The type for the identifier mapping value.", Options = new string[] { "String", "Int", "Long", "Guid" },
+        [JsonPropertyName("identifierMappingType")]
+        [CodeGenProperty("Identifier", Title = "The type for the identifier mapping value.", Options = ["String", "Int", "Long", "Guid"],
             Description = "Defaults to `String`.")]
         public string? IdentifierMappingType { get; set; }
 
         /// <summary>
         /// Gets or sets the table name for the `Cdc`-IdentifierMapping.
         /// </summary>
-        [JsonProperty("identifierMappingTable", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("identifierMappingTable")]
         [CodeGenProperty("Identifier", Title = "The table name for the `Cdc`-IdentifierMapping.",
             Description = "Defaults to `IdentifierMapping` (literal).")]
         public string? IdentifierMappingTable { get; set; }
@@ -111,7 +112,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the stored procedure name for the `Cdc`-IdentifierMapping create.
         /// </summary>
-        [JsonProperty("identifierMappingStoredProcedure", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("identifierMappingStoredProcedure")]
         [CodeGenProperty("Identifier", Title = "The stored procedure name for the `Cdc`-IdentifierMapping create.",
             Description = "Defaults to `spIdentifierMappingCreate` (literal).")]
         public string? IdentifierMappingStoredProcedure { get; set; }
@@ -123,7 +124,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the column name for the `IsDeleted` capability.
         /// </summary>
-        [JsonProperty("isDeletedColumn", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("isDeletedColumn")]
         [CodeGenProperty("Infer", Title = "The column name for the `IsDeleted` (logical delete) capability (if any).",
             Description = "Defaults to `IsDeleted`.")]
         public string? IsDeletedColumn { get; set; }
@@ -135,31 +136,31 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the option to automatically rename the SQL Tables and Columns for use in .NET.
         /// </summary>
-        [JsonProperty("autoDotNetRename", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty(".NET", Title = "The option to automatically rename the SQL Tables and Columns for use in .NET.", Options = new string[] { "None", "PascalCase", "SnakeKebabToPascalCase" },
+        [JsonPropertyName("autoDotNetRename")]
+        [CodeGenProperty(".NET", Title = "The option to automatically rename the SQL Tables and Columns for use in .NET.", Options = ["None", "PascalCase", "SnakeKebabToPascalCase"],
             Description = "Defaults to `SnakeKebabToPascalCase` which will remove any underscores or hyphens separating each word and capitalize the first character of each; e.g. `internal-customer_id` would be renamed as `InternalCustomerId`. The `PascalCase` option will capatilize the first character only.")]
         public string? AutoDotNetRename { get; set; }
 
         /// <summary>
         /// Gets or sets the default list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).
         /// </summary>
-        [JsonProperty("excludeColumnsFromETag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("excludeColumnsFromETag")]
         [CodeGenPropertyCollection(".NET", Title = "The default list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking)")]
         public List<string>? ExcludeColumnsFromETag { get; set; }
 
         /// <summary>
         /// Get or sets the JSON Serializer to use for JSON property attribution.
         /// </summary>
-        [JsonProperty("jsonSerializer", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("CDC", Title = "The JSON Serializer to use for JSON property attribution.", Options = new string[] { "SystemText", "Newtonsoft" },
+        [JsonPropertyName("jsonSerializer")]
+        [CodeGenProperty("CDC", Title = "The JSON Serializer to use for JSON property attribution.", Options = ["SystemText", "Newtonsoft"],
             Description = "Defaults to `SystemText`.")]
         public string? JsonSerializer { get; set; }
 
         /// <summary>
         /// Gets or sets the type of service that manages the underlying orchestrator.
         /// </summary>
-        [JsonProperty("service", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = new string[] { "None", "HostedService", "Service" },
+        [JsonPropertyName("service")]
+        [CodeGenProperty("CDC", Title = "The type of service that manages the underlying orchestrator.", Options = ["None", "HostedService", "Service"],
             Description = "Defaults to `None`. A `HostedService` is an `IHostedService` implementation enabling long-running execution; whereas, `Service` is intended for self-managed execution.")]
         public string? Service { get; set; }
 
@@ -170,7 +171,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the root for the event name by prepending to all event subject names.
         /// </summary>
-        [JsonProperty("eventSubjectRoot", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("eventSubjectRoot")]
         [CodeGenProperty("Event", Title = "The root for the event name by prepending to all event subject names via CDC.",
             Description = "Used to enable the sending of messages to the likes of EventHubs, Service Broker, Kafka, etc.", IsImportant = true)]
         public string? EventSubjectRoot { get; set; }
@@ -178,31 +179,31 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the default formatting for the Subject when an Event is published.
         /// </summary>
-        [JsonProperty("eventSubjectFormat", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Event", Title = "The default formatting for the Subject when an Event is published via CDC.", Options = new string[] { "NameOnly", "NameAndKey", "NameAndTableKey" },
+        [JsonPropertyName("eventSubjectFormat")]
+        [CodeGenProperty("Event", Title = "The default formatting for the Subject when an Event is published via CDC.", Options = ["NameOnly", "NameAndKey", "NameAndTableKey"],
             Description = "Defaults to `NameOnly`.")]
         public string? EventSubjectFormat { get; set; }
 
         /// <summary>
         /// Gets or sets the formatting for the Action when an Event is published.
         /// </summary>
-        [JsonProperty("eventActionFormat", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Event", Title = "The formatting for the Action when an Event is published via CDC.", Options = new string[] { "None", "PastTense" }, IsImportant = true,
+        [JsonPropertyName("eventActionFormat")]
+        [CodeGenProperty("Event", Title = "The formatting for the Action when an Event is published via CDC.", Options = ["None", "PastTense"], IsImportant = true,
             Description = "Defaults to `None` (no formatting required, i.e. as-is).")]
         public string? EventActionFormat { get; set; }
 
         /// <summary>
         /// Gets or sets the URI kind for the event source URIs.
         /// </summary>
-        [JsonProperty("eventSourceKind", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Event", Title = "The URI kind for the event source URIs for CDC.", Options = new string[] { "None", "Absolute", "Relative", "RelativeOrAbsolute" },
+        [JsonPropertyName("eventSourceKind")]
+        [CodeGenProperty("Event", Title = "The URI kind for the event source URIs for CDC.", Options = ["None", "Absolute", "Relative", "RelativeOrAbsolute"],
             Description = "Defaults to `Relative` (being a relative path).")]
         public string? EventSourceKind { get; set; }
 
         /// <summary>
         /// Gets or sets the URI root for the event source by prepending to all event source URIs.
         /// </summary>
-        [JsonProperty("eventSourceRoot", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("eventSourceRoot")]
         [CodeGenProperty("Event", Title = "The URI root for the event source by prepending to all event source URIs for CDC.",
             Description = "The event source is only updated where an `EventSourceKind` is not `None`.")]
         public string? EventSourceRoot { get; set; }
@@ -210,15 +211,15 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the default formatting for the Source when an Event is published.
         /// </summary>
-        [JsonProperty("eventSourceFormat", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Event", Title = "The default formatting for the Source when an Event is published via CDC.", Options = new string[] { "NameOnly", "NameAndKey", "NameAndTableKey" },
+        [JsonPropertyName("eventSourceFormat")]
+        [CodeGenProperty("Event", Title = "The default formatting for the Source when an Event is published via CDC.", Options = ["NameOnly", "NameAndKey", "NameAndTableKey"],
             Description = "Defaults to `NameAndTableKey` (being the child `Cdc.ModelName` appended with the corresponding table key).")]
         public string? EventSourceFormat { get; set; }
 
         /// <summary>
         /// Gets or sets the root for the event type by prepending to all event type names.
         /// </summary>
-        [JsonProperty("eventTypeRoot", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("eventTypeRoot")]
         [CodeGenProperty("Event", Title = "The root for the event type by prepending to all event type names via CDC.",
             Description = "Used to enable the sending of messages to the likes of EventHubs, Service Broker, Kafka, etc. Defaults to `EventSubjectRoot`.", IsImportant = true)]
         public string? EventTypeRoot { get; set; }
@@ -230,7 +231,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Indicates whether to generate the event outbox SQL and .NET artefacts.
         /// </summary>
-        [JsonProperty("outbox", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("outbox")]
         [CodeGenProperty("Outbox", Title = "Indicates whether to generate the event outbox SQL and .NET artefacts.",
             Description = "Defaults to `false`.")]
         public bool? Outbox { get; set; }
@@ -238,7 +239,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the schema name of the event outbox table.
         /// </summary>
-        [JsonProperty("outboxSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("outboxSchema")]
         [CodeGenProperty("Outbox", Title = "The schema name of the event outbox table.",
             Description = "Defaults to `Outbox` (literal).")]
         public string? OutboxSchema { get; set; }
@@ -246,7 +247,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Indicates whether to create the `Outbox`-Schema within the database.
         /// </summary>
-        [JsonProperty("outboxSchemaCreate", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("outboxSchemaCreate")]
         [CodeGenProperty("Key", Title = "Indicates whether to create the `OutboxSchema` within the database.",
             Description = "Defaults to `false`.")]
         public bool? OutboxSchemaCreate { get; set; }
@@ -254,7 +255,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the name of the event outbox table.
         /// </summary>
-        [JsonProperty("outboxTable", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("outboxTable")]
         [CodeGenProperty("Outbox", Title = "The name of the event outbox table.",
             Description = "Defaults to `EventOutbox` (literal).")]
         public string? OutboxTable { get; set; }
@@ -262,7 +263,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the stored procedure name for the event outbox enqueue.
         /// </summary>
-        [JsonProperty("outboxEnqueueStoredProcedure", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("outboxEnqueueStoredProcedure")]
         [CodeGenProperty("Outbox", Title = "The stored procedure name for the event outbox enqueue.",
             Description = "Defaults to `spEventOutboxEnqueue` (literal).")]
         public string? OutboxEnqueueStoredProcedure { get; set; }
@@ -270,7 +271,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the stored procedure name for the event outbox dequeue.
         /// </summary>
-        [JsonProperty("outboxDequeueStoredProcedure", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("outboxDequeueStoredProcedure")]
         [CodeGenProperty("Outbox", Title = "The stored procedure name for the event outbox dequeue.",
             Description = "Defaults to `spEventOutboxDequeue` (literal).")]
         public string? OutboxDequeueStoredProcedure { get; set; }
@@ -282,7 +283,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the base path (directory) prefix for the artefacts.
         /// </summary>
-        [JsonProperty("pathBase", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("pathBase")]
         [CodeGenProperty("Path", Title = "The base path (directory) prefix for the Database-related artefacts; other `Path*` properties append to this value when they are not specifically overridden.",
             Description = "Defaults to `AppName` (runtime parameter). For example `Avanade.Application`.")]
         public string? PathBase { get; set; }
@@ -290,7 +291,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the path (directory) for the root Database-related artefacts.
         /// </summary>
-        [JsonProperty("pathDatabase", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("pathDatabase")]
         [CodeGenProperty("Path", Title = "The path (directory) for the Schema Database-related artefacts.",
             Description = "Defaults to `PathBase` + `.Database` (literal). For example `Avanade.Application.Database`.")]
         public string? PathDatabase { get; set; }
@@ -298,7 +299,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the path (directory) for the Schema Database-related artefacts.
         /// </summary>
-        [JsonProperty("pathDatabaseSchema", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("pathDatabaseSchema")]
         [CodeGenProperty("Path", Title = "The path (directory) for the Schema Database-related artefacts.",
             Description = "Defaults to `PathDatabase` + `/Schema` (literal). For example `Avanade.Application.Database/Schema`.")]
         public string? PathDatabaseSchema { get; set; }
@@ -306,7 +307,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the path (directory) for the Schema Database-related artefacts.
         /// </summary>
-        [JsonProperty("pathDatabaseMigrations", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("pathDatabaseMigrations")]
         [CodeGenProperty("Path", Title = "The path (directory) for the Schema Database-related artefacts.",
             Description = "Defaults to `PathDatabase` + `/Migrations` (literal). For example `Avanade.Application.Database/Migrations`.")]
         public string? PathDatabaseMigrations { get; set; }
@@ -314,7 +315,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the path (directory) for the CDC-related (.NET) publisher artefacts.
         /// </summary>
-        [JsonProperty("pathDotNetPublisher", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("pathDotNetPublisher")]
         [CodeGenProperty("Path", Title = "The path (directory) for the CDC-related (.NET) artefacts.",
             Description = "Defaults to `PathBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.")]
         public string? PathDotNetPublisher { get; set; }
@@ -326,7 +327,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the base Namespace (root) for the .NET artefacts.
         /// </summary>
-        [JsonProperty("namespaceBase", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("namespaceBase")]
         [CodeGenProperty("Namespace", Title = "The base Namespace (root) for the .NET artefacts.",
             Description = "Defaults to `AppName` (runtime parameter). For example `Avanade.Application`.")]
         public string? NamespaceBase { get; set; }
@@ -334,7 +335,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the Namespace (root) for the CDC-related publisher .NET artefacts.
         /// </summary>
-        [JsonProperty("namespacePublisher", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("namespacePublisher")]
         [CodeGenProperty("Namespace", Title = "The Namespace (root) for the CDC-related Publisher .NET artefacts.",
             Description = "Defaults to `NamespaceBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.")]
         public string? NamespacePublisher { get; set; }
@@ -342,7 +343,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the Namespace (root) for the outbox-related .NET artefacts.
         /// </summary>
-        [JsonProperty("namespaceOutbox", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("namespaceOutbox")]
         [CodeGenProperty("Namespace", Title = "The Namespace (root) for the Outbox-related Publisher .NET artefacts.",
             Description = "Defaults to `NamespacePublisher`.")]
         public string? NamespaceOutbox { get; set; }
@@ -354,7 +355,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the corresponding <see cref="TableConfig"/> collection.
         /// </summary>
-        [JsonProperty("tables", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("tables")]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `Table` collection.", IsImportant = true,
             Description = "A `Table` object provides the primary database table configuration for Change Data Capture (CDC), including multiple child table joins to form a composite entity.")]
         public List<TableConfig>? Tables { get; set; }
@@ -403,7 +404,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets the list of tables that are to be CDC-enabled.
         /// </summary>
-        public List<CdcEnableConfig> CdcEnabledTables { get; } = new List<CdcEnableConfig>();
+        public List<CdcEnableConfig> CdcEnabledTables { get; } = [];
 
         /// <summary>
         /// Gets the list of hosted services.
@@ -494,7 +495,7 @@ namespace NTangle.CodeGen.Config
 
             // That only leaves SnakeKebabToPascalCase.
             var sb = new StringBuilder();
-            foreach (var part in name.Split(new char[] { '_', '-' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var part in name.Split(_separators, StringSplitOptions.RemoveEmptyEntries))
             {
                 sb.Append(StringConverter.ToPascalCase(part));
             }

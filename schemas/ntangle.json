@@ -4,43 +4,43 @@
   "definitions": {
     "Root": {
       "type": "object",
-      "title": "The 'Root' object (database-driven)",
-      "description": "The 'RootConfig' object defines the global properties that are used to drive the underlying database-driven CDC-oriented code-generation.",
+      "title": "The \u0060Root\u0060 object (database-driven)",
+      "description": "The \u0060RootConfig\u0060 object defines the global properties that are used to drive the underlying database-driven CDC-oriented code-generation.",
       "properties": {
         "schema": {
           "type": "string",
-          "title": "The default 'Schema' name where the existing tables are defined within the database.",
-          "description": "This is used as the default 'Schema' for all child objects. Defaults to 'dbo' (literal)."
+          "title": "The default \u0060Schema\u0060 name where the existing tables are defined within the database.",
+          "description": "This is used as the default \u0060Schema\u0060 for all child objects. Defaults to \u0060dbo\u0060 (literal)."
         },
         "cdcSchema": {
           "type": "string",
-          "title": "The schema name for the _ntangle_ generated 'CDC'-related database artefacts.",
-          "description": "Defaults to 'NTangle' (literal)."
+          "title": "The schema name for the _ntangle_ generated \u0060CDC\u0060-related database artefacts.",
+          "description": "Defaults to \u0060NTangle\u0060 (literal)."
         },
         "cdcSchemaCreate": {
           "type": "boolean",
-          "title": "Indicates whether to create the 'CdcSchema' within the database.",
-          "description": "Defaults to 'false'."
+          "title": "Indicates whether to create the \u0060CdcSchema\u0060 within the database.",
+          "description": "Defaults to \u0060false\u0060."
         },
         "versionTrackingTable": {
           "type": "string",
-          "title": "The table name for the 'Cdc'-VersionTracking.",
-          "description": "Defaults to 'VersionTracking' (literal)."
+          "title": "The table name for the \u0060Cdc\u0060-VersionTracking.",
+          "description": "Defaults to \u0060VersionTracking\u0060 (literal)."
         },
         "cdcEnable": {
           "type": "boolean",
-          "title": "Indicates whether to enable 'Cdc' within the database for the tables that participate.",
-          "description": "Defaults to 'false'. This option can be overridden for each underlying table referenced."
+          "title": "Indicates whether to enable \u0060Cdc\u0060 within the database for the tables that participate.",
+          "description": "Defaults to \u0060false\u0060. This option can be overridden for each underlying table referenced."
         },
         "identifierMapping": {
           "type": "boolean",
-          "title": "Indicates whether to include the generation of the generic 'CDC'-IdentifierMapping database capabilities.",
-          "description": "Where set to 'true' each underlying 'Table' and corresponding 'Join' must set 'IdentifierMapping' explicitly."
+          "title": "Indicates whether to include the generation of the generic \u0060CDC\u0060-IdentifierMapping database capabilities.",
+          "description": "Where set to \u0060true\u0060 each underlying \u0060Table\u0060 and corresponding \u0060Join\u0060 must set \u0060IdentifierMapping\u0060 explicitly."
         },
         "identifierMappingType": {
           "type": "string",
           "title": "The type for the identifier mapping value.",
-          "description": "Defaults to 'String'.",
+          "description": "Defaults to \u0060String\u0060.",
           "enum": [
             "String",
             "Int",
@@ -50,23 +50,23 @@
         },
         "identifierMappingTable": {
           "type": "string",
-          "title": "The table name for the 'Cdc'-IdentifierMapping.",
-          "description": "Defaults to 'IdentifierMapping' (literal)."
+          "title": "The table name for the \u0060Cdc\u0060-IdentifierMapping.",
+          "description": "Defaults to \u0060IdentifierMapping\u0060 (literal)."
         },
         "identifierMappingStoredProcedure": {
           "type": "string",
-          "title": "The stored procedure name for the 'Cdc'-IdentifierMapping create.",
-          "description": "Defaults to 'spIdentifierMappingCreate' (literal)."
+          "title": "The stored procedure name for the \u0060Cdc\u0060-IdentifierMapping create.",
+          "description": "Defaults to \u0060spIdentifierMappingCreate\u0060 (literal)."
         },
         "isDeletedColumn": {
           "type": "string",
-          "title": "The column name for the 'IsDeleted' (logical delete) capability (if any).",
-          "description": "Defaults to 'IsDeleted'."
+          "title": "The column name for the \u0060IsDeleted\u0060 (logical delete) capability (if any).",
+          "description": "Defaults to \u0060IsDeleted\u0060."
         },
         "autoDotNetRename": {
           "type": "string",
           "title": "The option to automatically rename the SQL Tables and Columns for use in .NET.",
-          "description": "Defaults to 'SnakeKebabToPascalCase' which will remove any underscores or hyphens separating each word and capitalize the first character of each; e.g. 'internal-customer_id' would be renamed as 'InternalCustomerId'. The 'PascalCase' option will capatilize the first character only.",
+          "description": "Defaults to \u0060SnakeKebabToPascalCase\u0060 which will remove any underscores or hyphens separating each word and capitalize the first character of each; e.g. \u0060internal-customer_id\u0060 would be renamed as \u0060InternalCustomerId\u0060. The \u0060PascalCase\u0060 option will capatilize the first character only.",
           "enum": [
             "None",
             "PascalCase",
@@ -75,7 +75,7 @@
         },
         "excludeColumnsFromETag": {
           "type": "array",
-          "title": "The default list of 'Column' names that should be excluded from the generated ETag (used for the likes of duplicate send tracking)",
+          "title": "The default list of \u0060Column\u0060 names that should be excluded from the generated ETag (used for the likes of duplicate send tracking)",
           "items": {
             "type": "string"
           }
@@ -83,7 +83,7 @@
         "jsonSerializer": {
           "type": "string",
           "title": "The JSON Serializer to use for JSON property attribution.",
-          "description": "Defaults to 'SystemText'.",
+          "description": "Defaults to \u0060SystemText\u0060.",
           "enum": [
             "SystemText",
             "Newtonsoft"
@@ -92,7 +92,7 @@
         "service": {
           "type": "string",
           "title": "The type of service that manages the underlying orchestrator.",
-          "description": "Defaults to 'None'. A 'HostedService' is an 'IHostedService' implementation enabling long-running execution; whereas, 'Service' is intended for self-managed execution.",
+          "description": "Defaults to \u0060None\u0060. A \u0060HostedService\u0060 is an \u0060IHostedService\u0060 implementation enabling long-running execution; whereas, \u0060Service\u0060 is intended for self-managed execution.",
           "enum": [
             "None",
             "HostedService",
@@ -107,7 +107,7 @@
         "eventSubjectFormat": {
           "type": "string",
           "title": "The default formatting for the Subject when an Event is published via CDC.",
-          "description": "Defaults to 'NameOnly'.",
+          "description": "Defaults to \u0060NameOnly\u0060.",
           "enum": [
             "NameOnly",
             "NameAndKey",
@@ -117,7 +117,7 @@
         "eventActionFormat": {
           "type": "string",
           "title": "The formatting for the Action when an Event is published via CDC.",
-          "description": "Defaults to 'None' (no formatting required, i.e. as-is).",
+          "description": "Defaults to \u0060None\u0060 (no formatting required, i.e. as-is).",
           "enum": [
             "None",
             "PastTense"
@@ -126,7 +126,7 @@
         "eventSourceKind": {
           "type": "string",
           "title": "The URI kind for the event source URIs for CDC.",
-          "description": "Defaults to 'Relative' (being a relative path).",
+          "description": "Defaults to \u0060Relative\u0060 (being a relative path).",
           "enum": [
             "None",
             "Absolute",
@@ -137,12 +137,12 @@
         "eventSourceRoot": {
           "type": "string",
           "title": "The URI root for the event source by prepending to all event source URIs for CDC.",
-          "description": "The event source is only updated where an 'EventSourceKind' is not 'None'."
+          "description": "The event source is only updated where an \u0060EventSourceKind\u0060 is not \u0060None\u0060."
         },
         "eventSourceFormat": {
           "type": "string",
           "title": "The default formatting for the Source when an Event is published via CDC.",
-          "description": "Defaults to 'NameAndTableKey' (being the child 'Cdc.ModelName' appended with the corresponding table key).",
+          "description": "Defaults to \u0060NameAndTableKey\u0060 (being the child \u0060Cdc.ModelName\u0060 appended with the corresponding table key).",
           "enum": [
             "NameOnly",
             "NameAndKey",
@@ -152,82 +152,82 @@
         "eventTypeRoot": {
           "type": "string",
           "title": "The root for the event type by prepending to all event type names via CDC.",
-          "description": "Used to enable the sending of messages to the likes of EventHubs, Service Broker, Kafka, etc. Defaults to 'EventSubjectRoot'."
+          "description": "Used to enable the sending of messages to the likes of EventHubs, Service Broker, Kafka, etc. Defaults to \u0060EventSubjectRoot\u0060."
         },
         "outbox": {
           "type": "boolean",
           "title": "Indicates whether to generate the event outbox SQL and .NET artefacts.",
-          "description": "Defaults to 'false'."
+          "description": "Defaults to \u0060false\u0060."
         },
         "outboxSchema": {
           "type": "string",
           "title": "The schema name of the event outbox table.",
-          "description": "Defaults to 'Outbox' (literal)."
+          "description": "Defaults to \u0060Outbox\u0060 (literal)."
         },
         "outboxSchemaCreate": {
           "type": "boolean",
-          "title": "Indicates whether to create the 'OutboxSchema' within the database.",
-          "description": "Defaults to 'false'."
+          "title": "Indicates whether to create the \u0060OutboxSchema\u0060 within the database.",
+          "description": "Defaults to \u0060false\u0060."
         },
         "outboxTable": {
           "type": "string",
           "title": "The name of the event outbox table.",
-          "description": "Defaults to 'EventOutbox' (literal)."
+          "description": "Defaults to \u0060EventOutbox\u0060 (literal)."
         },
         "outboxEnqueueStoredProcedure": {
           "type": "string",
           "title": "The stored procedure name for the event outbox enqueue.",
-          "description": "Defaults to 'spEventOutboxEnqueue' (literal)."
+          "description": "Defaults to \u0060spEventOutboxEnqueue\u0060 (literal)."
         },
         "outboxDequeueStoredProcedure": {
           "type": "string",
           "title": "The stored procedure name for the event outbox dequeue.",
-          "description": "Defaults to 'spEventOutboxDequeue' (literal)."
+          "description": "Defaults to \u0060spEventOutboxDequeue\u0060 (literal)."
         },
         "pathBase": {
           "type": "string",
-          "title": "The base path (directory) prefix for the Database-related artefacts; other 'Path*' properties append to this value when they are not specifically overridden.",
-          "description": "Defaults to 'AppName' (runtime parameter). For example 'Avanade.Application'."
+          "title": "The base path (directory) prefix for the Database-related artefacts; other \u0060Path*\u0060 properties append to this value when they are not specifically overridden.",
+          "description": "Defaults to \u0060AppName\u0060 (runtime parameter). For example \u0060Avanade.Application\u0060."
         },
         "pathDatabase": {
           "type": "string",
           "title": "The path (directory) for the Schema Database-related artefacts.",
-          "description": "Defaults to 'PathBase' + '.Database' (literal). For example 'Avanade.Application.Database'."
+          "description": "Defaults to \u0060PathBase\u0060 \u002B \u0060.Database\u0060 (literal). For example \u0060Avanade.Application.Database\u0060."
         },
         "pathDatabaseSchema": {
           "type": "string",
           "title": "The path (directory) for the Schema Database-related artefacts.",
-          "description": "Defaults to 'PathDatabase' + '/Schema' (literal). For example 'Avanade.Application.Database/Schema'."
+          "description": "Defaults to \u0060PathDatabase\u0060 \u002B \u0060/Schema\u0060 (literal). For example \u0060Avanade.Application.Database/Schema\u0060."
         },
         "pathDatabaseMigrations": {
           "type": "string",
           "title": "The path (directory) for the Schema Database-related artefacts.",
-          "description": "Defaults to 'PathDatabase' + '/Migrations' (literal). For example 'Avanade.Application.Database/Migrations'."
+          "description": "Defaults to \u0060PathDatabase\u0060 \u002B \u0060/Migrations\u0060 (literal). For example \u0060Avanade.Application.Database/Migrations\u0060."
         },
         "pathDotNetPublisher": {
           "type": "string",
           "title": "The path (directory) for the CDC-related (.NET) artefacts.",
-          "description": "Defaults to 'PathBase' + '.Publisher' (literal). For example 'Avanade.Application.Publisher'."
+          "description": "Defaults to \u0060PathBase\u0060 \u002B \u0060.Publisher\u0060 (literal). For example \u0060Avanade.Application.Publisher\u0060."
         },
         "namespaceBase": {
           "type": "string",
           "title": "The base Namespace (root) for the .NET artefacts.",
-          "description": "Defaults to 'AppName' (runtime parameter). For example 'Avanade.Application'."
+          "description": "Defaults to \u0060AppName\u0060 (runtime parameter). For example \u0060Avanade.Application\u0060."
         },
         "namespacePublisher": {
           "type": "string",
           "title": "The Namespace (root) for the CDC-related Publisher .NET artefacts.",
-          "description": "Defaults to 'NamespaceBase' + '.Publisher' (literal). For example 'Avanade.Application.Publisher'."
+          "description": "Defaults to \u0060NamespaceBase\u0060 \u002B \u0060.Publisher\u0060 (literal). For example \u0060Avanade.Application.Publisher\u0060."
         },
         "namespaceOutbox": {
           "type": "string",
           "title": "The Namespace (root) for the Outbox-related Publisher .NET artefacts.",
-          "description": "Defaults to 'NamespacePublisher'."
+          "description": "Defaults to \u0060NamespacePublisher\u0060."
         },
         "tables": {
           "type": "array",
-          "title": "The corresponding 'Table' collection.",
-          "description": "A 'Table' object provides the primary database table configuration for Change Data Capture (CDC), including multiple child table joins to form a composite entity.",
+          "title": "The corresponding \u0060Table\u0060 collection.",
+          "description": "A \u0060Table\u0060 object provides the primary database table configuration for Change Data Capture (CDC), including multiple child table joins to form a composite entity.",
           "items": {
             "$ref": "#/definitions/Table"
           }
@@ -236,8 +236,8 @@
     },
     "Table": {
       "type": "object",
-      "title": "'Table' object (database-driven)",
-      "description": "The 'Table' object enables the definition of the primary table, one-or-more child tables and their respective join relationships, to enable Change Data Capture (CDC) event publishing. The 'IncludeColumns' and 'ExcludeColumns' provide a shorthand to include or exclude selected columns; with the 'AliasColumns' providing a means to rename where required.",
+      "title": "\u0027Table\u0027 object (database-driven)",
+      "description": "The \u0060Table\u0060 object enables the definition of the primary table, one-or-more child tables and their respective join relationships, to enable Change Data Capture (CDC) event publishing. The \u0060IncludeColumns\u0060 and \u0060ExcludeColumns\u0060 provide a shorthand to include or exclude selected columns; with the \u0060AliasColumns\u0060 providing a means to rename where required.",
       "properties": {
         "name": {
           "type": "string",
@@ -246,94 +246,94 @@
         "schema": {
           "type": "string",
           "title": "The default schema name used where not otherwise explicitly specified.",
-          "description": "Defaults to 'Root.Schema'."
+          "description": "Defaults to \u0060Root.Schema\u0060."
         },
         "table": {
           "type": "string",
           "title": "The name of the primary table.",
-          "description": "Defaults to 'Name'. This is used to specify the actual underlying database table name (required where the 'Name' has been changed to enable uniqueness)."
+          "description": "Defaults to \u0060Name\u0060. This is used to specify the actual underlying database table name (required where the \u0060Name\u0060 has been changed to enable uniqueness)."
         },
         "alias": {
           "type": "string",
           "title": "The table alias name (must be unique).",
-          "description": "Will automatically default where not specified; for example a table named 'Person' will default to 'p'."
+          "description": "Will automatically default where not specified; for example a table named \u0060Person\u0060 will default to \u0060p\u0060."
         },
         "includeColumns": {
           "type": "array",
-          "title": "The list of 'Column' names to be included in the underlying generated output.",
-          "description": "Where not specified this indicates that all 'Columns' are to be included.",
+          "title": "The list of \u0060Column\u0060 names to be included in the underlying generated output.",
+          "description": "Where not specified this indicates that all \u0060Columns\u0060 are to be included.",
           "items": {
             "type": "string"
           }
         },
         "excludeColumns": {
           "type": "array",
-          "title": "The list of 'Column' names to be excluded from the underlying generated output.",
-          "description": "Where not specified this indicates no 'Columns' are to be excluded.",
+          "title": "The list of \u0060Column\u0060 names to be excluded from the underlying generated output.",
+          "description": "Where not specified this indicates no \u0060Columns\u0060 are to be excluded.",
           "items": {
             "type": "string"
           }
         },
         "aliasColumns": {
           "type": "array",
-          "title": "The list of 'Column' and 'Alias' pairs (split by a '^' lookup character) to enable column aliasing/renaming.",
-          "description": "Each alias value should be formatted as 'Column' + '^' + 'Alias'; e.g. 'PCODE^ProductCode'.",
+          "title": "The list of \u0060Column\u0060 and \u0060Alias\u0060 pairs (split by a \u0060^\u0060 lookup character) to enable column aliasing/renaming.",
+          "description": "Each alias value should be formatted as \u0060Column\u0060 \u002B \u0060^\u0060 \u002B \u0060Alias\u0060; e.g. \u0060PCODE^ProductCode\u0060.",
           "items": {
             "type": "string"
           }
         },
         "executeStoredProcedure": {
           "type": "string",
-          "title": "The 'CDC' _execute_ batch stored procedure name.",
-          "description": "Defaults to 'sp' (literal) + 'Name' + 'BatchExecute' (literal); e.g. 'spNameBatchExecute'."
+          "title": "The \u0060CDC\u0060 _execute_ batch stored procedure name.",
+          "description": "Defaults to \u0060sp\u0060 (literal) \u002B \u0060Name\u0060 \u002B \u0060BatchExecute\u0060 (literal); e.g. \u0060spNameBatchExecute\u0060."
         },
         "completeStoredProcedure": {
           "type": "string",
-          "title": "The 'CDC' _complete_ batch stored procedure name.",
-          "description": "Defaults to 'sp' (literal) + 'Name' + 'BatchComplete' (literal); e.g. 'spNameBatchComplete'."
+          "title": "The \u0060CDC\u0060 _complete_ batch stored procedure name.",
+          "description": "Defaults to \u0060sp\u0060 (literal) \u002B \u0060Name\u0060 \u002B \u0060BatchComplete\u0060 (literal); e.g. \u0060spNameBatchComplete\u0060."
         },
         "resetStoredProcedure": {
           "type": "string",
-          "title": "The 'CDC' _reset_ batch stored procedure name.",
-          "description": "Defaults to 'sp' (literal) + 'Name' + 'BatchReset' (literal); e.g. 'spNameBatchReset'."
+          "title": "The \u0060CDC\u0060 _reset_ batch stored procedure name.",
+          "description": "Defaults to \u0060sp\u0060 (literal) \u002B \u0060Name\u0060 \u002B \u0060BatchReset\u0060 (literal); e.g. \u0060spNameBatchReset\u0060."
         },
         "cdcSchema": {
           "type": "string",
-          "title": "The schema name for the generated 'CDC'-related database artefacts.",
-          "description": "Defaults to 'Root.CdcSchema'."
+          "title": "The schema name for the generated \u0060CDC\u0060-related database artefacts.",
+          "description": "Defaults to \u0060Root.CdcSchema\u0060."
         },
         "batchTrackingTable": {
           "type": "string",
-          "title": "The corresponding 'CDC' Batch tracking table name.",
-          "description": "Defaults to 'Name' + 'BatchTracking' (literal)."
+          "title": "The corresponding \u0060CDC\u0060 Batch tracking table name.",
+          "description": "Defaults to \u0060Name\u0060 \u002B \u0060BatchTracking\u0060 (literal)."
         },
         "cdcEnable": {
           "type": "boolean",
-          "title": "Indicates whether to enable 'Cdc' within the database for the tables that participate.",
-          "description": "Defaults to 'false'. This option can be overridden for each underlying table referenced."
+          "title": "Indicates whether to enable \u0060Cdc\u0060 within the database for the tables that participate.",
+          "description": "Defaults to \u0060false\u0060. This option can be overridden for each underlying table referenced."
         },
         "model": {
           "type": "string",
           "title": "The .NET model name.",
-          "description": "Defaults to 'Name'."
+          "description": "Defaults to \u0060Name\u0060."
         },
         "orchestratorCtorParams": {
           "type": "array",
-          "title": "The list of additional (non-default) Dependency Injection (DI) parameters for the generated CDC 'Orchestrator' constructor.",
-          "description": "Each constructor parameter should be formatted as 'Type' + '^' + 'Name'; e.g. 'IConfiguration^Config'. Where the 'Name' portion is not specified it will be inferred.",
+          "title": "The list of additional (non-default) Dependency Injection (DI) parameters for the generated CDC \u0060Orchestrator\u0060 constructor.",
+          "description": "Each constructor parameter should be formatted as \u0060Type\u0060 \u002B \u0060^\u0060 \u002B \u0060Name\u0060; e.g. \u0060IConfiguration^Config\u0060. Where the \u0060Name\u0060 portion is not specified it will be inferred.",
           "items": {
             "type": "string"
           }
         },
         "database": {
           "type": "string",
-          "title": "The .NET database 'IDatabase' Type name used in the constructor for Dependency Injection (DI).",
-          "description": "Defaults to 'IDatabase'."
+          "title": "The .NET database \u0060IDatabase\u0060 Type name used in the constructor for Dependency Injection (DI).",
+          "description": "Defaults to \u0060IDatabase\u0060."
         },
         "includeColumnsOnDelete": {
           "type": "array",
-          "title": "The list of 'Column' names that should be included (in addition to the primary key) for a logical delete.",
-          "description": "Where a column is not specified in this list its corresponding .NET property will be automatically cleared by the 'CdcDataOrchestrator' as the data is technically considered as non-existing.",
+          "title": "The list of \u0060Column\u0060 names that should be included (in addition to the primary key) for a logical delete.",
+          "description": "Where a column is not specified in this list its corresponding .NET property will be automatically cleared by the \u0060CdcDataOrchestrator\u0060 as the data is technically considered as non-existing.",
           "items": {
             "type": "string"
           }
@@ -341,7 +341,7 @@
         "service": {
           "type": "string",
           "title": "The type of service that manages the underlying orchestrator.",
-          "description": "Defaults to 'Root.Service'. A 'HostedService' is an 'IHostedService' implementation enabling long-running execution; whereas, 'Service' is intended for self-managed execution.",
+          "description": "Defaults to \u0060Root.Service\u0060. A \u0060HostedService\u0060 is an \u0060IHostedService\u0060 implementation enabling long-running execution; whereas, \u0060Service\u0060 is intended for self-managed execution.",
           "enum": [
             "None",
             "HostedService",
@@ -350,15 +350,15 @@
         },
         "excludeColumnsFromETag": {
           "type": "array",
-          "title": "The list of 'Column' names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).",
-          "description": "Defaults to 'Root.CdcExcludeColumnsFromETag'.",
+          "title": "The list of \u0060Column\u0060 names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).",
+          "description": "Defaults to \u0060Root.CdcExcludeColumnsFromETag\u0060.",
           "items": {
             "type": "string"
           }
         },
         "tenantIdColumns": {
           "type": "array",
-          "title": "The list of 'Column' names that represent the tenant identifier.",
+          "title": "The list of \u0060Column\u0060 names that represent the tenant identifier.",
           "items": {
             "type": "string"
           }
@@ -366,12 +366,12 @@
         "partitionKey": {
           "type": "string",
           "title": "The partition key.",
-          "description": "A partition key can be specified using either 'PartitionKey' or 'PartitionKeyColumns'."
+          "description": "A partition key can be specified using either \u0060PartitionKey\u0060 or \u0060PartitionKeyColumns\u0060."
         },
         "partitionKeyColumns": {
           "type": "array",
-          "title": "The list of 'Column' names that represent the partition key.",
-          "description": "A partition key can be specified using either 'PartitionKey' or 'PartitionKeyColumns'.",
+          "title": "The list of \u0060Column\u0060 names that represent the partition key.",
+          "description": "A partition key can be specified using either \u0060PartitionKey\u0060 or \u0060PartitionKeyColumns\u0060.",
           "items": {
             "type": "string"
           }
@@ -379,12 +379,12 @@
         "eventSource": {
           "type": "string",
           "title": "The Event Source.",
-          "description": "Defaults to 'Schema' + '/' (literal) + 'Name' (as lowercase). Note: when used in code-generation the 'Root.EventSourceRoot' will be prepended where specified."
+          "description": "Defaults to \u0060Schema\u0060 \u002B \u0060/\u0060 (literal) \u002B \u0060Name\u0060 (as lowercase). Note: when used in code-generation the \u0060Root.EventSourceRoot\u0060 will be prepended where specified."
         },
         "eventSourceFormat": {
           "type": "string",
           "title": "The default formatting for the Source when an Event is published.",
-          "description": "Defaults to 'Root.EventSourceFormat'.",
+          "description": "Defaults to \u0060Root.EventSourceFormat\u0060.",
           "enum": [
             "NameOnly",
             "NameAndKey",
@@ -394,12 +394,12 @@
         "eventSubject": {
           "type": "string",
           "title": "The Event Subject.",
-          "description": "Defaults to 'ModelName'. Note: when used in code-generation the 'Root.EventSubjectRoot' will be prepended where specified."
+          "description": "Defaults to \u0060ModelName\u0060. Note: when used in code-generation the \u0060Root.EventSubjectRoot\u0060 will be prepended where specified."
         },
         "eventSubjectFormat": {
           "type": "string",
           "title": "The default formatting for the Subject when an Event is published.",
-          "description": "Defaults to 'Root.EventSubjectFormat'.",
+          "description": "Defaults to \u0060Root.EventSubjectFormat\u0060.",
           "enum": [
             "NameOnly",
             "NameAndKey",
@@ -409,42 +409,42 @@
         "eventType": {
           "type": "string",
           "title": "The Event Type.",
-          "description": "Defaults to 'ModelName'. Note: when used in code-generation the 'Root.EventTypeRoot' will be prepended where specified."
+          "description": "Defaults to \u0060ModelName\u0060. Note: when used in code-generation the \u0060Root.EventTypeRoot\u0060 will be prepended where specified."
         },
         "identifierMapping": {
           "type": "boolean",
-          "title": "Indicates whether to perform Identifier Mapping (mapping to 'GlobalId') for the primary key.",
-          "description": "This indicates whether to create a new 'GlobalId' property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
+          "title": "Indicates whether to perform Identifier Mapping (mapping to \u0060GlobalId\u0060) for the primary key.",
+          "description": "This indicates whether to create a new \u0060GlobalId\u0060 property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
         },
         "identifierName": {
           "type": "string",
-          "title": "The JSON name for the 'GlobalId' property where 'IdentifierMapping' is 'true'. Defaults to 'globalId'.",
-          "description": "This indicates whether to create a new 'GlobalId' property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
+          "title": "The JSON name for the \u0060GlobalId\u0060 property where \u0060IdentifierMapping\u0060 is \u0060true\u0060. Defaults to \u0060globalId\u0060.",
+          "description": "This indicates whether to create a new \u0060GlobalId\u0060 property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
         },
         "isDeletedColumn": {
           "type": "string",
-          "title": "The column name for the 'IsDeleted' (logical delete) capability (if any).",
-          "description": "Defaults to 'Root.ColumnIsDeleted'."
+          "title": "The column name for the \u0060IsDeleted\u0060 (logical delete) capability (if any).",
+          "description": "Defaults to \u0060Root.ColumnIsDeleted\u0060."
         },
         "joins": {
           "type": "array",
-          "title": "The corresponding 'Join' collection.",
-          "description": "A 'Join' object provides the configuration for a table join.",
+          "title": "The corresponding \u0060Join\u0060 collection.",
+          "description": "A \u0060Join\u0060 object provides the configuration for a table join.",
           "items": {
             "$ref": "#/definitions/Join"
           }
         },
         "where": {
           "type": "array",
-          "title": "The corresponding 'Where' collection.",
-          "description": "A 'Where' object provides the configuration for a table where clause.",
+          "title": "The corresponding \u0060Where\u0060 collection.",
+          "description": "A \u0060Where\u0060 object provides the configuration for a table where clause.",
           "items": {
             "$ref": "#/definitions/Where"
           }
         },
         "mappings": {
           "type": "array",
-          "title": "The corresponding 'TableMapping' collection.",
+          "title": "The corresponding \u0060TableMapping\u0060 collection.",
           "items": {
             "$ref": "#/definitions/TableMapping"
           }
@@ -456,33 +456,33 @@
     },
     "Join": {
       "type": "object",
-      "title": "'Join' object (database-driven)",
-      "description": "The 'Join' object defines a join to another (or same) table within the logical CDC entity.  The 'IncludeColumns' and 'ExcludeColumns' provide a shorthand to include or exclude selected columns; with the 'AliasColumns' providing a means to rename where required.",
+      "title": "\u0027Join\u0027 object (database-driven)",
+      "description": "The \u0060Join\u0060 object defines a join to another (or same) table within the logical CDC entity.  The \u0060IncludeColumns\u0060 and \u0060ExcludeColumns\u0060 provide a shorthand to include or exclude selected columns; with the \u0060AliasColumns\u0060 providing a means to rename where required.",
       "properties": {
         "name": {
           "type": "string",
           "title": "The unique name.",
-          "description": "A unique name is required where the same 'Table' is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database."
+          "description": "A unique name is required where the same \u0060Table\u0060 is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database."
         },
         "schema": {
           "type": "string",
           "title": "The schema name of the table to join.",
-          "description": "Defaults to 'Cdc.Schema'; i.e. same schema."
+          "description": "Defaults to \u0060Cdc.Schema\u0060; i.e. same schema."
         },
         "table": {
           "type": "string",
           "title": "The name of the table to join.",
-          "description": "Defaults to 'Name'. This is used to specify the actual underlying database table name (required where the 'Name' has been changed to enable uniqueness)."
+          "description": "Defaults to \u0060Name\u0060. This is used to specify the actual underlying database table name (required where the \u0060Name\u0060 has been changed to enable uniqueness)."
         },
         "alias": {
           "type": "string",
-          "title": "The 'Schema' and 'Table' alias name.",
+          "title": "The \u0060Schema\u0060 and \u0060Table\u0060 alias name.",
           "description": "Will automatically default where not specified."
         },
         "type": {
           "type": "string",
           "title": "The SQL join type.",
-          "description": "Defaults to 'Cdc'. The 'Cdc' value indicates this is a related secondary table (within a logical CDC entity) that also has Change Data Capture turned on and equally needs to be monitored for changes.",
+          "description": "Defaults to \u0060Cdc\u0060. The \u0060Cdc\u0060 value indicates this is a related secondary table (within a logical CDC entity) that also has Change Data Capture turned on and equally needs to be monitored for changes.",
           "enum": [
             "Cdc",
             "Inner",
@@ -494,12 +494,12 @@
         "joinTo": {
           "type": "string",
           "title": "The name of the table to join to (must be previously specified).",
-          "description": "Defaults to parent 'Table.Name'."
+          "description": "Defaults to parent \u0060Table.Name\u0060."
         },
         "joinCardinality": {
           "type": "string",
           "title": "The join cardinality being whether there is a One-to-Many or One-to-One relationship.",
-          "description": "Defaults to 'OneToMany'. This represents the Parent ('JoinTo') to child (_this_) relationship.",
+          "description": "Defaults to \u0060OneToMany\u0060. This represents the Parent (\u0060JoinTo\u0060) to child (_this_) relationship.",
           "enum": [
             "OneToMany",
             "OneToOne"
@@ -507,34 +507,34 @@
         },
         "cdcEnable": {
           "type": "boolean",
-          "title": "Indicates whether to enable 'Cdc' within the database for the tables that participate.",
-          "description": "Defaults to 'false'. This option can be overridden for each underlying table referenced."
+          "title": "Indicates whether to enable \u0060Cdc\u0060 within the database for the tables that participate.",
+          "description": "Defaults to \u0060false\u0060. This option can be overridden for each underlying table referenced."
         },
         "querySizeMultiplier": {
           "type": "number",
           "title": "The query size multiplier for the CDC-Join.",
-          "description": "Defaults to '1.0'. This is applied to the execute stored procedure '@MaxQuerySize' parameter to allow tailoring on the join query ('TOP') sizes to optimize selection. Must be greater than zero and less than or equal to 100."
+          "description": "Defaults to \u00601.0\u0060. This is applied to the execute stored procedure \u0060@MaxQuerySize\u0060 parameter to allow tailoring on the join query (\u0060TOP\u0060) sizes to optimize selection. Must be greater than zero and less than or equal to 100."
         },
         "includeColumns": {
           "type": "array",
-          "title": "The list of 'Column' names to be included in the underlying generated output.",
-          "description": "Where not specified this indicates that all 'Columns' are to be included.",
+          "title": "The list of \u0060Column\u0060 names to be included in the underlying generated output.",
+          "description": "Where not specified this indicates that all \u0060Columns\u0060 are to be included.",
           "items": {
             "type": "string"
           }
         },
         "excludeColumns": {
           "type": "array",
-          "title": "The list of 'Column' names to be excluded from the underlying generated output.",
-          "description": "Where not specified this indicates no 'Columns' are to be excluded.",
+          "title": "The list of \u0060Column\u0060 names to be excluded from the underlying generated output.",
+          "description": "Where not specified this indicates no \u0060Columns\u0060 are to be excluded.",
           "items": {
             "type": "string"
           }
         },
         "aliasColumns": {
           "type": "array",
-          "title": "The list of 'Column' and 'Alias' pairs (split by a '^' lookup character) to enable column renaming.",
-          "description": "Each alias value should be formatted as 'Column' + '^' + 'Alias'; e.g. 'PCODE^ProductCode'",
+          "title": "The list of \u0060Column\u0060 and \u0060Alias\u0060 pairs (split by a \u0060^\u0060 lookup character) to enable column renaming.",
+          "description": "Each alias value should be formatted as \u0060Column\u0060 \u002B \u0060^\u0060 \u002B \u0060Alias\u0060; e.g. \u0060PCODE^ProductCode\u0060",
           "items": {
             "type": "string"
           }
@@ -542,49 +542,49 @@
         "model": {
           "type": "string",
           "title": "The .NET model name.",
-          "description": "Defaults to 'Name'."
+          "description": "Defaults to \u0060Name\u0060."
         },
         "property": {
           "type": "string",
           "title": "The .NET property name.",
-          "description": "Defaults to 'Model' where 'JoinCardinality' is 'OneToOne'; otherwise, it will be the 'Model' pluralized."
+          "description": "Defaults to \u0060Model\u0060 where \u0060JoinCardinality\u0060 is \u0060OneToOne\u0060; otherwise, it will be the \u0060Model\u0060 pluralized."
         },
         "includeColumnsOnDelete": {
           "type": "array",
-          "title": "The list of 'Column' names that should be included (in addition to the primary key) for a logical delete.",
-          "description": "Where a column is not specified in this list its corresponding .NET property will be automatically cleared by the 'CdcDataOrchestrator' as the data is technically considered as non-existing.",
+          "title": "The list of \u0060Column\u0060 names that should be included (in addition to the primary key) for a logical delete.",
+          "description": "Where a column is not specified in this list its corresponding .NET property will be automatically cleared by the \u0060CdcDataOrchestrator\u0060 as the data is technically considered as non-existing.",
           "items": {
             "type": "string"
           }
         },
         "excludeColumnsFromETag": {
           "type": "array",
-          "title": "The list of 'Column' names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).",
-          "description": "Defaults to 'CodeGeneration.CdcExcludeColumnsFromETag'.",
+          "title": "The list of \u0060Column\u0060 names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).",
+          "description": "Defaults to \u0060CodeGeneration.CdcExcludeColumnsFromETag\u0060.",
           "items": {
             "type": "string"
           }
         },
         "identifierMapping": {
           "type": "boolean",
-          "title": "Indicates whether to perform Identifier Mapping (mapping to 'GlobalId') for the primary key.",
-          "description": "This indicates whether to create a new 'GlobalId' property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
+          "title": "Indicates whether to perform Identifier Mapping (mapping to \u0060GlobalId\u0060) for the primary key.",
+          "description": "This indicates whether to create a new \u0060GlobalId\u0060 property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
         },
         "identifierName": {
           "type": "string",
-          "title": "The JSON name for the 'GlobalId' property where 'IdentifierMapping' is 'true'. Defaults to 'globalId'.",
-          "description": "This indicates whether to create a new 'GlobalId' property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
+          "title": "The JSON name for the \u0060GlobalId\u0060 property where \u0060IdentifierMapping\u0060 is \u0060true\u0060. Defaults to \u0060globalId\u0060.",
+          "description": "This indicates whether to create a new \u0060GlobalId\u0060 property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s)."
         },
         "on": {
           "type": "array",
-          "title": "The corresponding 'JoinOn' collection.",
+          "title": "The corresponding \u0060JoinOn\u0060 collection.",
           "items": {
             "$ref": "#/definitions/JoinOn"
           }
         },
         "mappings": {
           "type": "array",
-          "title": "The corresponding 'JoinMapping' collection.",
+          "title": "The corresponding \u0060JoinMapping\u0060 collection.",
           "items": {
             "$ref": "#/definitions/JoinMapping"
           }
@@ -596,21 +596,21 @@
     },
     "JoinOn": {
       "type": "object",
-      "title": "'JoinOn' object (database-driven)",
-      "description": "The 'JoinOn' object defines the join on characteristics for a 'Join' object.",
+      "title": "\u0027JoinOn\u0027 object (database-driven)",
+      "description": "The \u0060JoinOn\u0060 object defines the join on characteristics for a \u0060Join\u0060 object.",
       "properties": {
         "name": {
           "type": "string",
-          "title": "The name of the join column (from the 'Join' table)."
+          "title": "The name of the join column (from the \u0060Join\u0060 table)."
         },
         "toColumn": {
           "type": "string",
           "title": "The name of the join to column.",
-          "description": "Defaults to 'Name'; i.e. assumes same name."
+          "description": "Defaults to \u0060Name\u0060; i.e. assumes same name."
         },
         "toStatement": {
           "type": "string",
-          "title": "The SQL statement for the join on bypassing the corresponding 'ToColumn' specification."
+          "title": "The SQL statement for the join on bypassing the corresponding \u0060ToColumn\u0060 specification."
         }
       },
       "required": [
@@ -619,8 +619,8 @@
     },
     "JoinMapping": {
       "type": "object",
-      "title": "'JoinMapping' object (database-driven)",
-      "description": "The 'JoinMapping' object defines one or more related table identifier mappings.",
+      "title": "\u0027JoinMapping\u0027 object (database-driven)",
+      "description": "The \u0060JoinMapping\u0060 object defines one or more related table identifier mappings.",
       "properties": {
         "name": {
           "type": "string",
@@ -643,8 +643,8 @@
     },
     "Where": {
       "type": "object",
-      "title": "'Where' object (database-driven)",
-      "description": "This should only be used where the column value is largely immutable; otherwise, unintended side-effects may occur. _NTangle_ uses the condition explictily and does not attempt to handle value change to infer creation or deletion of data as a result of the underlying change; as such, this should be used cautiously. Note that the 'where' is applied when querying the 'cdc.fn_cdc_get_all_changes_...' function, not the underlying table itself.",
+      "title": "\u0027Where\u0027 object (database-driven)",
+      "description": "This should only be used where the column value is largely immutable; otherwise, unintended side-effects may occur. _NTangle_ uses the condition explictily and does not attempt to handle value change to infer creation or deletion of data as a result of the underlying change; as such, this should be used cautiously. Note that the \u0060where\u0060 is applied when querying the \u0060cdc.fn_cdc_get_all_changes_...\u0060 function, not the underlying table itself.",
       "properties": {
         "name": {
           "type": "string",
@@ -654,7 +654,7 @@
         "nullable": {
           "type": "string",
           "title": "The where nullability clause operator",
-          "description": "This enables statements such as 'WHERE (COL IS NULL)' or 'WHERE (COL IS NULL OR COL = VALUE)' (where .",
+          "description": "This enables statements such as \u0060WHERE (COL IS NULL)\u0060 or \u0060WHERE (COL IS NULL OR COL = VALUE)\u0060 (where .",
           "enum": [
             "ISNULL",
             "ISNOTNULL"
@@ -663,7 +663,7 @@
         "operator": {
           "type": "string",
           "title": "The where clause equality operator",
-          "description": "Defaults to 'EQ' where 'Value' is specified.",
+          "description": "Defaults to \u0060EQ\u0060 where \u0060Value\u0060 is specified.",
           "enum": [
             "EQ",
             "NE",
@@ -686,8 +686,8 @@
     },
     "TableMapping": {
       "type": "object",
-      "title": "'TableMapping' object (database-driven)",
-      "description": "The 'TableMapping' object defines one or more related table identifier mappings.",
+      "title": "\u0027TableMapping\u0027 object (database-driven)",
+      "description": "The \u0060TableMapping\u0060 object defines one or more related table identifier mappings.",
       "properties": {
         "name": {
           "type": "string",

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
-using CoreEx;
-using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
 using DbEx.DbSchema;
@@ -10,13 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace NTangle.CodeGen.Config
 {
     /// <summary>
     /// Represents the table join configuration.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [CodeGenClass("Join", Title = "'Join' object (database-driven)",
         Description = "The `Join` object defines a join to another (or same) table within the logical CDC entity. "
             + " The `IncludeColumns` and `ExcludeColumns` provide a shorthand to include or exclude selected columns; with the `AliasColumns` providing a means to rename where required.",
@@ -40,7 +38,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the unqiue name.
         /// </summary>
-        [JsonProperty("name", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("name")]
         [CodeGenProperty("Key", Title = "The unique name.", IsMandatory = true, IsImportant = true,
             Description = "A unique name is required where the same `Table` is referenced more than once within a logical CDC entity. However, generally, this will represent the unique name of the table within the database.")]
         public string? Name { get; set; }
@@ -48,7 +46,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the schema name of the table to join.
         /// </summary>
-        [JsonProperty("schema", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("schema")]
         [CodeGenProperty("Key", Title = "The schema name of the table to join.",
             Description = "Defaults to `Cdc.Schema`; i.e. same schema.")]
         public string? Schema { get; set; }
@@ -56,7 +54,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the name of the table to join.
         /// </summary>
-        [JsonProperty("table", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("table")]
         [CodeGenProperty("Key", Title = "The name of the table to join.",
             Description = "Defaults to `Name`. This is used to specify the actual underlying database table name (required where the `Name` has been changed to enable uniqueness).")]
         public string? Table { get; set; }
@@ -64,7 +62,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the `Schema` and `Table` alias name.
         /// </summary>
-        [JsonProperty("alias", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("alias")]
         [CodeGenProperty("Key", Title = "The `Schema` and `Table` alias name.",
             Description = "Will automatically default where not specified.")]
         public string? Alias { get; set; }
@@ -72,8 +70,8 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the join type option.
         /// </summary>
-        [JsonProperty("type", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("Key", Title = "The SQL join type.", IsImportant = true, Options = new string[] { "Cdc", "Inner", "Left", "Right", "Full" },
+        [JsonPropertyName("type")]
+        [CodeGenProperty("Key", Title = "The SQL join type.", IsImportant = true, Options = ["Cdc", "Inner", "Left", "Right", "Full"],
             Description = "Defaults to `Cdc`. The `Cdc` value indicates this is a related secondary table (within a logical CDC entity) that also has Change Data Capture turned on and equally needs to be monitored for changes.")]
         public string? Type { get; set; }
 
@@ -84,7 +82,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the name of the parent table to join to.
         /// </summary>
-        [JsonProperty("joinTo", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("joinTo")]
         [CodeGenProperty("JoinTo", Title = "The name of the table to join to (must be previously specified).", IsImportant = true,
             Description = "Defaults to parent `Table.Name`.")]
         public string? JoinTo { get; set; }
@@ -92,8 +90,8 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Get or sets the join cardinality.
         /// </summary>
-        [JsonProperty("joinCardinality", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [CodeGenProperty("JoinTo", Title = "The join cardinality being whether there is a One-to-Many or One-to-One relationship.", Options = new string[] { "OneToMany", "OneToOne" },
+        [JsonPropertyName("joinCardinality")]
+        [CodeGenProperty("JoinTo", Title = "The join cardinality being whether there is a One-to-Many or One-to-One relationship.", Options = ["OneToMany", "OneToOne"],
             Description = "Defaults to `OneToMany`. This represents the Parent (`JoinTo`) to child (_this_) relationship.")]
         public string? JoinCardinality { get; set; }
 
@@ -104,7 +102,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Indicates whether to enable `Cdc` within the database for the tables that participate.
         /// </summary>
-        [JsonProperty("cdcEnable", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("cdcEnable")]
         [CodeGenProperty("Database", Title = "Indicates whether to enable `Cdc` within the database for the tables that participate.",
             Description = "Defaults to `false`. This option can be overridden for each underlying table referenced.")]
         public bool? CdcEnable { get; set; }
@@ -112,7 +110,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the query size multiplier for the CDC-Join.
         /// </summary>
-        [JsonProperty("querySizeMultiplier", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("querySizeMultiplier")]
         [CodeGenProperty("Database", Title = "The query size multiplier for the CDC-Join.",
             Description = "Defaults to `1.0`. This is applied to the execute stored procedure `@MaxQuerySize` parameter to allow tailoring on the join query (`TOP`) sizes to optimize selection. Must be greater than zero and less than or equal to 100.")]
         public decimal? QuerySizeMultiplier { get; set; }
@@ -124,7 +122,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` names to be included in the underlying generated output.
         /// </summary>
-        [JsonProperty("includeColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("includeColumns")]
         [CodeGenPropertyCollection("Columns", Title = "The list of `Column` names to be included in the underlying generated output.", IsImportant = true,
             Description = "Where not specified this indicates that all `Columns` are to be included.")]
         public List<string>? IncludeColumns { get; set; }
@@ -132,7 +130,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` names to be excluded from the underlying generated output.
         /// </summary>
-        [JsonProperty("excludeColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("excludeColumns")]
         [CodeGenPropertyCollection("Columns", Title = "The list of `Column` names to be excluded from the underlying generated output.", IsImportant = true,
             Description = "Where not specified this indicates no `Columns` are to be excluded.")]
         public List<string>? ExcludeColumns { get; set; }
@@ -140,7 +138,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` and `Alias` pairs to enable column renaming.
         /// </summary>
-        [JsonProperty("aliasColumns", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("aliasColumns")]
         [CodeGenPropertyCollection("Columns", Title = "The list of `Column` and `Alias` pairs (split by a `^` lookup character) to enable column renaming.", IsImportant = true,
             Description = "Each alias value should be formatted as `Column` + `^` + `Alias`; e.g. `PCODE^ProductCode`")]
         public List<string>? AliasColumns { get; set; }
@@ -152,7 +150,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the .NET model name.
         /// </summary>
-        [JsonProperty("model", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("model")]
         [CodeGenProperty(".NET", Title = "The .NET model name.",
             Description = "Defaults to `Name`.")]
         public string? Model { get; set; }
@@ -160,7 +158,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the .NET property name.
         /// </summary>
-        [JsonProperty("property", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("property")]
         [CodeGenProperty(".NET", Title = "The .NET property name.",
             Description = "Defaults to `Model` where `JoinCardinality` is `OneToOne`; otherwise, it will be the `Model` pluralized.")]
         public string? Property { get; set; }
@@ -168,7 +166,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` names that should be included (in addition to the primary key) for a logical delete.
         /// </summary>
-        [JsonProperty("includeColumnsOnDelete", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("includeColumnsOnDelete")]
         [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that should be included (in addition to the primary key) for a logical delete.",
            Description = "Where a column is not specified in this list its corresponding .NET property will be automatically cleared by the `CdcDataOrchestrator` as the data is technically considered as non-existing.")]
         public List<string>? IncludeColumnsOnDelete { get; set; }
@@ -176,7 +174,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).
         /// </summary>
-        [JsonProperty("excludeColumnsFromETag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("excludeColumnsFromETag")]
         [CodeGenPropertyCollection(".NET", Title = "The list of `Column` names that should be excluded from the generated ETag (used for the likes of duplicate send tracking).",
             Description = "Defaults to `CodeGeneration.CdcExcludeColumnsFromETag`.")]
         public List<string>? ExcludeColumnsFromETag { get; set; }
@@ -188,7 +186,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Indicates whether to perform Identifier Mapping (mapping to `GlobalId`) for the primary key.
         /// </summary>
-        [JsonProperty("identifierMapping", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("identifierMapping")]
         [CodeGenProperty("IdentifierMapping", Title = "Indicates whether to perform Identifier Mapping (mapping to `GlobalId`) for the primary key.", IsImportant = true,
            Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).")]
         public bool? IdentifierMapping { get; set; }
@@ -196,7 +194,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets JSON name for the `GlobalId` property where `IdentifierMapping` is `true`. Defaults to `globalId`.
         /// </summary>
-        [JsonProperty("identifierName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("identifierName")]
         [CodeGenProperty("IdentifierName", Title = "The JSON name for the `GlobalId` property where `IdentifierMapping` is `true`. Defaults to `globalId`.", IsImportant = true,
            Description = "This indicates whether to create a new `GlobalId` property on the _entity_ to house the global mapping identifier to be the reference outside of the specific database realm as a replacement to the existing primary key column(s).")]
         public string? IdentifierName { get; set; }
@@ -208,14 +206,14 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the corresponding <see cref="JoinOnConfig"/> collection.
         /// </summary>
-        [JsonProperty("on", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("on")]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `JoinOn` collection.")]
         public List<JoinOnConfig>? On { get; set; }
 
         /// <summary>
         /// Gets or sets the corresponding <see cref="JoinIdentifierMappingColumnConfig"/> collection.
         /// </summary>
-        [JsonProperty("mappings", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("mappings")]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `JoinMapping` collection.")]
         public List<JoinIdentifierMappingColumnConfig>? Mappings { get; set; }
 
@@ -231,7 +229,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets the selected column configurations.
         /// </summary>
-        public List<JoinColumnConfig> Columns { get; } = new List<JoinColumnConfig>();
+        public List<JoinColumnConfig> Columns { get; } = [];
 
         /// <summary>
         /// Gets the corresponding (actual) database table configuration.
@@ -256,12 +254,12 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets the list of primary key columns.
         /// </summary>
-        public List<JoinColumnConfig> PrimaryKeyColumns { get; } = new List<JoinColumnConfig>();
+        public List<JoinColumnConfig> PrimaryKeyColumns { get; } = [];
 
         /// <summary>
         /// Gets the join (linked) hierarchy (this and its parent up).
         /// </summary>
-        public List<JoinConfig> JoinHierarchy { get; private set; } = new List<JoinConfig>();
+        public List<JoinConfig> JoinHierarchy { get; private set; } = [];
 
         /// <summary>
         /// Gets the join (linked) hierarchy (this and its parent up) in reverse order.
@@ -473,7 +471,7 @@ namespace NTangle.CodeGen.Config
             }
 
             // Update the Join ons.
-            On ??= new List<JoinOnConfig>();
+            On ??= [];
 
             foreach (var on in On)
             {
@@ -558,7 +556,7 @@ namespace NTangle.CodeGen.Config
                 Property = Property,
                 Type = Type,
                 IsFirstInJoinHierarchy = isFirst,
-                On = new List<JoinOnConfig>(),
+                On = [],
                 DbTable = DbTable,
                 IndentIndex = indentIndex,
                 HierarchyParent = hierarchyParent,

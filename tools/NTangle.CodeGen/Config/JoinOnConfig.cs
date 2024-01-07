@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
 using DbEx.DbSchema;
-using Newtonsoft.Json;
 using OnRamp;
 using OnRamp.Config;
 using System;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace NTangle.CodeGen.Config
@@ -13,7 +13,6 @@ namespace NTangle.CodeGen.Config
     /// <summary>
     /// Represents the table join on condition configuration.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [CodeGenClass("JoinOn", Title = "'JoinOn' object (database-driven)",
         Description = "The `JoinOn` object defines the join on characteristics for a `Join` object.",
         ExampleMarkdown = @"A YAML configuration example is as follows:
@@ -31,14 +30,14 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the name of the join column (from the `Join` table).
         /// </summary>
-        [JsonProperty("name", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("name")]
         [CodeGenProperty("Key", Title = "The name of the join column (from the `Join` table).", IsMandatory = true)]
         public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the join to column.
         /// </summary>
-        [JsonProperty("toColumn", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("toColumn")]
         [CodeGenProperty("Key", Title = "The name of the join to column.", IsImportant = true,
             Description = "Defaults to `Name`; i.e. assumes same name.")]
         public string? ToColumn { get; set; }
@@ -46,7 +45,7 @@ namespace NTangle.CodeGen.Config
         /// <summary>
         /// Gets or sets the SQL statement for the join on bypassing the corresponding `ToColumn` specification.
         /// </summary>
-        [JsonProperty("toStatement", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("toStatement")]
         [CodeGenProperty("Key", Title = "The SQL statement for the join on bypassing the corresponding `ToColumn` specification.")]
         public string? ToStatement { get; set; }
 

@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v2.3.6
+- *Fixed:* Updated `DbEx` (`v2.3.15`) and`CoreEx` (`v3.8.1`) and other dependencies.
+- *Fixed*: Updated `OnRamp` (`2.0.0`) which necessitated internal change from `Newtonsoft.Json` (now deprecated) to `System.Text.Json`.
+
 ## v2.3.5
 - *Fixed:* Updated `DbEx` (`v2.3.13`) and`CoreEx` (`v3.6.1`) and other dependencies.
 - *Fixed:* Added `net8.0` support.
