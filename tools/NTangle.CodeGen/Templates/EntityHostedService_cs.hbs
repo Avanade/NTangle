@@ -8,14 +8,9 @@ namespace {{Root.NamespacePublisher}}.Services;
 /// <summary>
 /// Provides the Change Data Capture (CDC) <see cref="{{Model}}Cdc"/> entity (aggregate root) <see cref="HostedService{T}"/> capabilities (database table '[{{Schema}}].[{{Name}}]').
 /// </summary>
-public partial class {{Model}}HostedService : CdcHostedService<I{{Model}}Orchestrator, {{Model}}Cdc>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="{{Model}}HostedService"/> class.
-    /// </summary>
-    /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
-    /// <param name="logger">The <see cref="ILogger"/>.</param>
-    /// <param name="settings">The <see cref="SettingsBase"/>.</param>
-    /// <param name="synchronizer"> The <see cref="IServiceSynchronizer"/>.</param>
-    public {{Model}}HostedService(IServiceProvider serviceProvider, ILogger<{{Model}}HostedService> logger, SettingsBase settings, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, settings, synchronizer) { }
-}
+/// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
+/// <param name="logger">The <see cref="ILogger"/>.</param>
+/// <param name="settings">The <see cref="SettingsBase"/>.</param>
+/// <param name="synchronizer"> The <see cref="IServiceSynchronizer"/>.</param>
+public partial class {{Model}}HostedService(IServiceProvider serviceProvider, ILogger<{{Model}}HostedService> logger, SettingsBase settings, IServiceSynchronizer synchronizer) 
+    : CdcHostedService<I{{Model}}Orchestrator, {{Model}}Cdc>(serviceProvider, logger, settings, synchronizer) { }

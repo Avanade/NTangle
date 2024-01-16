@@ -14,17 +14,12 @@ namespace NTangle.Services
     /// Provides the base Change Data Capture (CDC) self-orchestrated <see cref="ServiceBase"/> capabilities.
     /// </summary>
     /// <remarks>Note that no <see cref="IServiceSynchronizer"/> is leveraged; synchronization is the responsibility of the consumer.</remarks>
-    public abstract class CdcService<TOrchestrator, TEntity> : ServiceBase where TOrchestrator : notnull, IEntityOrchestrator<TEntity> where TEntity : IEntity
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
+    /// <param name="logger">The <see cref="ILogger"/>.</param>
+    /// <param name="settings">The <see cref="SettingsBase"/>.</param>
+    public abstract class CdcService<TOrchestrator, TEntity>(IServiceProvider serviceProvider, ILogger logger, SettingsBase? settings) : ServiceBase(serviceProvider, logger, settings) where TOrchestrator : notnull, IEntityOrchestrator<TEntity> where TEntity : IEntity
     {
         private int? _maxIterations = null;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CdcService{TOrchestrator, TEntity}"/> class.
-        /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
-        protected CdcService(IServiceProvider serviceProvider, ILogger logger, SettingsBase? settings) : base(serviceProvider, logger, settings) { }
 
         /// <summary>
         /// Gets or sets the maximum number of iterations per execution.

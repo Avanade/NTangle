@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx;
 using CoreEx.Configuration;
 using CoreEx.Database;
 using CoreEx.Database.SqlServer;
@@ -48,9 +49,9 @@ namespace NTangle.Cdc
         public EntityOrchestrator(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger logger, string identifierMappingStoredProcedureName, IIdentifierGenerator<TGlobalIdentifer> identifierGenerator, IdentifierMappingMapperBase<TGlobalIdentifer> identifierMappingMapper)
             : base(db, executeStoredProcedureName, completeStoredProcedureName, eventPublisher, jsonSerializer, settings, logger)
         {
-            IdentifierMappingStoredProcedureName = identifierMappingStoredProcedureName ?? throw new ArgumentNullException(nameof(identifierMappingStoredProcedureName));
-            IdentifierGenerator = identifierGenerator ?? throw new ArgumentNullException(nameof(identifierGenerator));
-            IdentifierMappingMapper = identifierMappingMapper ?? throw new ArgumentNullException(nameof(identifierMappingMapper));
+            IdentifierMappingStoredProcedureName = identifierMappingStoredProcedureName.ThrowIfNull(nameof(identifierMappingStoredProcedureName));
+            IdentifierGenerator = identifierGenerator.ThrowIfNull(nameof(identifierGenerator));
+            IdentifierMappingMapper = identifierMappingMapper.ThrowIfNull(nameof(identifierMappingMapper));
             AdditionalEnvelopeProcessingAsync = AssignIdentityMappingAsync;
         }
 

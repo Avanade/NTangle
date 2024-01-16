@@ -74,7 +74,7 @@ public partial class CustomerOrchestrator : EntityOrchestrator<CustomerCdc, Cust
 
         /// <inheritdoc/>
         [JsonIgnore]
-        public byte[] DatabaseLsn { get; set; } = Array.Empty<byte>();
+        public byte[] DatabaseLsn { get; set; } = [];
 
         /// <inheritdoc/>
         [JsonIgnore]

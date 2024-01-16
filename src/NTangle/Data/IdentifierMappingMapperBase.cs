@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx;
 using CoreEx.Database;
 using CoreEx.Database.SqlServer;
 using CoreEx.Mapping;
@@ -14,18 +15,14 @@ namespace NTangle.Data
     /// Represents the <see cref="IdentifierMapping{T}"/> database mapper. 
     /// </summary>
     /// <typeparam name="T">The global identifier <see cref="System.Type"/>.</typeparam>
-    public abstract class IdentifierMappingMapperBase<T> : IDatabaseMapper<IdentifierMapping<T>>, IIdentifierMappingTvp<T>
+    /// <param name="dbTypeName">The database type name for the <see cref="TableValuedParameter"/>.</param>
+    public abstract class IdentifierMappingMapperBase<T>(string dbTypeName) : IDatabaseMapper<IdentifierMapping<T>>, IIdentifierMappingTvp<T>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IdentifierMappingMapperBase{T}"/> class.
-        /// </summary>
-        /// <param name="dbTypeName">The database type name for the <see cref="TableValuedParameter"/>.</param>
-        public IdentifierMappingMapperBase(string dbTypeName) => DbTypeName = dbTypeName ?? throw new ArgumentNullException(nameof(dbTypeName));
 
         /// <summary>
         /// Gets the database type name for the <see cref="TableValuedParameter"/>.
         /// </summary>
-        public string DbTypeName { get; }
+        public string DbTypeName { get; } = dbTypeName.ThrowIfNull(nameof(dbTypeName));
 
         /// <inheritdoc/>
         public IdentifierMapping<T>? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()

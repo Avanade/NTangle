@@ -6,6 +6,6 @@ public class PublishFunction
 
     public PublishFunction(EventOutboxService eventOutboxService) => _eventOutboxService = eventOutboxService.ThrowIfNull();
 
-    [FunctionName(nameof(PublishFunction))]
+    [Function(nameof(PublishFunction))]
     public Task RunAsync([TimerTrigger("*/5 * * * * *")] TimerInfo timer, CancellationToken cancellationToken) => _eventOutboxService.ExecuteAsync(cancellationToken);
 }

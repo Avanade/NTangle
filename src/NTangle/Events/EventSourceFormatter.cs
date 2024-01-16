@@ -21,14 +21,14 @@ namespace NTangle.Events
         /// <returns>The formatted action.</returns>
         public static Uri? Format<T>(EventDataFormatter formatter, Uri? source, T value, EventSourceFormat? format = EventSourceFormat.NameAndTableKey) where T : IEntityKey
         {
-            if (source == null)
+            if (source is null || value is null)
                 return null;
 
             return format switch
             {
                 EventSourceFormat.NameOnly => source,
-                EventSourceFormat.NameAndKey => CreateUri(source, value.EntityKey.ToString(formatter.KeySeparatorCharacter)),
-                EventSourceFormat.NameAndTableKey => CreateUri(source, value is IGlobalIdentifier gi ? gi.TableKey.ToString(formatter.KeySeparatorCharacter) : value.EntityKey.ToString(formatter.KeySeparatorCharacter)),
+                EventSourceFormat.NameAndKey => CreateUri(source, value.EntityKey.ToString(formatter.KeySeparatorCharacter)!),
+                EventSourceFormat.NameAndTableKey => CreateUri(source, value is IGlobalIdentifier gi ? gi.TableKey.ToString(formatter.KeySeparatorCharacter)! : value.EntityKey.ToString(formatter.KeySeparatorCharacter)!),
                 _ => null
             };
         }

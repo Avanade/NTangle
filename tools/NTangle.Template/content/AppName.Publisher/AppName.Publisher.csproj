@@ -1,18 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!--#if (implement_publisher_console) -->
     <OutputType>Exe</OutputType>
-    <!--#endif -->
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <!--#if (implement_publisher_function) -->
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
-    <!-- Following needed as per: https://github.com/Azure/azure-functions-core-tools/issues/2872 -->
-    <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
     <!--#endif -->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NTangle" Version="2.3.6" />
+    <PackageReference Include="NTangle" Version="2.4.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
@@ -33,14 +29,14 @@
     <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CoreEx.Azure" Version="3.8.1" />
+    <PackageReference Include="CoreEx.Azure" Version="3.9.0" />
     <!--#if (implement_publisher_console) -->
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <!--#endif -->
     <!--#if (implement_publisher_function) -->
-    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.13.5" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.16.4" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.0" />
     <!--#endif -->
   </ItemGroup>
 </Project>

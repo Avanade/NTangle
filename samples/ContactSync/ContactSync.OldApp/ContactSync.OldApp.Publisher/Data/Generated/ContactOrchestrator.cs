@@ -81,7 +81,7 @@ public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, Contac
 
         /// <inheritdoc/>
         [JsonIgnore]
-        public byte[] DatabaseLsn { get; set; } = Array.Empty<byte>();
+        public byte[] DatabaseLsn { get; set; } = [];
 
         /// <inheritdoc/>
         [JsonIgnore]

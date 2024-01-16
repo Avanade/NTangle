@@ -1,42 +1,39 @@
-﻿#if (implement_publisher_function)
-[assembly: FunctionsStartup(typeof(AppName.Publisher.Startup))]
-#endif
-
-namespace AppName.Publisher;
+﻿namespace AppName.Publisher;
 
 #if (implement_publisher_function)
 /// <summary>
-/// The Azure Functions runtime startup leveraging <see href="https://learn.microsoft.com/en-us/azure/azure-functions/functions-dotnet-dependency-injection"/>.
+/// The <see cref="HostStartup"/> to enable testable dependency injection.
 /// </summary>
-public class Startup : FunctionsStartup
+public class Startup : HostStartup
 {
-    public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder) => builder.ConfigurationBuilder
-        .AddJsonFile(System.IO.Path.Combine(builder.GetContext().ApplicationRootPath ?? "", "appsettings.json"), optional: true)
-        .AddEnvironmentVariables("DomainName_");
+    public override void ConfigureAppConfiguration(HostBuilderContext context, IConfigurationBuilder config)
+    {
+        config.AddEnvironmentVariables(prefix: "DomainName_");
+    }
 
-    public override void Configure(IFunctionsHostBuilder builder)
+    public override void ConfigureServices(IServiceCollection services)
     {
         // Adds the required _CoreEx_ services.
-        builder.Services
+        services
             .AddSettings<DomainNameSettings>()
             .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<DomainNameSettings>().DatabaseConnectionString)))
             .AddExecutionContext()
             .AddJsonSerializer();
 
         // Adds underlying CDC orchestrator/services.
-        builder.Services
+        services
             .AddGeneratedCdcOrchestratorServices()
             .AddGeneratedCdcServices();
 
         // Adds the EventPublisher, which will use the default EventDataFormatter, with CloudEventSerializer and EventOutbox enqueue as sender.
-        builder.Services
+        services
             .AddEventPublisher()
             .AddEventDataFormatter()
             .AddCloudEventSerializer()
             .AddScoped<IEventSender, EventOutboxEnqueue>();
 
         //  Adds the ServiceBusSender to publish the events to Azure Service Bus, and adds the event outbox dequeue service.
-        builder.Services
+        services
             .AddSingleton(sp => new Az.ServiceBusClient(sp.GetRequiredService<DomainNameSettings>().ServiceBusConnectionString))
             .AddScoped<ServiceBusSender>()
             .AddScoped(sp => new EventOutboxService(sp, sp.GetRequiredService<ILogger<EventOutboxService>>())

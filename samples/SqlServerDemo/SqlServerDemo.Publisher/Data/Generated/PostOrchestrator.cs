@@ -55,7 +55,7 @@ public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestr
             {
                 foreach (var c in __result.GroupBy(x => new { x.Posts_PostsId }).Select(g => new { g.Key.Posts_PostsId, Coll = g.ToList() }))
                 {
-                    var pItem = pColl.First(x => x.PostsId == c.Posts_PostsId).Comments ?? new();
+                    var pItem = pColl.First(x => x.PostsId == c.Posts_PostsId).Comments ?? [];
                     foreach (var ct in c.Coll.GroupBy(x => new { x.ParentId }).Select(g => new { g.Key.ParentId, Coll = g.ToCollection<PostCdc.CommentsTagsCdcCollection, PostCdc.CommentsTagsCdc>() }))
                     {
                         pItem.Where(x => x.CommentsId == ct.ParentId).ForEach(x => x.Tags = ct.Coll);
@@ -105,7 +105,7 @@ public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestr
 
         /// <inheritdoc/>
         [JsonIgnore]
-        public byte[] DatabaseLsn { get; set; } = Array.Empty<byte>();
+        public byte[] DatabaseLsn { get; set; } = [];
 
         /// <inheritdoc/>
         [JsonIgnore]

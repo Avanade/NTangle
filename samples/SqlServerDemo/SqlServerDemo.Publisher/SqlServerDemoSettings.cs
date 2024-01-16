@@ -3,14 +3,9 @@
 /// <summary>
 /// Provides the <b>SqlServerDemo</b> settings.
 /// </summary>
-public class SqlServerDemoSettings : SettingsBase
+/// <param name="configuration">The <see cref="IConfiguration"/>.</param>
+public class SqlServerDemoSettings(IConfiguration configuration) : SettingsBase(configuration, "SqlServerDemo")
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqlServerDemoSettings"/> class.
-    /// </summary>
-    /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
-    public SqlServerDemoSettings(IConfiguration configuration) : base(configuration, "SqlServerDemo") { }
-
     /// <summary>
     /// Gets the SQL Server database connection string.
     /// </summary>
