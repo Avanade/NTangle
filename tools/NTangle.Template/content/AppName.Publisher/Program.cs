@@ -1,4 +1,10 @@
-﻿namespace AppName.Publisher;
+﻿#if (implement_publisher_function)
+new HostBuilder()
+    .ConfigureFunctionsWorkerDefaults()
+    .ConfigureHostStartup<AppName.Publisher.Startup>()
+    .Build().Run();
+#else
+namespace AppName.Publisher;
 
 /// <summary>
 /// The console program leveraging <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host"/>.
@@ -20,3 +26,4 @@ internal class Program
         })
         .Build().Run();
 }
+#endif

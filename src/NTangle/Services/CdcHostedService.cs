@@ -14,7 +14,11 @@ namespace NTangle.Services
     /// <summary>
     /// Provides the base Change Data Capture (CDC) <see cref="TimerHostedServiceBase"/> capabilities.
     /// </summary>
-    public abstract class CdcHostedService<TOrchestrator, TEntity> : SynchronizedTimerHostedServiceBase<TEntity>, ICdcHostedService where TOrchestrator : notnull, IEntityOrchestrator<TEntity> where TEntity : IEntity
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
+    /// <param name="logger">The <see cref="ILogger"/>.</param>
+    /// <param name="settings">The <see cref="SettingsBase"/>.</param>
+    /// <param name="synchronizer">The <see cref="IServiceSynchronizer"/>.</param>
+    public abstract class CdcHostedService<TOrchestrator, TEntity>(IServiceProvider serviceProvider, ILogger logger, SettingsBase? settings, IServiceSynchronizer? synchronizer) : SynchronizedTimerHostedServiceBase<TEntity>(serviceProvider, logger, settings, synchronizer), ICdcHostedService where TOrchestrator : notnull, IEntityOrchestrator<TEntity> where TEntity : IEntity
     {
         private TimeSpan? _interval;
 
@@ -27,15 +31,6 @@ namespace NTangle.Services
         /// Gets or sets the default interval seconds used where the specified <see cref="Interval"/> is less than or equal to zero. Defaults to <b>thirty</b> seconds.
         /// </summary>
         public static TimeSpan DefaultInterval { get; set; } = TimeSpan.FromSeconds(30);
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CdcHostedService{TOrchestrator, TEntity}"/> class.
-        /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="settings">The <see cref="SettingsBase"/>.</param>
-        /// <param name="synchronizer">The <see cref="IServiceSynchronizer"/>.</param>
-        protected CdcHostedService(IServiceProvider serviceProvider, ILogger logger, SettingsBase? settings, IServiceSynchronizer? synchronizer) : base(serviceProvider, logger, settings, synchronizer) { }
 
         /// <summary>
         /// Gets or sets the interval between each execution.

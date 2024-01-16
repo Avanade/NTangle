@@ -4,7 +4,7 @@ public class SubscriberFunction
 {
     private readonly ServiceBusOrchestratedSubscriber _subscriber;
 
-    public SubscriberFunction(ServiceBusOrchestratedSubscriber subscriber) => _subscriber = subscriber ?? throw new ArgumentNullException(nameof(subscriber));
+    public SubscriberFunction(ServiceBusOrchestratedSubscriber subscriber) => _subscriber = subscriber.ThrowIfNull(nameof(subscriber));
 
     [Singleton(Mode = SingletonMode.Function)]
     [FunctionName("SubscriberFunction")]

@@ -45,7 +45,7 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
 {{#ifne OrchestratorCtorParameters.Count 0}}
     {
   {{#each OrchestratorCtorParameters}}
-        {{PrivateName}} = {{ArgumentName}} ?? throw new ArgumentNullException(nameof({{ArgumentName}}));
+        {{PrivateName}} = {{ArgumentName}}.ThrowIfNull(nameof({{ArgumentName}}));
   {{/each}}
         {{Model}}OrchestratorCtor();
     }
@@ -70,7 +70,7 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
                {{indent IndentSpaces}} foreach (var {{Alias}} in {{#if @first}}__result{{else}}{{HierarchyChild.Alias}}{{/if}}{{#unless @first}}.Coll{{/unless}}.GroupBy(x => new { {{#each OnSelectColumns}}{{#unless @last}}, {{/unless}}x.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}} }).Select(g => new { {{#each OnSelectColumns}}{{#unless @last}}, {{/unless}}g.Key.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}}, Coll = g.{{#if @last}}ToCollection<{{../Parent.Model}}Cdc.{{../Model}}CdcCollection, {{../Parent.Model}}Cdc.{{../Model}}Cdc>{{else}}ToList{{/if}}() }))
                {{indent IndentSpaces}} {
     {{#unless @last}}
-               {{indent IndentSpaces}}     var {{#ifval HierarchyChild}}{{HierarchyChild.Alias}}{{else}}{{Parent.Alias}}{{/ifval}}Item = {{#ifval HierarchyChild}}{{HierarchyChild.Alias}}{{else}}{{Parent.Alias}}{{/ifval}}Coll.First(x => {{#each OnSelectColumns}}{{#unless @last}} && {{/unless}}x.{{ToColumnAlias}} == {{Parent.Alias}}.{{#if @../last}}{{ToColumnAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/each}}).{{Property}} ?? new();
+               {{indent IndentSpaces}}     var {{#ifval HierarchyChild}}{{HierarchyChild.Alias}}{{else}}{{Parent.Alias}}{{/ifval}}Item = {{#ifval HierarchyChild}}{{HierarchyChild.Alias}}{{else}}{{Parent.Alias}}{{/ifval}}Coll.First(x => {{#each OnSelectColumns}}{{#unless @last}} && {{/unless}}x.{{ToColumnAlias}} == {{Parent.Alias}}.{{#if @../last}}{{ToColumnAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/each}}).{{Property}} ?? [];
     {{else}}
                {{indent IndentSpaces}}     {{#if @first}}{{Parent.Alias}}Coll{{else}}{{#ifnull HierarchyChild.HierarchyChild}}{{Parent.Alias}}{{else}}HierarchyChild.HierarchyChild.Alias{{/ifnull}}Item{{/if}}.Where(x => {{#each OnSelectColumns}}{{#unless @last}} && {{/unless}}x.{{ToColumnAlias}} == {{Parent.Alias}}.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}}).ForEach(x => x.{{Property}} = {{Alias}}.Coll{{#ifeq JoinCardinality 'OneToOne'}}.FirstOrDefault(){{/ifeq}});
     {{/unless}}
@@ -121,7 +121,7 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
 
         /// <inheritdoc/>
         [JsonIgnore]
-        public byte[] DatabaseLsn { get; set; } = Array.Empty<byte>();
+        public byte[] DatabaseLsn { get; set; } = [];
 
         /// <inheritdoc/>
         [JsonIgnore]

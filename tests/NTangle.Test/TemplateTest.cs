@@ -111,11 +111,12 @@ namespace NTangle.Test
             // Uninstall any previous nTangle templates (failure is ok here)
             ExecuteCommand("dotnet", "new uninstall NTangle.Template");
 
-            // Uninstall the template solution from local package.
-            //ExecuteCommand("dotnet", $"new -u NTangle.Template --nuget-source {_nugetDir.FullName}", _rootDir.FullName);
+            // Determine the "actual" version to publish so we are explicit.
+            var pf = Directory.GetFiles(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget-publish"), "NTangle.Template.*.nupkg").FirstOrDefault();
+            Assert.That(pf, Is.Not.Null, "NTangle.Template.*.nupkg could not be found.");
 
             // Install the template solution from local package.
-            Assert.GreaterOrEqual(0, ExecuteCommand("dotnet", $"new install ntangle.template --nuget-source {_nugetDir.FullName}", _rootDir.FullName).exitCode, "install ntangle.template");
+            Assert.GreaterOrEqual(0, ExecuteCommand("dotnet", $"new install ntangle.template::{new FileInfo(pf).Name[17..^6]} --nuget-source {_nugetDir.FullName}", _rootDir.FullName).exitCode, "install ntangle.template");
         }
 
         [Test]
@@ -178,7 +179,7 @@ namespace NTangle.Test
 
             // Publisher : Execute publisher and check event sent.
             await ChangeSomeData(appName).ConfigureAwait(false);
-            var (exitCode, stdOut) = ExecuteCommand("dotnet", "run", Path.Combine(dir, $"{appName}.Publisher"), 30000);
+            var (_, stdOut) = ExecuteCommand("dotnet", "run", Path.Combine(dir, $"{appName}.Publisher"), 30000);
             Assert.IsTrue(stdOut.Contains("\"source\": \"/database/cdc/legacy/contact/1\""), "Expected published event content not found in stdout.");
         }
 

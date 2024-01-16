@@ -5,6 +5,7 @@
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <!-- Following needed as per: https://github.com/Azure/azure-functions-core-tools/issues/2872 -->
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Update="appsettings.json">
@@ -22,7 +23,7 @@
     <Folder Include="Entities\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CoreEx.Azure" Version="3.8.1" />
+    <PackageReference Include="CoreEx.Azure" Version="3.9.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.13.5" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />

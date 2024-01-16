@@ -76,13 +76,13 @@ namespace NTangle.Cdc
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         internal EntityOrchestratorBase(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger logger)
         {
-            Db = db ?? throw new ArgumentNullException(nameof(db));
-            ExecuteStoredProcedureName = executeStoredProcedureName ?? throw new ArgumentNullException(nameof(executeStoredProcedureName));
-            CompleteStoredProcedureName = completeStoredProcedureName ?? throw new ArgumentNullException(nameof(completeStoredProcedureName));
-            EventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
-            JsonSerializer = jsonSerializer ?? throw new ArgumentNullException(nameof(jsonSerializer));
-            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            Db = db.ThrowIfNull(nameof(db));
+            ExecuteStoredProcedureName = executeStoredProcedureName.ThrowIfNull(nameof(executeStoredProcedureName));
+            CompleteStoredProcedureName = completeStoredProcedureName.ThrowIfNull(nameof(completeStoredProcedureName));
+            EventPublisher = eventPublisher.ThrowIfNull(nameof(eventPublisher));
+            JsonSerializer = jsonSerializer.ThrowIfNull(nameof(jsonSerializer));
+            Settings = settings.ThrowIfNull(nameof(settings));
+            Logger = logger.ThrowIfNull(nameof(logger));
 
             MaxQuerySize = Settings.GetCdcValue<int?>(ServiceName, MaxQuerySizeParamName) ?? 100;
             ContinueWithDataLoss = Settings.GetCdcValue<bool?>(ServiceName, ContinueWithDataLossParamName) ?? false;
@@ -450,7 +450,7 @@ namespace NTangle.Cdc
         /// The <see cref="IEventPublisher.SendAsync(CancellationToken)"/> must <b>not</b> be performed as this will result in data publishing inconsistencies; this is managed internally by the <see cref="ExecuteAsync(CancellationToken)"/>.</remarks>
         protected virtual async Task CreateEventsAsync(IEventPublisher eventPublisher, TEntityEnvelopeColl coll, string? correlationId, CancellationToken cancellationToken = default)
         {
-            foreach (var item in coll ?? throw new ArgumentNullException(nameof(coll)))
+            foreach (var item in coll.ThrowIfNull(nameof(coll)))
             {
                 await CreateEventAsync(eventPublisher, item, item.DatabaseOperationType, correlationId, cancellationToken).ConfigureAwait(false);
             }

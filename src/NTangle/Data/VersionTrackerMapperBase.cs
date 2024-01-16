@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx;
 using CoreEx.Database;
 using CoreEx.Database.SqlServer;
 using CoreEx.Mapping;
@@ -13,18 +14,13 @@ namespace NTangle.Data
     /// <summary>
     /// Represents the <see cref="VersionTracker"/> database mapper. 
     /// </summary>
-    public abstract class VersionTrackingMapperBase : IDatabaseMapper<VersionTracker>, IDatabaseTvp<VersionTracker>
+    /// <param name="dbTypeName">The database type name for the <see cref="TableValuedParameter"/>.</param>
+    public abstract class VersionTrackingMapperBase(string dbTypeName) : IDatabaseMapper<VersionTracker>, IDatabaseTvp<VersionTracker>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VersionTrackingMapperBase"/> class.
-        /// </summary>
-        /// <param name="dbTypeName">The database type name for the <see cref="TableValuedParameter"/>.</param>
-        public VersionTrackingMapperBase(string dbTypeName) => DbTypeName = dbTypeName ?? throw new ArgumentNullException(nameof(dbTypeName));
-
         /// <summary>
         /// Gets the database type name for the <see cref="TableValuedParameter"/>.
         /// </summary>
-        public string DbTypeName { get; }
+        public string DbTypeName { get; } = dbTypeName.ThrowIfNull(nameof(dbTypeName));
 
         /// <inheritdoc/>
         public VersionTracker? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()

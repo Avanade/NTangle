@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx;
 using CoreEx.Database.SqlServer;
 using Microsoft.Data.SqlClient;
 using OnRamp;
@@ -38,7 +39,7 @@ namespace NTangle.CodeGen
         /// <remarks>Also adds this <see cref="Assembly"/> before adding the passed <paramref name="assemblies"/> into <see cref="CodeGeneratorArgsBase.Assemblies"/>.</remarks>
         public CodeGenConsole(string connectionString, params Assembly[] assemblies) : base()
         {
-            Args.ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            Args.ConnectionString = connectionString.ThrowIfNull(nameof(connectionString));
             Args.AddAssembly(typeof(DbEx.DatabaseExtensions).Assembly).AddAssembly(typeof(DbEx.SqlServer.SqlServerSchemaConfig).Assembly).AddAssembly(typeof(CodeGenConsole).Assembly);
             if (assemblies == null || assemblies.Length == 0)
                 Args.AddAssembly(Assembly.GetCallingAssembly());
@@ -61,7 +62,7 @@ namespace NTangle.CodeGen
         /// <returns>The current instance to support fluent-style method-chaining.</returns>
         public CodeGenConsole UseScript(string scriptFileName)
         {
-            Args.ScriptFileName = scriptFileName ?? throw new ArgumentNullException(scriptFileName);
+            Args.ScriptFileName = scriptFileName.ThrowIfNull(scriptFileName);
             return this;
         }
 
@@ -72,7 +73,7 @@ namespace NTangle.CodeGen
         /// <returns>The current instance to support fluent-style method-chaining.</returns>
         public CodeGenConsole UseConfig(string configFileName)
         {
-            Args.ConfigFileName = configFileName ?? throw new ArgumentNullException(configFileName);
+            Args.ConfigFileName = configFileName.ThrowIfNull(configFileName);
             return this;
         }
 

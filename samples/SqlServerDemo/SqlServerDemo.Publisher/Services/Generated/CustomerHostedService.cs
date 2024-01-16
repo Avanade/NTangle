@@ -7,14 +7,9 @@ namespace SqlServerDemo.Publisher.Services;
 /// <summary>
 /// Provides the Change Data Capture (CDC) <see cref="CustomerCdc"/> entity (aggregate root) <see cref="HostedService{T}"/> capabilities (database table '[Legacy].[Customer]').
 /// </summary>
-public partial class CustomerHostedService : CdcHostedService<ICustomerOrchestrator, CustomerCdc>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CustomerHostedService"/> class.
-    /// </summary>
-    /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
-    /// <param name="logger">The <see cref="ILogger"/>.</param>
-    /// <param name="settings">The <see cref="SettingsBase"/>.</param>
-    /// <param name="synchronizer"> The <see cref="IServiceSynchronizer"/>.</param>
-    public CustomerHostedService(IServiceProvider serviceProvider, ILogger<CustomerHostedService> logger, SettingsBase settings, IServiceSynchronizer synchronizer) : base(serviceProvider, logger, settings, synchronizer) { }
-}
+/// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
+/// <param name="logger">The <see cref="ILogger"/>.</param>
+/// <param name="settings">The <see cref="SettingsBase"/>.</param>
+/// <param name="synchronizer"> The <see cref="IServiceSynchronizer"/>.</param>
+public partial class CustomerHostedService(IServiceProvider serviceProvider, ILogger<CustomerHostedService> logger, SettingsBase settings, IServiceSynchronizer synchronizer) 
+    : CdcHostedService<ICustomerOrchestrator, CustomerCdc>(serviceProvider, logger, settings, synchronizer) { }

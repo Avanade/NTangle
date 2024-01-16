@@ -6,6 +6,6 @@ public class ContactFunction
 
     public ContactFunction(ContactService contactService) => _contactService = contactService.ThrowIfNull();
 
-    [FunctionName(nameof(ContactFunction))]
+    [Function(nameof(ContactFunction))]
     public Task RunAsync([TimerTrigger("*/5 * * * * *")] TimerInfo timer, CancellationToken cancellationToken) => _contactService.ExecuteAsync(cancellationToken);
 }
