@@ -2,8 +2,8 @@
 
 using DbEx;
 using DbEx.DbSchema;
-using DbEx.SqlServer;
-using Microsoft.Data.SqlClient;
+using DbEx.Migration;
+using DbEx.SqlServer.Migration;
 using Microsoft.Extensions.Logging;
 using OnRamp;
 using OnRamp.Config;
@@ -472,8 +472,8 @@ namespace NTangle.CodeGen.Config
 
             var sw = Stopwatch.StartNew();
             var db = (CodeGenArgs.GetCreateDatabase(false)?.Invoke(CodeGenArgs.ConnectionString!)) ?? throw new CodeGenException(this, null, "A database provider must be specified during application startup, consider using the likes of 'UseSqlServer' to specify; e.g: 'CodeGenConsole.Create(\"...\").UseSqlServer().RunAsync(args)'.");
-            var csb = new SqlConnectionStringBuilder(CodeGenArgs.ConnectionString);
-            DbTables = await db.SelectSchemaAsync(new SqlServerSchemaConfig(csb.InitialCatalog)).ConfigureAwait(false);
+            var ssm = new SqlServerMigration(new MigrationArgs { ConnectionString = CodeGenArgs.ConnectionString });
+            DbTables = await db.SelectSchemaAsync(ssm).ConfigureAwait(false);
 
             sw.Stop();
             CodeGenArgs.Logger?.Log(LogLevel.Information, "{Content}", $"    Database schema query complete [{sw.Elapsed.TotalMilliseconds}ms]");
