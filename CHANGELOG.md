@@ -2,8 +2,11 @@
 
 Represents the **NuGet** versions.
 
+## v2.5.0
+- *Enhancement:* Updated `DbEx` (`v2.5.0`) and`CoreEx` (`v3.12.0`) and other dependencies.
+
 ## v2.4.0
-- *Fixed:* Updated `DbEx` (`v2.4.0`) and`CoreEx` (`v3.9.0`) and other dependencies.
+- *Enhancement:* Updated `DbEx` (`v2.4.0`) and`CoreEx` (`v3.9.0`) and other dependencies.
 - *Enhancement:* Updated the `dotnet new ntangle` template to target `net8.0` and [isolated](https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide) functions.
 
 ## v2.3.6
