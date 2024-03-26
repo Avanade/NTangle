@@ -7,10 +7,4 @@ namespace SqlServerDemo.Publisher.Data;
 /// <summary>
 /// Provides the <see cref="VersionTracking"/> database mapper for table '[NTangle].[VersionTracking]'.
 /// </summary>
-public class VersionTrackingMapper : VersionTrackingMapperBase
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VersionTrackingMapper"/> class.
-    /// </summary>
-    public VersionTrackingMapper() : base("[NTangle].[udtVersionTrackingList]") { }
-}
+public class VersionTrackingMapper() : VersionTrackingMapperBase("[NTangle].[udtVersionTrackingList]") { }

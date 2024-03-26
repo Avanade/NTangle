@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v2.5.2
+- *Fixed:* Updated `CoreEx` (`v3.15.0`) and other dependencies.
+- *Fixed:* Simplify event outbox C# code-generation templates for primary constructor usage.
+
 ## v2.5.1
 - *Fixed:* Updated `CoreEx` (`v3.13.0`) and other dependencies.
 

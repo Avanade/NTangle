@@ -7,13 +7,7 @@ namespace ContactSync.OldApp.Publisher.Services;
 /// <summary>
 /// Provides the Change Data Capture (CDC) <see cref="ContactCdc"/> entity (aggregate root) <see cref="CdcService{TOrchestrator, TEntity}"/> capabilities (database table '[old].[Contact]').
 /// </summary>
-public partial class ContactService : CdcService<IContactOrchestrator, ContactCdc>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ContactService"/> class.
-    /// </summary>
-    /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
-    /// <param name="logger">The <see cref="ILogger"/>.</param>
-    /// <param name="settings">The <see cref="SettingsBase"/>.</param>
-    public ContactService(IServiceProvider serviceProvider, ILogger<ContactService> logger, SettingsBase settings) : base(serviceProvider, logger, settings) { }
-}
+/// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
+/// <param name="logger">The <see cref="ILogger"/>.</param>
+/// <param name="settings">The <see cref="SettingsBase"/>.</param>
+public partial class ContactService(IServiceProvider serviceProvider, ILogger<ContactService> logger, SettingsBase settings) : CdcService<IContactOrchestrator, ContactCdc>(serviceProvider, logger, settings) { }

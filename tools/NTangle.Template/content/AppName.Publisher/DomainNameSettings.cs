@@ -3,14 +3,9 @@
 /// <summary>
 /// Provides the <b>AppName</b> settings.
 /// </summary>
-public class DomainNameSettings : SettingsBase
+/// <param name="configuration">The <see cref="IConfiguration"/>.</param>
+public class DomainNameSettings(IConfiguration configuration) : SettingsBase(configuration, "DomainName")
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DomainNameSettings"/> class.
-    /// </summary>
-    /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
-    public DomainNameSettings(IConfiguration configuration) : base(configuration, "DomainName") { }
-
     /// <summary>
     /// Gets the SQL Server database connection string.
     /// </summary>

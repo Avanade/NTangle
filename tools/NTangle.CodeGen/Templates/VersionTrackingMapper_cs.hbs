@@ -8,10 +8,4 @@ namespace {{Root.NamespacePublisher}}.Data;
 /// <summary>
 /// Provides the <see cref="VersionTracking"/> database mapper for table '[{{Root.CdcSchema}}].[{{Root.VersionTrackingTable}}]'.
 /// </summary>
-public class VersionTrackingMapper : VersionTrackingMapperBase
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VersionTrackingMapper"/> class.
-    /// </summary>
-    public VersionTrackingMapper() : base("[{{Root.CdcSchema}}].[udt{{Root.VersionTrackingTable}}List]") { }
-}
+public class VersionTrackingMapper() : VersionTrackingMapperBase("[{{Root.CdcSchema}}].[udt{{Root.VersionTrackingTable}}List]") { }
