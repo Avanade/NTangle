@@ -8,10 +8,4 @@ namespace SqlServerDemo.Publisher.Data;
 /// Provides the <see cref="IdentifierMapping{T}"/> database mapper for table '[NTangle].[IdentifierMapping]'.
 /// </summary>
 /// <typeparam name="T">The global identifier <see cref="System.Type"/>.</typeparam>
-public class IdentifierMappingMapper<T> : IdentifierMappingMapperBase<T>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VersionTrackingMapper"/> class.
-    /// </summary>
-    public IdentifierMappingMapper() : base("[NTangle].[udtIdentifierMappingList]") { }
-}
+public class IdentifierMappingMapper<T>() : IdentifierMappingMapperBase<T>("[NTangle].[udtIdentifierMappingList]") { }
