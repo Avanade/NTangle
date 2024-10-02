@@ -1,6 +1,6 @@
-CREATE PROCEDURE [NTangle].[spContactBatchComplete]
+CREATE OR ALTER PROCEDURE [NTangle].[spContactBatchComplete]
   @BatchTrackingId BIGINT,
-  @VersionTrackingList AS [NTangle].[udtVersionTrackingList] READONLY
+  @VersionTrackingList AS NVARCHAR(MAX)
 AS
 BEGIN
   /*
@@ -35,6 +35,8 @@ BEGIN
     DECLARE @Timestamp DATETIME2
     SET @Timestamp = GETUTCDATE()
 
+    SELECT * into #versionTrackingList FROM OPENJSON(@VersionTrackingList) WITH ([Key] NVARCHAR(255) '$.key', [Hash] NVARCHAR(127) '$.hash')
+
     UPDATE [_batch] SET
         [_batch].[IsComplete] = 1,
         [_batch].[CompletedDate] = @Timestamp
@@ -42,7 +44,7 @@ BEGIN
       WHERE BatchTrackingId = @BatchTrackingId 
 
     MERGE INTO [NTangle].[VersionTracking] WITH (HOLDLOCK) AS [_vt]
-      USING @VersionTrackingList AS [_list] ON ([_vt].[Schema] = N'old' AND [_vt].[Table] = N'Contact' AND [_vt].[Key] = [_list].[Key])
+      USING #versionTrackingList AS [_list] ON ([_vt].[Schema] = N'old' AND [_vt].[Table] = N'Contact' AND [_vt].[Key] = [_list].[Key])
       WHEN MATCHED AND EXISTS (
           SELECT [_list].[Key], [_list].[Hash]
           EXCEPT

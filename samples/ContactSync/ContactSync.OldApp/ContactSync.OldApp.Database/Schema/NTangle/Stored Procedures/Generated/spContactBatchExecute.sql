@@ -1,4 +1,4 @@
-CREATE PROCEDURE [NTangle].[spContactBatchExecute]
+CREATE OR ALTER PROCEDURE [NTangle].[spContactBatchExecute]
   @MaxQuerySize BIGINT = 100,         -- Maximum size of query to limit the number of changes to a manageable batch (performance vs failure trade-off).
   @ContinueWithDataLoss BIT = 0       -- Ignores data loss and continues; versus throwing an error.
 AS

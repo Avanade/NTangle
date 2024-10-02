@@ -4,7 +4,6 @@ using CoreEx;
 using CoreEx.Abstractions;
 using CoreEx.Configuration;
 using CoreEx.Database;
-using CoreEx.Database.SqlServer;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
@@ -27,12 +26,12 @@ namespace NTangle.Cdc
     /// <typeparam name="TEntity">The root entity <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelopeColl">The <typeparamref name="TEntityEnvelope"/> collection <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelope">The <typeparamref name="TEntity"/> envelope <see cref="Type"/>.</typeparam>
-    /// <typeparam name="TVersionTrackerMapper">The <see cref="VersionTracker"/> database and table-valued parameter mapper <see cref="Type"/>.</typeparam>
+    /// <typeparam name="TVersionTrackerMapper">The <see cref="VersionTracker"/> database mapper <see cref="Type"/>.</typeparam>
     public abstract class EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper> : IEntityOrchestrator
         where TEntity : class, IEntity, new()
         where TEntityEnvelopeColl : List<TEntityEnvelope>, new()
         where TEntityEnvelope : class, TEntity, IEntityEnvelope, new()
-        where TVersionTrackerMapper : IDatabaseMapper<VersionTracker>, IDatabaseTvp<VersionTracker>, new()
+        where TVersionTrackerMapper : IDatabaseMapper<VersionTracker>, new()
     {
         private const string MaxQuerySizeParamName = "MaxQuerySize";
         private const string ContinueWithDataLossParamName = "ContinueWithDataLoss";
@@ -60,7 +59,6 @@ namespace NTangle.Cdc
         protected const string IsPhysicallyDeletedColumnName = "_IsPhysicallyDeleted";
 
         private static readonly BatchTrackerMapper _batchTrackerMapper = new();
-        private static readonly TVersionTrackerMapper _versionTrackerMapper = new();
         private string? _name;
         private int _maxQuerySize = 100;
 
@@ -217,7 +215,7 @@ namespace NTangle.Cdc
                 await Db.StoredProcedure(CompleteStoredProcedureName).Params(p =>
                 {
                     p.AddParameter(BatchTrackingIdParamName, batchTrackerId);
-                    p.AddTableValuedParameter(VersionTrackingListParamName, _versionTrackerMapper.CreateTableValuedParameter(versionTracking));
+                    p.AddJsonParameter(VersionTrackingListParamName, versionTracking);
                 }).SelectMultiSetAsync(MultiSetArgs.Create(msa), cancellationToken).ConfigureAwait(false);
             }
             catch (BusinessException bex) // The known (converted) SQL Exception.

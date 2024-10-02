@@ -1,5 +1,5 @@
 ﻿{{! Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle }}
-CREATE PROCEDURE [{{CdcSchema}}].[{{ExecuteStoredProcedure}}]
+CREATE OR ALTER PROCEDURE [{{CdcSchema}}].[{{ExecuteStoredProcedure}}]
   @MaxQuerySize BIGINT = 100,         -- Maximum size of query to limit the number of changes to a manageable batch (performance vs failure trade-off).
   @ContinueWithDataLoss BIT = 0       -- Ignores data loss and continues; versus throwing an error.
 AS
