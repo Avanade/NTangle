@@ -5,7 +5,6 @@ using CoreEx.Database;
 using CoreEx.Events;
 using CoreEx.Json;
 using Microsoft.Extensions.Logging;
-using NTangle.Data;
 using System;
 using System.Collections.Generic;
 
@@ -17,7 +16,7 @@ namespace NTangle.Cdc
     /// <typeparam name="TEntity">The root entity <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelopeColl">The <typeparamref name="TEntityEnvelope"/> collection <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelope">The <typeparamref name="TEntity"/> envelope <see cref="Type"/>.</typeparam>
-    /// <typeparam name="TVersionTrackerMapper">The <see cref="VersionTracker"/> database and table-valued parameter mapper <see cref="Type"/>.</typeparam>
+    /// <typeparam name="TVersionTrackerMapper">The <see cref="VersionTracker"/> database mapper <see cref="Type"/>.</typeparam>
     /// <param name="db">The <see cref="IDatabase"/>.</param>
     /// <param name="executeStoredProcedureName">The name of the batch execute stored procedure.</param>
     /// <param name="completeStoredProcedureName">The name of the batch complete stored procedure.</param>
@@ -29,6 +28,6 @@ namespace NTangle.Cdc
         where TEntity : class, IEntity, new()
         where TEntityEnvelopeColl : List<TEntityEnvelope>, new()
         where TEntityEnvelope : class, TEntity, IEntityEnvelope, new()
-        where TVersionTrackerMapper : IDatabaseMapper<VersionTracker>, IDatabaseTvp<VersionTracker>, new()
+        where TVersionTrackerMapper : IDatabaseMapper<VersionTracker>, new()
     { }
 }

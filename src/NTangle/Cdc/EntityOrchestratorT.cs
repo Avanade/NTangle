@@ -23,13 +23,13 @@ namespace NTangle.Cdc
     /// <typeparam name="TEntity">The root entity <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelopeColl">The <typeparamref name="TEntityEnvelope"/> collection <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelope">The <typeparamref name="TEntity"/> envelope <see cref="Type"/>.</typeparam>
-    /// <typeparam name="TVersionTrackerMapper">The <see cref="VersionTracker"/> database and table-valued parameter mapper <see cref="Type"/>.</typeparam>
+    /// <typeparam name="TVersionTrackerMapper">The <see cref="VersionTracker"/> database mapper <see cref="Type"/>.</typeparam>
     /// <typeparam name="TGlobalIdentifer">The global identifier <see cref="Type"/>.</typeparam>
     public abstract class EntityOrchestrator<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper, TGlobalIdentifer> : EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper>, IEntityOrchestrator<TEntity>
         where TEntity : class, IEntity, new()
         where TEntityEnvelopeColl : List<TEntityEnvelope>, new()
         where TEntityEnvelope : class, TEntity, IEntityEnvelope, new()
-        where TVersionTrackerMapper : IDatabaseMapper<VersionTracker>, IDatabaseTvp<VersionTracker>, new()
+        where TVersionTrackerMapper : IDatabaseMapper<VersionTracker>, new()
     { 
         private const string IdentifierListParamName = "IdentifierList";
 
@@ -86,10 +86,9 @@ namespace NTangle.Cdc
             // There could be multiple references to same Schema/Table/Key; these need to filtered out; i.e. send only a distinct list.
             var imcd = new Dictionary<(string?, string?, string?), IdentifierMapping<TGlobalIdentifer>>();
             vimc.ForEach(item => imcd.TryAdd((item.Schema, item.Table, item.Key), item));
-            var tvp = IdentifierMappingMapper!.CreateTableValuedParameter(imcd.Values);
 
             // Execute the stored procedure and get the updated list.
-            var imc = await Db.StoredProcedure(IdentifierMappingStoredProcedureName!).Params(p => p.AddTableValuedParameter(IdentifierListParamName, tvp)).SelectQueryAsync(IdentifierMappingMapper, cancellationToken).ConfigureAwait(false);
+            var imc = await Db.StoredProcedure(IdentifierMappingStoredProcedureName!).Params(p => p.AddJsonParameter(IdentifierListParamName, imcd.Values)).SelectQueryAsync(IdentifierMappingMapper, cancellationToken).ConfigureAwait(false);
             if (imc.Count() != imcd.Count)
                 throw new InvalidOperationException($"Stored procedure '{IdentifierMappingStoredProcedureName}' returned an unexpected result.");
 

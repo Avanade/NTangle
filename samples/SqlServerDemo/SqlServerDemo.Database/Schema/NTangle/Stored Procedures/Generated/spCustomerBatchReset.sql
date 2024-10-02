@@ -1,4 +1,4 @@
-CREATE PROCEDURE [NTangle].[spCustomerBatchReset]
+CREATE OR ALTER PROCEDURE [NTangle].[spCustomerBatchReset]
 AS
 BEGIN
   /*

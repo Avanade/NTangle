@@ -2,6 +2,11 @@
 
 Represents the **NuGet** versions.
 
+## v2.6.0
+- *Enhancement:* Database code-generation defaults to the use of [JSON](https://learn.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server)-serialized parameters versus UDT/TVP to minimize the need for additional database objects; specifically [User-Defined Types](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-type-transact-sql) (UDT).
+  - This will now require a SQL Server version of 2016 or later; use earlier _DbEx_ versions that use UDT/TVP which are supported on earlier SQL Server versions.
+- *Enhancement:* All code-generated stored procedures now use `CREATE OR ALTER`; again, requires SQL Server 2016 or later.
+
 ## v2.5.2
 - *Fixed:* Updated `CoreEx` (`v3.15.0`) and other dependencies.
 - *Fixed:* Simplify event outbox C# code-generation templates for primary constructor usage.

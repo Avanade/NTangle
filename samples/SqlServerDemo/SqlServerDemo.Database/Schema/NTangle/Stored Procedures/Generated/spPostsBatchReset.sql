@@ -1,4 +1,4 @@
-CREATE PROCEDURE [NTangle].[spPostsBatchReset]
+CREATE OR ALTER PROCEDURE [NTangle].[spPostsBatchReset]
 AS
 BEGIN
   /*

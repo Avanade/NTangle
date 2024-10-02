@@ -6,8 +6,6 @@ using CoreEx.Database.SqlServer;
 using CoreEx.Mapping;
 using NTangle.Cdc;
 using System;
-using System.Collections.Generic;
-using System.Data;
 
 namespace NTangle.Data
 {
@@ -16,7 +14,7 @@ namespace NTangle.Data
     /// </summary>
     /// <typeparam name="T">The global identifier <see cref="System.Type"/>.</typeparam>
     /// <param name="dbTypeName">The database type name for the <see cref="TableValuedParameter"/>.</param>
-    public abstract class IdentifierMappingMapperBase<T>(string dbTypeName) : IDatabaseMapper<IdentifierMapping<T>>, IIdentifierMappingTvp<T>
+    public abstract class IdentifierMappingMapperBase<T>(string dbTypeName) : IDatabaseMapper<IdentifierMapping<T>>
     {
 
         /// <summary>
@@ -32,24 +30,6 @@ namespace NTangle.Data
             Key = record.GetValue<string>(nameof(IdentifierMapping<T>.Key)),
             GlobalId = record.GetValue<T>(nameof(IdentifierMapping<T>.GlobalId))
         };
-
-        /// <inheritdoc/>
-        public TableValuedParameter CreateTableValuedParameter(IEnumerable<IdentifierMapping<T>> list)
-        {
-            var dt = new DataTable();
-            dt.Columns.Add(nameof(IdentifierMapping<T>.Schema), typeof(string));
-            dt.Columns.Add(nameof(IdentifierMapping<T>.Table), typeof(string));
-            dt.Columns.Add(nameof(IdentifierMapping<T>.Key), typeof(string));
-            dt.Columns.Add(nameof(IdentifierMapping<T>.GlobalId), typeof(T));
-
-            var tvp = new TableValuedParameter(DbTypeName, dt);
-            foreach (var item in list)
-            {
-                tvp.AddRow(item.Schema, item.Table, item.Key, item.GlobalId);
-            }
-
-            return tvp;
-        }
 
         /// <inheritdoc/>
         void IDatabaseMapper<IdentifierMapping<T>>.MapToDb(IdentifierMapping<T>? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();

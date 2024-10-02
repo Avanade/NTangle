@@ -1,4 +1,4 @@
-CREATE PROCEDURE [NTangle].[spContactBatchReset]
+CREATE OR ALTER PROCEDURE [NTangle].[spContactBatchReset]
 AS
 BEGIN
   /*
