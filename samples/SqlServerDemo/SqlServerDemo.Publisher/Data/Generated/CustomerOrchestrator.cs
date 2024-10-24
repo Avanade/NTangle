@@ -12,7 +12,7 @@ public partial interface ICustomerOrchestrator : IEntityOrchestrator<CustomerCdc
 /// <summary>
 /// Manages the Change Data Capture (CDC) <see cref="CustomerCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Customer]').
 /// </summary>
-public partial class CustomerOrchestrator : EntityOrchestrator<CustomerCdc, CustomerOrchestrator.CustomerCdcEnvelopeCollection, CustomerOrchestrator.CustomerCdcEnvelope, VersionTrackingMapper>, ICustomerOrchestrator
+public partial class CustomerOrchestrator : EntityOrchestrator<CustomerCdc, CustomerOrchestrator.CustomerCdcEnvelopeCollection, CustomerOrchestrator.CustomerCdcEnvelope>, ICustomerOrchestrator
 {
     private static readonly CustomerCdcMapper _customerCdcMapper = new();
 

@@ -213,9 +213,6 @@ Table | [`EventOutbox`](../samples/SqlServerDemo/SqlServerDemo.Database/Migratio
 Table | [`EventOutboxData`](../samples/SqlServerDemo/SqlServerDemo.Database/Migrations/20221107-232848-06-create-outbox-eventoutboxdata-table.sql) | Event outbox data.
 Table | [`IdentifierMapping`](../samples/SqlServerDemo/SqlServerDemo.Database/Migrations/20221107-232848-07-create-ntangle-identifiermapping-table.sql) | Identifier mapping.
 Table | [`VersionTracking`](../samples/SqlServerDemo/SqlServerDemo.Database/Migrations/20221107-232848-02-create-ntangle-versiontracking-table.sql) | Version (hash) tracking.
-UDT | [`udtEventOutboxList`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/Outbox/Types/User-Defined%20Table%20Types/Generated/udtEventOutboxList.sql) | Event outbox list user-defined type.
-UDT | [`udtIdentifierMappingList`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Types/User-Defined%20Table%20Types/Generated/udtIdentifierMappingList.sql) | Identifier mapping list user-defined type.
-UDT | [`udtVersionTrackingList`](../samples/SqlServerDemo/SqlServerDemo.Database/Schema/NTangle/Types/User-Defined%20Table%20Types/Generated/udtVersionTrackingList.sql) | Version tracking list user-defined type.
 
 <br/>
 
@@ -230,7 +227,5 @@ Namespace | Artefact | Description
 Data | [`XxxOrchestrator`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/ContactOrchestrator.cs) | Change tracking and event publisher orchestrator.
 Data | [`EventOutboxDequeue`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/EventOutboxDequeue.cs) | Event outbox dequeue.
 Data | [`EventOutboxEnqueue`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/EventOutboxEnqueue.cs) | Event outbox enqueue.
-Data | [`IdentifierMappingMapper`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/IdentifierMappingMapper.cs) | Identifier mapping database to .NET mapper.
-Data | [`VersionTrackingMapper`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Data/Generated/VersionTrackingMapper.cs) | Version tracking database to .NET mapper.
 Entities | [`XxxCdc`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Entities/Generated/ContactCdc.cs) | Entity (aggregate root) representation of database table(s) and relationships.
 Services | [`XxxHostedService`](../samples/SqlServerDemo/SqlServerDemo.Publisher/Services/Generated/ContactHostedService.cs) | Timer-based host for the `XxxCdcOrchestrator`.

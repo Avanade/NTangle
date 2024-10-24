@@ -13,7 +13,7 @@ public partial interface I{{Model}}Orchestrator : IEntityOrchestrator<{{Model}}C
 /// <summary>
 /// Manages the Change Data Capture (CDC) <see cref="{{Model}}Cdc"/> entity (aggregate root) orchestration (database table '[{{Schema}}].[{{Name}}]').
 /// </summary>
-public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{Model}}Orchestrator.{{Model}}CdcEnvelopeCollection, {{Model}}Orchestrator.{{Model}}CdcEnvelope, VersionTrackingMapper{{#if UsesGlobalIdentifier}}, {{Root.IdentifierMappingDotNetType}}{{/if}}>, I{{Model}}Orchestrator
+public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{Model}}Orchestrator.{{Model}}CdcEnvelopeCollection, {{Model}}Orchestrator.{{Model}}CdcEnvelope{{#if UsesGlobalIdentifier}}, {{Root.IdentifierMappingDotNetType}}{{/if}}>, I{{Model}}Orchestrator
 {
     private static readonly {{Model}}CdcMapper _{{camel Model}}CdcMapper = new();
 {{#each DistinctModels}}
@@ -41,7 +41,7 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
     /// <param name="{{ArgumentName}}">{{{Text}}}</param>
 {{/each}}
     public {{Model}}Orchestrator({{Database}} db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<{{Model}}Orchestrator> logger{{#if UsesGlobalIdentifier}}, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen{{/if}}{{#each OrchestratorCtorParameters}}, {{Type}} {{ArgumentName}}{{/each}}) :
-        base(db, "[{{CdcSchema}}].[{{ExecuteStoredProcedure}}]", "[{{CdcSchema}}].[{{CompleteStoredProcedure}}]", eventPublisher, jsonSerializer, settings, logger{{#if UsesGlobalIdentifier}}, "[{{Root.CdcSchema}}].[{{Root.IdentifierMappingStoredProcedure}}]", idGen, new IdentifierMappingMapper<{{Root.IdentifierMappingDotNetType}}>(){{/if}}){{#ifeq OrchestratorCtorParameters.Count 0}} => {{Model}}OrchestratorCtor();{{/ifeq}}
+        base(db, "[{{CdcSchema}}].[{{ExecuteStoredProcedure}}]", "[{{CdcSchema}}].[{{CompleteStoredProcedure}}]", eventPublisher, jsonSerializer, settings, logger{{#if UsesGlobalIdentifier}}, "[{{Root.CdcSchema}}].[{{Root.IdentifierMappingStoredProcedure}}]", idGen{{/if}}){{#ifeq OrchestratorCtorParameters.Count 0}} => {{Model}}OrchestratorCtor();{{/ifeq}}
 {{#ifne OrchestratorCtorParameters.Count 0}}
     {
   {{#each OrchestratorCtorParameters}}

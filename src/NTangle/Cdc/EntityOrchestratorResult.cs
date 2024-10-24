@@ -5,7 +5,7 @@ using System;
 namespace NTangle.Cdc
 {
     /// <summary>
-    /// Represents the <see cref="EntityOrchestratorBase{TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper}"/> result.
+    /// Represents the <see cref="EntityOrchestratorBase{TEntity, TEntityEnvelopeColl, TEntityEnvelope}"/> result.
     /// </summary>
     public class EntityOrchestratorResult
     {

@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NTangle.CodeGen" Version="2.6.0" />
+    <PackageReference Include="NTangle.CodeGen" Version="2.6.1" />
   </ItemGroup>
   <ItemGroup>
     <None Update="ntangle.yaml">

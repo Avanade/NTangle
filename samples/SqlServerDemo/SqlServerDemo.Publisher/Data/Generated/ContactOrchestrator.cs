@@ -12,7 +12,7 @@ public partial interface IContactOrchestrator : IEntityOrchestrator<ContactCdc> 
 /// <summary>
 /// Manages the Change Data Capture (CDC) <see cref="ContactCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Contact]').
 /// </summary>
-public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, ContactOrchestrator.ContactCdcEnvelopeCollection, ContactOrchestrator.ContactCdcEnvelope, VersionTrackingMapper, string>, IContactOrchestrator
+public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, ContactOrchestrator.ContactCdcEnvelopeCollection, ContactOrchestrator.ContactCdcEnvelope, string>, IContactOrchestrator
 {
     private static readonly ContactCdcMapper _contactCdcMapper = new();
     private static readonly AddressCdcMapper _addressCdcMapper = new();
@@ -27,7 +27,7 @@ public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, Contac
     /// <param name="logger">The <see cref="ILogger"/>.</param>
     /// <param name="idGen">The <see cref="IIdentifierGenerator{T}"/>.</param>
     public ContactOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<ContactOrchestrator> logger, IIdentifierGenerator<string> idGen) :
-        base(db, "[NTangle].[spContactBatchExecute]", "[NTangle].[spContactBatchComplete]", eventPublisher, jsonSerializer, settings, logger, "[NTangle].[spIdentifierMappingCreate]", idGen, new IdentifierMappingMapper<string>()) => ContactOrchestratorCtor();
+        base(db, "[NTangle].[spContactBatchExecute]", "[NTangle].[spContactBatchComplete]", eventPublisher, jsonSerializer, settings, logger, "[NTangle].[spIdentifierMappingCreate]", idGen) => ContactOrchestratorCtor();
 
     partial void ContactOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 

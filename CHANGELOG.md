@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v2.6.1
+- *Fixed:* As a result of the `v2.6.0` enhancements the generated `IdentifierMappingMapper.cs` and `VersionTrackingMapper.cs` are not required. This fix will ensure these files are no longer generated; as such these should be removed from any existing solution after a re-gen.
+- *Fixed:* The base `EntityOrchestrator` classes have also been corrected to remove the `IdentifierMappingMapper` and `VersionTrackingMapper` references.
+
 ## v2.6.0
 - *Enhancement:* Database code-generation defaults to the use of [JSON](https://learn.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server)-serialized parameters versus UDT/TVP to minimize the need for additional database objects; specifically [User-Defined Types](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-type-transact-sql) (UDT).
   - This will now require a SQL Server version of 2016 or later; use earlier _DbEx_ versions that use UDT/TVP which are supported on earlier SQL Server versions.
