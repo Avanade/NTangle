@@ -12,7 +12,7 @@ public partial interface IContactOrchestrator : IEntityOrchestrator<ContactCdc> 
 /// <summary>
 /// Manages the Change Data Capture (CDC) <see cref="ContactCdc"/> entity (aggregate root) orchestration (database table '[old].[Contact]').
 /// </summary>
-public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, ContactOrchestrator.ContactCdcEnvelopeCollection, ContactOrchestrator.ContactCdcEnvelope, VersionTrackingMapper>, IContactOrchestrator
+public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, ContactOrchestrator.ContactCdcEnvelopeCollection, ContactOrchestrator.ContactCdcEnvelope>, IContactOrchestrator
 {
     private static readonly ContactCdcMapper _contactCdcMapper = new();
     private static readonly AddressCdcMapper _addressCdcMapper = new();

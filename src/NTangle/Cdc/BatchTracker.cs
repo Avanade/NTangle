@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using CoreEx.Entities;
 using System;
 
 namespace NTangle.Cdc
@@ -7,7 +8,7 @@ namespace NTangle.Cdc
     /// <summary>
     /// Represents the CDC (Change Data Capture) batch tracker.
     /// </summary>
-    public class BatchTracker
+    public class BatchTracker : IIdentifier<long>
     {
         /// <summary>
         /// Gets or sets the batch identifer.

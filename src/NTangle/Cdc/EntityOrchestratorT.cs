@@ -3,7 +3,6 @@
 using CoreEx;
 using CoreEx.Configuration;
 using CoreEx.Database;
-using CoreEx.Database.SqlServer;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
@@ -23,18 +22,16 @@ namespace NTangle.Cdc
     /// <typeparam name="TEntity">The root entity <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelopeColl">The <typeparamref name="TEntityEnvelope"/> collection <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelope">The <typeparamref name="TEntity"/> envelope <see cref="Type"/>.</typeparam>
-    /// <typeparam name="TVersionTrackerMapper">The <see cref="VersionTracker"/> database mapper <see cref="Type"/>.</typeparam>
     /// <typeparam name="TGlobalIdentifer">The global identifier <see cref="Type"/>.</typeparam>
-    public abstract class EntityOrchestrator<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper, TGlobalIdentifer> : EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper>, IEntityOrchestrator<TEntity>
+    public abstract class EntityOrchestrator<TEntity, TEntityEnvelopeColl, TEntityEnvelope, TGlobalIdentifer> : EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope>, IEntityOrchestrator<TEntity>
         where TEntity : class, IEntity, new()
         where TEntityEnvelopeColl : List<TEntityEnvelope>, new()
         where TEntityEnvelope : class, TEntity, IEntityEnvelope, new()
-        where TVersionTrackerMapper : IDatabaseMapper<VersionTracker>, new()
     { 
         private const string IdentifierListParamName = "IdentifierList";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityOrchestrator{TEntity, TEntityEnvelopeColl, TEntityEnvelope, TVersionTrackerMapper, TGlobalIdentifer}"/> class that requires identifier mapping support.
+        /// Initializes a new instance of the <see cref="EntityOrchestrator{TEntity, TEntityEnvelopeColl, TEntityEnvelope, TGlobalIdentifer}"/> class that requires identifier mapping support.
         /// </summary>
         /// <param name="db">The <see cref="IDatabase"/>.</param>
         /// <param name="executeStoredProcedureName">The name of the batch execute stored procedure.</param>
@@ -45,13 +42,12 @@ namespace NTangle.Cdc
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="identifierMappingStoredProcedureName">The name of the optional identifier mapping stored procedure.</param>
         /// <param name="identifierGenerator">The <see cref="IIdentifierGenerator{TCdcIdentifer}"/>.</param>
-        /// <param name="identifierMappingMapper">The <see cref="IdentifierMappingMapperBase{TCdcIdentifer}"/>.</param>
-        public EntityOrchestrator(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger logger, string identifierMappingStoredProcedureName, IIdentifierGenerator<TGlobalIdentifer> identifierGenerator, IdentifierMappingMapperBase<TGlobalIdentifer> identifierMappingMapper)
+        public EntityOrchestrator(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger logger, string identifierMappingStoredProcedureName, IIdentifierGenerator<TGlobalIdentifer> identifierGenerator)
             : base(db, executeStoredProcedureName, completeStoredProcedureName, eventPublisher, jsonSerializer, settings, logger)
         {
             IdentifierMappingStoredProcedureName = identifierMappingStoredProcedureName.ThrowIfNull(nameof(identifierMappingStoredProcedureName));
             IdentifierGenerator = identifierGenerator.ThrowIfNull(nameof(identifierGenerator));
-            IdentifierMappingMapper = identifierMappingMapper.ThrowIfNull(nameof(identifierMappingMapper));
+            IdentifierMappingMapper = new IdentifierMappingMapper<TGlobalIdentifer>();
             AdditionalEnvelopeProcessingAsync = AssignIdentityMappingAsync;
         }
 
@@ -66,9 +62,9 @@ namespace NTangle.Cdc
         public IIdentifierGenerator<TGlobalIdentifer> IdentifierGenerator { get; }
 
         /// <summary>
-        /// Gets the <see cref="IdentifierMappingMapperBase{TCdcIdentifer}"/>.
+        /// Gets the <see cref="IdentifierMappingMapper{TCdcIdentifer}"/>.
         /// </summary>
-        public IdentifierMappingMapperBase<TGlobalIdentifer> IdentifierMappingMapper { get; }
+        public IdentifierMappingMapper<TGlobalIdentifer> IdentifierMappingMapper { get; }
 
         /// <summary>
         /// Assigns the identity mapping by adding <i>new</i> for those items that do not currentyly have a global identifier currently assigned.

@@ -12,7 +12,7 @@ public partial interface IPostOrchestrator : IEntityOrchestrator<PostCdc> { }
 /// <summary>
 /// Manages the Change Data Capture (CDC) <see cref="PostCdc"/> entity (aggregate root) orchestration (database table '[Legacy].[Posts]').
 /// </summary>
-public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestrator.PostCdcEnvelopeCollection, PostOrchestrator.PostCdcEnvelope, VersionTrackingMapper>, IPostOrchestrator
+public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestrator.PostCdcEnvelopeCollection, PostOrchestrator.PostCdcEnvelope>, IPostOrchestrator
 {
     private static readonly PostCdcMapper _postCdcMapper = new();
     private static readonly CommentCdcMapper _commentCdcMapper = new();
