@@ -15,7 +15,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.27.3" />
+    <None Remove="Scripts\SqlServerDbExSidecar.yaml" />
+    <None Remove="Scripts\SqlServerSidecarDatabase.yaml" />
+    <None Remove="templates\ExecuteBatch_sql.hbs" />
+    <None Remove="Templates\SpExecuteBatch_Sidecar_sql.hbs" />
+    <None Remove="templates\spTrackingBatch_sql.hbs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.28.0" />
     <PackageReference Include="DbEx.SqlServer" Version="2.7.1" />
   </ItemGroup>
 

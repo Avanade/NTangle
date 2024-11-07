@@ -96,6 +96,14 @@ public partial class ContactCdc : IEntity, IPartitionKey, IGlobalIdentifier<stri
     public CompositeKey TableKey => new(CID);
 
     /// <inheritdoc/>
+    public void GetIdentifierMappingConfigurations(ValueIdentifierMappingCollection<string> coll)
+    {
+        coll.Add(new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalId), Schema = "Legacy", Table = "Contact", Key = TableKey.ToString() });
+        coll.Add(new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalAlternateContactId), Schema = "Legacy", Table = "Contact", Key = AlternateContactId.ToString() });
+        Address?.GetIdentifierMappingConfigurations(coll);
+    }
+
+    /// <inheritdoc/>
     public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<string> coll, IIdentifierGenerator<string> idGen)
     {
         await coll.AddAsync(GlobalId == default, async () => new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalId), Schema = "Legacy", Table = "Contact", Key = TableKey.ToString(), GlobalId = await idGen.GenerateIdentifierAsync<ContactCdc>().ConfigureAwait(false) }).ConfigureAwait(false);
@@ -159,6 +167,13 @@ public partial class ContactCdc : IEntity, IPartitionKey, IGlobalIdentifier<stri
         /// <inheritdoc/>
         [JsonIgnore]
         public CompositeKey TableKey => new(AID);
+
+        /// <inheritdoc/>
+        public void GetIdentifierMappingConfigurations(ValueIdentifierMappingCollection<string> coll)
+        {
+            coll.Add(new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalId), Schema = "Legacy", Table = "Address", Key = TableKey.ToString() });
+            coll.Add(new ValueIdentifierMapping<string> { Value = this, Property = nameof(GlobalAlternateAddressId), Schema = "Legacy", Table = "Address", Key = AlternateAddressId.ToString() });
+        }
 
         /// <inheritdoc/>
         public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<string> coll, IIdentifierGenerator<string> idGen)

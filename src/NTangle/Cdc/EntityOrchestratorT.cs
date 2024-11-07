@@ -6,6 +6,7 @@ using CoreEx.Database;
 using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
+using CoreEx.Results;
 using Microsoft.Extensions.Logging;
 using NTangle.Data;
 using System;
@@ -33,49 +34,44 @@ namespace NTangle.Cdc
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityOrchestrator{TEntity, TEntityEnvelopeColl, TEntityEnvelope, TGlobalIdentifer}"/> class that requires identifier mapping support.
         /// </summary>
-        /// <param name="db">The <see cref="IDatabase"/>.</param>
-        /// <param name="executeStoredProcedureName">The name of the batch execute stored procedure.</param>
-        /// <param name="completeStoredProcedureName">The name of the batch complete stored procedure.</param>
+        /// <param name="database">The <see cref="IDatabase"/>.</param>
         /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
         /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
         /// <param name="settings">The <see cref="SettingsBase"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="identifierMappingStoredProcedureName">The name of the optional identifier mapping stored procedure.</param>
         /// <param name="identifierGenerator">The <see cref="IIdentifierGenerator{TCdcIdentifer}"/>.</param>
-        public EntityOrchestrator(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger logger, string identifierMappingStoredProcedureName, IIdentifierGenerator<TGlobalIdentifer> identifierGenerator)
-            : base(db, executeStoredProcedureName, completeStoredProcedureName, eventPublisher, jsonSerializer, settings, logger)
+        public EntityOrchestrator(IDatabase database, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger logger, IIdentifierGenerator<TGlobalIdentifer> identifierGenerator)
+            : base(database, eventPublisher, jsonSerializer, settings, logger)
         {
-            IdentifierMappingStoredProcedureName = identifierMappingStoredProcedureName.ThrowIfNull(nameof(identifierMappingStoredProcedureName));
             IdentifierGenerator = identifierGenerator.ThrowIfNull(nameof(identifierGenerator));
-            IdentifierMappingMapper = new IdentifierMappingMapper<TGlobalIdentifer>();
-            AdditionalEnvelopeProcessingAsync = AssignIdentityMappingAsync;
+            PostConsolidationProcessingAsync = AssignIdentityMappingAsync;
         }
 
         /// <summary>
         /// Gets the name of the <b>identifier mapping</b> stored procedure.
         /// </summary>
-        public string IdentifierMappingStoredProcedureName { get; }
+        protected abstract string IdentifierMappingStoredProcedureName { get; }
 
         /// <summary>
         /// Gets the <see cref="IIdentifierGenerator{TCdcIdentifer}"/>.
         /// </summary>
-        public IIdentifierGenerator<TGlobalIdentifer> IdentifierGenerator { get; }
+        protected IIdentifierGenerator<TGlobalIdentifer> IdentifierGenerator { get; }
 
         /// <summary>
         /// Gets the <see cref="IdentifierMappingMapper{TCdcIdentifer}"/>.
         /// </summary>
-        public IdentifierMappingMapper<TGlobalIdentifer> IdentifierMappingMapper { get; }
+        protected IdentifierMappingMapper<TGlobalIdentifer> IdentifierMappingMapper { get; } = new IdentifierMappingMapper<TGlobalIdentifer>();
 
         /// <summary>
         /// Assigns the identity mapping by adding <i>new</i> for those items that do not currentyly have a global identifier currently assigned.
         /// </summary>
-        /// <param name="coll">The entity envelope collection.</param>
+        /// <param name="result">The <see cref="EntityOrchestratorResult{TEntityEnvelopeColl, TEntityEnvelope}"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        protected async Task AssignIdentityMappingAsync(TEntityEnvelopeColl coll, CancellationToken cancellationToken = default)
+        protected async Task AssignIdentityMappingAsync(EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result, CancellationToken cancellationToken = default)
         {
             // Find all the instances where there is currently no global identifier assigned.
             var vimc = new ValueIdentifierMappingCollection<TGlobalIdentifer>();
-            await coll.OfType<ILinkIdentifierMapping<TGlobalIdentifer>>().ForEachAsync(async item => await item.LinkIdentifierMappingsAsync(vimc, IdentifierGenerator!).ConfigureAwait(false)).ConfigureAwait(false);
+            await result.Result.OfType<ILinkIdentifierMapping<TGlobalIdentifer>>().ForEachAsync(async item => await item.LinkIdentifierMappingsAsync(vimc, IdentifierGenerator!).ConfigureAwait(false)).ConfigureAwait(false);
             if (vimc.Count == 0)
                 return;
 
@@ -84,13 +80,13 @@ namespace NTangle.Cdc
             vimc.ForEach(item => imcd.TryAdd((item.Schema, item.Table, item.Key), item));
 
             // Execute the stored procedure and get the updated list.
-            var imc = await Db.StoredProcedure(IdentifierMappingStoredProcedureName!).Params(p => p.AddJsonParameter(IdentifierListParamName, imcd.Values)).SelectQueryAsync(IdentifierMappingMapper, cancellationToken).ConfigureAwait(false);
+            var imc = await Database.StoredProcedure(IdentifierMappingStoredProcedureName!).Params(p => p.AddJsonParameter(IdentifierListParamName, imcd.Values)).SelectQueryAsync(IdentifierMappingMapper, cancellationToken).ConfigureAwait(false);
             if (imc.Count() != imcd.Count)
                 throw new InvalidOperationException($"Stored procedure '{IdentifierMappingStoredProcedureName}' returned an unexpected result.");
 
             // Re-link the identifier mappings with the final value.
             vimc.ForEach(item => item.GlobalId = imc.Single(x => x.Schema == item.Schema && x.Table == item.Table && x.Key == item.Key).GlobalId);
-            coll.OfType<ILinkIdentifierMapping<TGlobalIdentifer>>().ForEach(item => item.RelinkIdentifierMappings(vimc));
+            result.Result.OfType<ILinkIdentifierMapping<TGlobalIdentifer>>().ForEach(item => item.RelinkIdentifierMappings(vimc));
         }
     }
 }

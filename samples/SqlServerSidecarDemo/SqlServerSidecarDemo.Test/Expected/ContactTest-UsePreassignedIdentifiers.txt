@@ -1,0 +1,17 @@
+﻿{
+  "value": {
+    "name": "Name1",
+    "phone": "123",
+    "active": true,
+    "addressId": 11,
+    "uniqueId": "1afc7f5c-ffa0-4741-81cf-f12eaab822bf",
+    "address": {
+      "street1": "1st"
+    }
+  },
+  "subject": "legacy.contact",
+  "action": "updated",
+  "type": "legacy.contact",
+  "source": "/database/cdc/legacy/contact/1",
+  "partitionKey": "Contact"
+}

@@ -1,0 +1,9 @@
+﻿{
+  "value": {
+    "postsId": 1
+  },
+  "subject": "legacy.post.1",
+  "action": "deleted",
+  "type": "legacy.post",
+  "source": "/database/cdc/legacy/posts"
+}

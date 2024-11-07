@@ -232,6 +232,11 @@ namespace NTangle.CodeGen.Config
         public List<JoinColumnConfig> Columns { get; } = [];
 
         /// <summary>
+        /// Gets the selected column configurations with the mapping-related excluded.
+        /// </summary>
+        public List<JoinColumnConfig> ColumnsExcludeMapping => Columns.Where(x => x.IdentifierMappingAlias is null).ToList();
+
+        /// <summary>
         /// Gets the corresponding (actual) database table configuration.
         /// </summary>
         public DbTableSchema? DbTable { get; private set; }

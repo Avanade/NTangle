@@ -22,22 +22,28 @@ public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestr
     /// <summary>
     /// Initializes a new instance of the <see cref="PostOrchestrator"/> class.
     /// </summary>
-    /// <param name="db">The <see cref="IDatabase"/>.</param>
+    /// <param name="database">The <see cref="IDatabase"/>.</param>
     /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
     /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
     /// <param name="settings">The <see cref="SettingsBase"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
-    public PostOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<PostOrchestrator> logger) :
-        base(db, "[NTangle].[spPostsBatchExecute]", "[NTangle].[spPostsBatchComplete]", eventPublisher, jsonSerializer, settings, logger) => PostOrchestratorCtor();
+    public PostOrchestrator(IDatabase database, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<PostOrchestrator> logger)
+        : base(database, eventPublisher, jsonSerializer, settings, logger) => PostOrchestratorCtor();
 
     partial void PostOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
     /// <inheritdoc/>
-    protected override async Task<EntityOrchestratorResult<PostCdcEnvelopeCollection, PostCdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
+    protected override string ExecuteStoredProcedureName => "[NTangle].[spPostsBatchExecute]";
+
+    /// <inheritdoc/>
+    protected override string CompleteStoredProcedureName => "[NTangle].[spPostsBatchComplete]";
+
+    /// <inheritdoc/>
+    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<PostCdcEnvelopeCollection, PostCdcEnvelope> result, CancellationToken cancellationToken = default)
     {
         var pColl = new PostCdcEnvelopeCollection();
 
-        var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
+        await SelectQueryMultiSetAsync(result, MultiSetArgs.Create(
             // Root table: '[Legacy].[Posts]'
             new MultiSetCollArgs<PostCdcEnvelopeCollection, PostCdcEnvelope>(_postCdcMapper, __result => pColl = __result, stopOnNull: true),
 
@@ -73,8 +79,13 @@ public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestr
             })), cancellationToken).ConfigureAwait(false);
 
         result.Result.AddRange(pColl);
-        return result;
     }
+
+    /// <inheritdoc/>
+    protected override string Schema => "Legacy";
+
+    /// <inheritdoc/>
+    protected override string Table => "Posts";
 
     /// <inheritdoc/>
     protected override string EventSubject => "Legacy.Post";

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using System.Text.Json.Serialization;
+
 namespace NTangle.Cdc
 {
     /// <summary>
@@ -11,11 +13,13 @@ namespace NTangle.Cdc
         /// <summary>
         /// Gets or sets the corresponding property name.
         /// </summary>
+        [JsonIgnore]
         public string? Property { get; set; }
 
         /// <summary>
         /// Gets or sets the related (owning) value.
         /// </summary>
+        [JsonIgnore]
         public object? Value { get; set; }
     }
 }

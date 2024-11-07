@@ -49,7 +49,8 @@ namespace NTangle.Services
             {
                 // New scope per iteration to ensure any dependencies are disposed correctly; reset the execution context between invocations.
                 using var scope = scopedServiceProvider.CreateScope();
-                CoreEx.ExecutionContext.Reset();
+                using var ec = CoreEx.ExecutionContext.CreateNew();
+                ec.ServiceProvider = scope.ServiceProvider;
 
                 // Instantiate the orchestrator.
                 var eo = (TOrchestrator)(scope.ServiceProvider.GetService(typeof(TOrchestrator))

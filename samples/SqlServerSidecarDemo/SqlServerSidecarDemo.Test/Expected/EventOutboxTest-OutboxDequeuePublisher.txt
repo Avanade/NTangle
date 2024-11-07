@@ -1,0 +1,19 @@
+﻿{
+  "specversion": "1.0",
+  "type": "legacy.contact",
+  "source": "/database/cdc/legacy/contact/1",
+  "subject": "legacy.contact",
+  "action": "updated",
+  "partitionkey": "Contact",
+  "datacontenttype": "application/json",
+  "data": {
+    "name": "Name1",
+    "phone": "000",
+    "active": true,
+    "addressId": 11,
+    "uniqueId": "1afc7f5c-ffa0-4741-81cf-f12eaab822bf",
+    "address": {
+      "street1": "Side"
+    }
+  }
+}

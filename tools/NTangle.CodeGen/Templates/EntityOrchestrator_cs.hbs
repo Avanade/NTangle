@@ -13,12 +13,15 @@ public partial interface I{{Model}}Orchestrator : IEntityOrchestrator<{{Model}}C
 /// <summary>
 /// Manages the Change Data Capture (CDC) <see cref="{{Model}}Cdc"/> entity (aggregate root) orchestration (database table '[{{Schema}}].[{{Name}}]').
 /// </summary>
-public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{Model}}Orchestrator.{{Model}}CdcEnvelopeCollection, {{Model}}Orchestrator.{{Model}}CdcEnvelope{{#if UsesGlobalIdentifier}}, {{Root.IdentifierMappingDotNetType}}{{/if}}>, I{{Model}}Orchestrator
+public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sidecar{{/if}}Orchestrator<{{Model}}Cdc, {{Model}}Orchestrator.{{Model}}CdcEnvelopeCollection, {{Model}}Orchestrator.{{Model}}CdcEnvelope{{#if Root.UseSidecar}}, {{Model}}Orchestrator.{{Model}}BatchTracker, {{Model}}Orchestrator.{{Model}}BatchTrackerMapper{{/if}}{{#if UsesGlobalIdentifier}}, {{Root.IdentifierMappingDotNetType}}{{/if}}>, I{{Model}}Orchestrator
 {
     private static readonly {{Model}}CdcMapper _{{camel Model}}CdcMapper = new();
 {{#each DistinctModels}}
     private static readonly {{Model}}CdcMapper _{{camel Model}}CdcMapper = new();
 {{/each}}
+{{#if Root.UseSidecar}}
+    private static readonly {{Model}}BatchTrackerMapper _batchTrackerMapper = new();
+{{/if}}
 {{#each OrchestratorCtorParameters}}
   {{#if @first}}
 
@@ -29,7 +32,10 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
     /// <summary>
     /// Initializes a new instance of the <see cref="{{Model}}Orchestrator"/> class.
     /// </summary>
-    /// <param name="db">The <see cref="{{Database}}"/>.</param>
+    /// <param name="database">The {{#if Root.UseSidecar}}primary {{/if}}<see cref="{{Database}}"/>.</param>
+{{#if Root.UseSidecar}}
+    /// <param name="sidecarDatabase">The sidecar <see cref="ISidecarDatabase"/>.</param>
+{{/if}}
     /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
     /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
     /// <param name="settings">The <see cref="SettingsBase"/>.</param>
@@ -40,8 +46,8 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
 {{#each OrchestratorCtorParameters}}
     /// <param name="{{ArgumentName}}">{{{Text}}}</param>
 {{/each}}
-    public {{Model}}Orchestrator({{Database}} db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<{{Model}}Orchestrator> logger{{#if UsesGlobalIdentifier}}, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen{{/if}}{{#each OrchestratorCtorParameters}}, {{Type}} {{ArgumentName}}{{/each}}) :
-        base(db, "[{{CdcSchema}}].[{{ExecuteStoredProcedure}}]", "[{{CdcSchema}}].[{{CompleteStoredProcedure}}]", eventPublisher, jsonSerializer, settings, logger{{#if UsesGlobalIdentifier}}, "[{{Root.CdcSchema}}].[{{Root.IdentifierMappingStoredProcedure}}]", idGen{{/if}}){{#ifeq OrchestratorCtorParameters.Count 0}} => {{Model}}OrchestratorCtor();{{/ifeq}}
+    public {{Model}}Orchestrator({{Database}} database, {{#if Root.UseSidecar}}ISidecarDatabase sidecarDatabase, {{/if}}IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<{{Model}}Orchestrator> logger{{#if UsesGlobalIdentifier}}, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen{{/if}}{{#each OrchestratorCtorParameters}}, {{Type}} {{ArgumentName}}{{/each}})
+        : base(database, {{#if Root.UseSidecar}}sidecarDatabase, {{/if}}eventPublisher, jsonSerializer, settings, logger{{#if UsesGlobalIdentifier}}, idGen{{/if}}){{#ifeq OrchestratorCtorParameters.Count 0}} => {{Model}}OrchestratorCtor();{{/ifeq}}
 {{#ifne OrchestratorCtorParameters.Count 0}}
     {
   {{#each OrchestratorCtorParameters}}
@@ -54,11 +60,71 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
     partial void {{Model}}OrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
     /// <inheritdoc/>
-    protected override async Task<EntityOrchestratorResult<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
+    protected override string ExecuteStoredProcedureName => "[{{CdcSchema}}].[{{ExecuteStoredProcedure}}]";
+
+    /// <inheritdoc/>
+    protected override string CompleteStoredProcedureName => "[{{CdcSchema}}].[{{CompleteStoredProcedure}}]";
+
+{{#if UsesGlobalIdentifier}}
+    /// <inheritdoc/>
+    protected override string IdentifierMappingStoredProcedureName => "[{{Root.CdcSchema}}].[{{Root.IdentifierMappingStoredProcedure}}]";
+
+{{/if}}
+{{#if Root.UseSidecar}}
+    /// <inheritdoc/>
+    protected override string ExecuteCdcSqlResourceName => "Resources.Generated.{{Model}}ExecuteBatch.sql";
+
+    /// <inheritdoc/>
+    protected override string TrackingStoredProcedureName => "[{{CdcSchema}}].[{{TrackingStoredProcedure}}]";
+
+    /// <inheritdoc/>
+    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope> result, CancellationToken cancellationToken = default)
+    {
+        static void lsnSynchronizer(DatabaseRecord dr, {{Model}}BatchTracker bt)
+        {
+            bt.{{Model}}MinLsn = dr.GetValue<byte[]>("{{pascal Name}}MinLsn");
+            bt.{{Model}}MaxLsn = dr.GetValue<byte[]>("{{pascal Name}}MaxLsn");
+{{#each CdcJoins}}
+            bt.{{Model}}MinLsn = dr.GetValue<byte[]>("{{pascal Name}}MinLsn");
+            bt.{{Model}}MaxLsn = dr.GetValue<byte[]>("{{pascal Name}}MaxLsn");
+{{/each}}
+        }
+
+        var {{Alias}}Coll = new {{Model}}CdcEnvelopeCollection();
+
+        await SelectQueryMultiSetAsync(result, MultiSetArgs.Create(
+            // Root table: '[{{Schema}}].[{{Table}}]'
+            new MultiSetCollArgs<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>(_{{camel Model}}CdcMapper, __result => {{Alias}}Coll = __result, stopOnNull: true){{#ifne CdcJoins.Count 0}},{{else}}), lsnSynchronizer, cancellationToken).ConfigureAwait(false);{{/ifne}}
+{{#each CdcJoins}}
+
+            // Join table: '[{{Schema}}].[{{Table}}]' (unique name '{{Name}}')
+            new MultiSetCollArgs<{{Parent.Model}}Cdc.{{Model}}CdcCollection, {{Parent.Model}}Cdc.{{Model}}Cdc>(_{{camel Model}}CdcMapper, __result =>
+            {
+  {{#each JoinHierarchyReverse}}
+               {{indent IndentSpaces}} foreach (var {{Alias}} in {{#if @first}}__result{{else}}{{HierarchyChild.Alias}}{{/if}}{{#unless @first}}.Coll{{/unless}}.GroupBy(x => new { {{#each OnSelectColumns}}{{#unless @last}}, {{/unless}}x.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}} }).Select(g => new { {{#each OnSelectColumns}}{{#unless @last}}, {{/unless}}g.Key.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}}, Coll = g.{{#if @last}}ToCollection<{{../Parent.Model}}Cdc.{{../Model}}CdcCollection, {{../Parent.Model}}Cdc.{{../Model}}Cdc>{{else}}ToList{{/if}}() }))
+               {{indent IndentSpaces}} {
+    {{#unless @last}}
+               {{indent IndentSpaces}}     var {{#ifval HierarchyChild}}{{HierarchyChild.Alias}}{{else}}{{Parent.Alias}}{{/ifval}}Item = {{#ifval HierarchyChild}}{{HierarchyChild.Alias}}{{else}}{{Parent.Alias}}{{/ifval}}Coll.First(x => {{#each OnSelectColumns}}{{#unless @last}} && {{/unless}}x.{{ToColumnAlias}} == {{Parent.Alias}}.{{#if @../last}}{{ToColumnAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/each}}).{{Property}} ?? [];
+    {{else}}
+               {{indent IndentSpaces}}     {{#if @first}}{{Parent.Alias}}Coll{{else}}{{#ifnull HierarchyChild.HierarchyChild}}{{Parent.Alias}}{{else}}HierarchyChild.HierarchyChild.Alias{{/ifnull}}Item{{/if}}.Where(x => {{#each OnSelectColumns}}{{#unless @last}} && {{/unless}}x.{{ToColumnAlias}} == {{Parent.Alias}}.{{#if @../../first}}{{NameAlias}}{{else}}{{#if @../last}}{{NameAlias}}{{else}}{{pascal Parent.JoinTo}}_{{NameAlias}}{{/if}}{{/if}}{{/each}}).ForEach(x => x.{{Property}} = {{Alias}}.Coll{{#ifeq JoinCardinality 'OneToOne'}}.FirstOrDefault(){{/ifeq}});
+    {{/unless}}
+  {{/each}}
+  {{#each JoinHierarchy}}
+               {{indent IndentSpaces}} }
+  {{/each}}
+            }){{#if @last}}), lsnSynchronizer, cancellationToken).ConfigureAwait(false);{{else}},{{/if}}
+{{/each}}
+
+        result.Result.AddRange({{Alias}}Coll);
+    }
+
+{{else}}
+    /// <inheritdoc/>
+    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope> result, CancellationToken cancellationToken = default)
     {
         var {{Alias}}Coll = new {{Model}}CdcEnvelopeCollection();
 
-        var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
+        await SelectQueryMultiSetAsync(result, MultiSetArgs.Create(
             // Root table: '[{{Schema}}].[{{Table}}]'
             new MultiSetCollArgs<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>(_{{camel Model}}CdcMapper, __result => {{Alias}}Coll = __result, stopOnNull: true){{#ifne CdcJoins.Count 0}},{{else}}), cancellationToken).ConfigureAwait(false);{{/ifne}}
 {{#each CdcJoins}}
@@ -82,8 +148,14 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
 {{/each}}
 
         result.Result.AddRange({{Alias}}Coll);
-        return result;
     }
+
+{{/if}}
+    /// <inheritdoc/>
+    protected override string Schema => "{{Schema}}";
+
+    /// <inheritdoc/>
+    protected override string Table => "{{Table}}";
 
     /// <inheritdoc/>
     protected override string EventSubject => "{{#ifval Root.EventSubjectRoot}}{{Root.EventSubjectRoot}}.{{/ifval}}{{EventSubject}}";
@@ -107,7 +179,7 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
 {{/ifne}}
 {{#ifne ExcludePropertiesFromETag.Count 0}}
     /// <inheritdoc/>
-    protected override string[]? ExcludePropertiesFromETag => new string[] { {{#each ExcludePropertiesFromETag}}"{{.}}"{{#unless @last}}, {{/unless}}{{/each}} };
+    protected override string[]? ExcludePropertiesFromETag => [{{#each ExcludePropertiesFromETag}}"{{.}}"{{#unless @last}}, {{/unless}}{{/each}}];
 
 {{/ifne}}
     /// <summary>
@@ -145,12 +217,18 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
         /// <inheritdoc/>
         public {{Model}}CdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
-{{#if IdentifierMapping}}
-            GlobalId = record.GetValue<{{Root.IdentifierMappingDotNetType}}?>("GlobalId"),
-{{/if}}
-{{#each SelectedEntityColumns}}
+{{#if Root.UseSidecar}}
+  {{#each ColumnsExcludeMapping}}
             {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"),
-{{/each}}
+  {{/each}}
+{{else}}
+  {{#if IdentifierMapping}}
+            GlobalId = record.GetValue<{{Root.IdentifierMappingDotNetType}}?>("GlobalId"),
+  {{/if}}
+  {{#each SelectedEntityColumns}}
+            {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"),
+  {{/each}}
+{{/if}}
 {{#each JoinNonCdcChildren}}
   {{#each Columns}}
             {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"),
@@ -158,7 +236,9 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
 {{/each}}
             DatabaseOperationType = record.GetValue<CdcOperationType>(CdcOperationTypeColumnName),
             DatabaseLsn = record.GetValue<byte[]>(CdcLsnColumnName),
+{{#unless Root.UseSidecar}}
             DatabaseTrackingHash = record.GetValue<string?>(TrackingHashColumnName),
+{{/unless}}
             IsDatabasePhysicallyDeleted = record.GetValue<bool>(IsPhysicallyDeletedColumnName)
         };
 
@@ -182,13 +262,19 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
       {{/each}}
     {{/unless}}
   {{/each}}
-  {{#each Columns}}
+  {{#if Root.UseSidecar}}
+    {{#each ColumnsExcludeMapping}}
             {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"){{#unless @last}},{{else}}{{#ifne Parent.JoinNonCdcChildren.Count 0}},{{/ifne}}{{/unless}}
-  {{/each}}
+    {{/each}}
+  {{else}}
+    {{#each Columns}}
+            {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"){{#unless @last}},{{else}}{{#ifne Parent.JoinNonCdcChildren.Count 0}},{{/ifne}}{{/unless}}
+    {{/each}}
+  {{/if}}
   {{#each JoinNonCdcChildren}}
-      {{#each Columns}}
+    {{#each Columns}}
             {{pascal NameAlias}} = record.GetValue<{{DotNetType}}{{#if IsDotNetNullable}}?{{/if}}>("{{pascal NameAlias}}"){{#unless @last}},{{else}}{{#unless ../@last}},{{/unless}}{{/unless}}
-      {{/each}}
+    {{/each}}
   {{/each}}
         };
 
@@ -196,4 +282,67 @@ public partial class {{Model}}Orchestrator : EntityOrchestrator<{{Model}}Cdc, {{
         void IDatabaseMapper<{{Parent.Model}}Cdc.{{Model}}Cdc>.MapToDb({{Parent.Model}}Cdc.{{Model}}Cdc? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
     }
 {{/each}}
+{{#if Root.UseSidecar}}
+
+    /// <summary>
+    /// Represents the '{{Model}}'-specific <see cref="BatchTracker"/>.
+    /// </summary>
+    public class {{Model}}BatchTracker : BatchTracker
+    {
+        /// <summary>
+        /// Gets or sets the '{{Model}}' minimum LSN (Log Sequence Number).
+        /// </summary>
+        public byte[]? {{Model}}MinLsn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the '{{Model}}' maximum LSN (Log Sequence Number).
+        /// </summary>
+        public byte[]? {{Model}}MaxLsn { get; set; }
+{{#each DistinctModels}}
+
+        /// <summary>
+        /// Gets or sets the '{{Model}}' minimum LSN (Log Sequence Number).
+        /// </summary>
+        public byte[]? {{Model}}MinLsn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the '{{Model}}' maximum LSN (Log Sequence Number).
+        /// </summary>
+        public byte[]? {{Model}}MaxLsn { get; set; }
+{{/each}}
+    }
+
+    /// <summary>
+    /// Represents the <see cref="{{Model}}BatchTracker"/> database mapper.
+    /// </summary>
+    public class {{Model}}BatchTrackerMapper : DatabaseMapperEx<{{Model}}BatchTracker>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="{{Model}}BatchTrackerMapper"/> class.
+        /// </summary>
+        public {{Model}}BatchTrackerMapper() => InheritMapper(BatchTrackerMapper.Default);
+
+        /// <inheritdoc/>
+        protected override void OnMapFromDb(DatabaseRecord record, {{Model}}BatchTracker value, OperationTypes operationType)
+        {
+            value.{{Model}}MinLsn = record.GetValue<byte[]?>("{{pascal Name}}MinLsn");
+            value.{{Model}}MaxLsn = record.GetValue<byte[]?>("{{pascal Name}}MaxLsn");
+{{#each DistinctModels}}
+            value.{{Model}}MinLsn = record.GetValue<byte[]?>("{{pascal Name}}MinLsn");
+            value.{{Model}}MaxLsn = record.GetValue<byte[]?>("{{pascal Name}}MaxLsn");
+{{/each}}
+        }
+
+        /// <inheritdoc/>
+        protected override void OnMapToDb({{Model}}BatchTracker value, DatabaseParameterCollection parameters, OperationTypes operationType)
+        {
+            parameters.AddParameter("{{pascal Name}}MinLsn", value.{{Model}}MinLsn, dbType: System.Data.DbType.Binary);
+            parameters.AddParameter("{{pascal Name}}MaxLsn", value.{{Model}}MaxLsn, dbType: System.Data.DbType.Binary);
+{{#each DistinctModels}}
+            parameters.AddParameter("{{pascal Name}}MinLsn", value.{{Model}}MinLsn, dbType: System.Data.DbType.Binary);
+            parameters.AddParameter("{{pascal Name}}MaxLsn", value.{{Model}}MaxLsn, dbType: System.Data.DbType.Binary);
+{{/each}}
+        }
+    }
+{{/if}}
 }

@@ -37,7 +37,7 @@ BEGIN
     -- There should never be more than one incomplete batch.
     IF @@ROWCOUNT > 1
     BEGIN
-      ;THROW 56002, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
+      ;THROW 56010, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
     END
 
     -- Get the latest 'base' minimum.
@@ -90,9 +90,9 @@ BEGIN
     -- The minimum should _not_ be less than the base otherwise we have lost data; either continue with this data loss, or error and stop.
     DECLARE @hasDataLoss BIT = 0
 
-    IF (@{{pascal Name}}MinLsn < @{{pascal Name}}BaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @{{pascal Name}}MinLsn = @{{pascal Name}}BaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''{{Schema}}.{{Table}}''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@{{pascal Name}}MinLsn < @{{pascal Name}}BaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @{{pascal Name}}MinLsn = @{{pascal Name}}BaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''{{Schema}}.{{Table}}''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
 {{#each CdcJoins}}
-    IF (@{{pascal Name}}MinLsn < @{{pascal Name}}BaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @{{pascal Name}}MinLsn = @{{pascal Name}}BaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''{{Schema}}.{{Table}}''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@{{pascal Name}}MinLsn < @{{pascal Name}}BaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @{{pascal Name}}MinLsn = @{{pascal Name}}BaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''{{Schema}}.{{Table}}''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
 {{/each}}
 
     -- Find changes on the root table: '[{{Schema}}].[{{Table}}]' - this determines overall operation type: 'create', 'update' or 'delete'.
@@ -238,14 +238,14 @@ BEGIN
       {{JoinTypeSql}} [{{Schema}}].[{{Table}}] AS [{{Alias}}] ON ({{#each On}}{{#unless @first}} AND {{/unless}}[{{Parent.Alias}}].[{{Name}}] = {{#ifval ToStatement}}{{ToStatement}}{{else}}[{{Parent.JoinToAlias}}].[{{ToColumn}}]{{/ifval}}{{/each}})
 {{/each}}
 {{#if IdentifierMapping}}
-      LEFT OUTER JOIN [{{Root.CdcSchema}}].[{{Root.IdentifierMappingTable}}] AS [_im] ON ([_im].[Schema] = N'{{Schema}}' AND [_im].[Table] = N'{{Name}}' AND [_im].[Key] = {{#ifeq PrimaryKeyColumns.Count 1}}{{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{/each}}{{else}}CONCAT({{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{#unless @last}}, ',', {{/unless}}{{/each}}){{/ifeq}}
+      LEFT OUTER JOIN [{{Root.CdcSchema}}].[{{Root.IdentifierMappingTable}}] AS [_im] ON ([_im].[Schema] = N'{{Schema}}' AND [_im].[Table] = N'{{Table}}' AND [_im].[Key] = {{#ifeq PrimaryKeyColumns.Count 1}}{{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{/each}}{{else}}CONCAT({{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{#unless @last}}, ',', {{/unless}}{{/each}}){{/ifeq}}
 {{/if}}
 {{#each SelectedColumnsExcludingPrimaryKey}}
   {{#ifval IdentifierMappingParent}}
       LEFT OUTER JOIN [{{Root.CdcSchema}}].[{{Root.IdentifierMappingTable}}] AS [{{IdentifierMappingAlias}}] ON ([{{IdentifierMappingAlias}}].[Schema] = '{{IdentifierMappingSchema}}' AND [{{IdentifierMappingAlias}}].[Table] = '{{IdentifierMappingTable}}' AND [{{IdentifierMappingAlias}}].[Key] = CAST([{{IdentifierMappingParent.Parent.Alias}}].[{{IdentifierMappingParent.Name}}] AS NVARCHAR(128))) 
   {{/ifval}}
 {{/each}}
-      LEFT OUTER JOIN [{{Root.CdcSchema}}].[{{Root.VersionTrackingTable}}] AS [_vt] ON ([_vt].[Schema] = N'{{Schema}}' AND [_vt].[Table] = N'{{Name}}' AND [_vt].[Key] = {{#if IdentifierMapping}}_im.GlobalId){{else}}{{#ifeq PrimaryKeyColumns.Count 1}}{{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{/each}}{{else}}CONCAT({{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{#unless @last}}, ',', {{/unless}}{{/each}}){{/ifeq}}{{/if}}
+      LEFT OUTER JOIN [{{Root.CdcSchema}}].[{{Root.VersionTrackingTable}}] AS [_vt] ON ([_vt].[Schema] = N'{{Schema}}' AND [_vt].[Table] = N'{{Table}}' AND [_vt].[Key] = {{#if IdentifierMapping}}_im.GlobalId){{else}}{{#ifeq PrimaryKeyColumns.Count 1}}{{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{/each}}{{else}}CONCAT({{#each PrimaryKeyColumns}}CAST([_chg].[{{Name}}] AS NVARCHAR(128))){{#unless @last}}, ',', {{/unless}}{{/each}}){{/ifeq}}{{/if}}
       ORDER BY [_Lsn] ASC
 
 {{#each CdcJoins}}

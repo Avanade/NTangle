@@ -1,4 +1,5 @@
 CREATE OR ALTER PROCEDURE [NTangle].[spCustomerBatchReset]
+  @MaxLsn BINARY(10) NULL = NULL
 AS
 BEGIN
   /*
@@ -12,9 +13,12 @@ BEGIN
     BEGIN TRANSACTION
 
     -- Get the maximum lsn.
-    DECLARE @MaxLsn BINARY(10), @CompletedDate DATETIME2;
-    SET @MaxLsn = sys.fn_cdc_get_max_lsn();
+    DECLARE @CompletedDate DATETIME2;
     SET @CompletedDate = GETUTCDATE();
+    IF @MaxLsn IS NULL
+    BEGIN
+      SET @MaxLsn = sys.fn_cdc_get_max_lsn();
+    END
 
     -- Complete any incomplete batch (with data loss) with max lsn.
     UPDATE [_batch] SET

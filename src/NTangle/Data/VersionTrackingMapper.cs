@@ -1,25 +1,29 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
 using CoreEx.Database;
+using CoreEx.Database.Mapping;
 using CoreEx.Mapping;
 using NTangle.Cdc;
-using System;
 
 namespace NTangle.Data
 {
     /// <summary>
     /// Represents the <see cref="VersionTracker"/> database mapper. 
     /// </summary>
-    public class VersionTrackingMapper : IDatabaseMapper<VersionTracker>
+    public class VersionTrackingMapper : DatabaseMapperEx<VersionTracker>
     {
         /// <inheritdoc/>
-        public VersionTracker? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
+        protected override void OnMapFromDb(DatabaseRecord record, VersionTracker value, OperationTypes operationType)
         {
-            Key = record.GetValue<string>(nameof(VersionTracker.Key)),
-            Hash = record.GetValue<string>(nameof(VersionTracker.Hash))
-        };
+            value.Key = record.GetValue<string>(nameof(VersionTracker.Key));
+            value.Hash = record.GetValue<string>(nameof(VersionTracker.Hash));
+        }
 
         /// <inheritdoc/>
-        void IDatabaseMapper<VersionTracker>.MapToDb(VersionTracker? value, DatabaseParameterCollection parameters, OperationTypes operationType) => throw new NotImplementedException();
+        protected override void OnMapToDb(VersionTracker value, DatabaseParameterCollection parameters, OperationTypes operationType)
+        {
+            parameters.AddParameter(nameof(VersionTracker.Key), value.Key);
+            parameters.AddParameter(nameof(VersionTracker.Hash), value.Hash);
+        }
     }
 }

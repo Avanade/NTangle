@@ -26,9 +26,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>  <ItemGroup>
-    <PackageReference Include="CoreEx.Azure" Version="3.27.3" />
-    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.27.3" />
-    <PackageReference Include="CoreEx.Validation" Version="3.27.3" />
+    <PackageReference Include="CoreEx.Azure" Version="3.28.0" />
+    <PackageReference Include="CoreEx.Database.SqlServer" Version="3.28.0" />
+    <PackageReference Include="CoreEx.Validation" Version="3.28.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.16.4" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.5.0" />

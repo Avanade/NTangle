@@ -1,5 +1,6 @@
 ﻿{{! Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle }}
 CREATE OR ALTER PROCEDURE [{{CdcSchema}}].[{{ResetStoredProcedure}}]
+  @MaxLsn BINARY(10){{#unless Root.UseSidecar}} NULL = NULL{{/unless}}
 AS
 BEGIN
   /*
@@ -13,9 +14,14 @@ BEGIN
     BEGIN TRANSACTION
 
     -- Get the maximum lsn.
-    DECLARE @MaxLsn BINARY(10), @CompletedDate DATETIME2;
-    SET @MaxLsn = sys.fn_cdc_get_max_lsn();
+    DECLARE @CompletedDate DATETIME2;
     SET @CompletedDate = GETUTCDATE();
+{{#unless Root.UseSidecar}}
+    IF @MaxLsn IS NULL
+    BEGIN
+      SET @MaxLsn = sys.fn_cdc_get_max_lsn();
+    END
+{{/unless}}
 
     -- Complete any incomplete batch (with data loss) with max lsn.
     UPDATE [_batch] SET

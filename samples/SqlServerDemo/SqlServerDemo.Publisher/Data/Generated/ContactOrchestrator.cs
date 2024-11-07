@@ -20,23 +20,32 @@ public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, Contac
     /// <summary>
     /// Initializes a new instance of the <see cref="ContactOrchestrator"/> class.
     /// </summary>
-    /// <param name="db">The <see cref="IDatabase"/>.</param>
+    /// <param name="database">The <see cref="IDatabase"/>.</param>
     /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
     /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
     /// <param name="settings">The <see cref="SettingsBase"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
     /// <param name="idGen">The <see cref="IIdentifierGenerator{T}"/>.</param>
-    public ContactOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<ContactOrchestrator> logger, IIdentifierGenerator<string> idGen) :
-        base(db, "[NTangle].[spContactBatchExecute]", "[NTangle].[spContactBatchComplete]", eventPublisher, jsonSerializer, settings, logger, "[NTangle].[spIdentifierMappingCreate]", idGen) => ContactOrchestratorCtor();
+    public ContactOrchestrator(IDatabase database, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<ContactOrchestrator> logger, IIdentifierGenerator<string> idGen)
+        : base(database, eventPublisher, jsonSerializer, settings, logger, idGen) => ContactOrchestratorCtor();
 
     partial void ContactOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
     /// <inheritdoc/>
-    protected override async Task<EntityOrchestratorResult<ContactCdcEnvelopeCollection, ContactCdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
+    protected override string ExecuteStoredProcedureName => "[NTangle].[spContactBatchExecute]";
+
+    /// <inheritdoc/>
+    protected override string CompleteStoredProcedureName => "[NTangle].[spContactBatchComplete]";
+
+    /// <inheritdoc/>
+    protected override string IdentifierMappingStoredProcedureName => "[NTangle].[spIdentifierMappingCreate]";
+
+    /// <inheritdoc/>
+    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<ContactCdcEnvelopeCollection, ContactCdcEnvelope> result, CancellationToken cancellationToken = default)
     {
         var cColl = new ContactCdcEnvelopeCollection();
 
-        var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
+        await SelectQueryMultiSetAsync(result, MultiSetArgs.Create(
             // Root table: '[Legacy].[Contact]'
             new MultiSetCollArgs<ContactCdcEnvelopeCollection, ContactCdcEnvelope>(_contactCdcMapper, __result => cColl = __result, stopOnNull: true),
 
@@ -50,8 +59,13 @@ public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, Contac
             })), cancellationToken).ConfigureAwait(false);
 
         result.Result.AddRange(cColl);
-        return result;
     }
+
+    /// <inheritdoc/>
+    protected override string Schema => "Legacy";
+
+    /// <inheritdoc/>
+    protected override string Table => "Contact";
 
     /// <inheritdoc/>
     protected override string EventSubject => "Legacy.Contact";

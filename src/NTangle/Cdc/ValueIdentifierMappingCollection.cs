@@ -33,7 +33,7 @@ namespace NTangle.Cdc
         /// <param name="value">The related (owning) value.</param>
         /// <param name="property">The property name.</param>
         /// <returns>The <see cref="IdentifierMapping{T}.GlobalId"/>.</returns>
-        public T GetGlobalId(object value, string property) => this.Single(x => x.Value == value && x.Property == property).GlobalId ?? throw new InvalidOperationException("The GlobalId must not be null.");
+        public T GetGlobalId(object value, string property) => this.Single(x => x.Value == value && x.Property == property).GlobalId ?? default!;
 
         /// <summary>
         /// Invokes the <paramref name="link"/> action where the <paramref name="condition"/> is <c>true</c>.

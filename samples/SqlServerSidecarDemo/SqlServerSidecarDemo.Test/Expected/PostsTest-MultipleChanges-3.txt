@@ -1,0 +1,18 @@
+﻿{
+  "value": {
+    "postsId": 4,
+    "text": "Blah 4",
+    "date": "2020-01-01T00:00:00Z",
+    "comments": [
+      {
+        "commentsId": 401,
+        "text": "Blah blah 401",
+        "date": "2020-01-01T00:00:00Z"
+      }
+    ]
+  },
+  "subject": "legacy.post.4",
+  "action": "created",
+  "type": "legacy.post",
+  "source": "/database/cdc/legacy/posts"
+}
