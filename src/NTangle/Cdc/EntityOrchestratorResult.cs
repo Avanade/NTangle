@@ -15,12 +15,12 @@ namespace NTangle.Cdc
         public Guid ExecutionId { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="BatchTracker"/> where <see cref="IsSuccessful"/>.
+        /// Gets the <see cref="Cdc.BatchTracker"/> where <see cref="IsSuccessful"/>.
         /// </summary>
-        public BatchTracker? Batch { get; internal set; }
+        public BatchTracker? BatchTracker { get; internal set; }
 
         /// <summary>
-        /// Indicates that the outbox execution is successful and can continue.
+        /// Indicates that the execution is successful and can continue.
         /// </summary>
         public bool IsSuccessful => Exception == null;
 
@@ -34,5 +34,10 @@ namespace NTangle.Cdc
         /// </summary>
         /// <remarks>This will only be updated as a result of <see cref="IEntityOrchestrator.ExecuteAsync(System.Threading.CancellationToken)"/>.</remarks>
         public EntityOrchestratorExecuteStatus? ExecuteStatus { get; internal set; }
+
+        /// <summary>
+        /// Indicates that an explicit execution was requested bypassing CDC (Change Data Capture) and <see cref="Cdc.BatchTracker"/>.
+        /// </summary>
+        public bool IsExplicitExecution { get; internal set; }
     }
 }

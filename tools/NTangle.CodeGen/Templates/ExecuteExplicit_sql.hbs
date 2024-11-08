@@ -1,0 +1,122 @@
+{{! Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle }}
+BEGIN
+  /*
+   * This is automatically generated; any changes will be lost.
+   */
+
+  SET NOCOUNT ON;
+
+  BEGIN TRY
+    -- Declare variables.
+    DECLARE @lsn BINARY(10)
+
+    CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, {{#each PrimaryKeyColumns}}[{{Name}}] {{upper DbColumn.Type}}{{#unless @last}}, {{/unless}}{{/each}})
+
+    -- Simulate changes on the root table: '[{{Schema}}].[{{Table}}]'.
+    IF @{{Name}}KeysList IS NOT NULL
+    BEGIN
+      SELECT * INTO #{{Name}}KeysList FROM OPENJSON(@{{Name}}KeysList) WITH ({{#each PrimaryKeyColumns}}[{{Name}}] {{upper DbColumn.Type}} '$.{{pascal NameAlias}}'{{#unless @last}}, {{/unless}}{{/each}})
+
+      INSERT INTO #_changes
+        SELECT
+            @lsn AS [_Lsn],
+            4 AS [_Op],
+{{#each PrimaryKeyColumns}}
+            [_cdc].[{{Name}}] AS [{{Name}}]{{#unless @last}},{{/unless}}
+{{/each}}
+          FROM #{{Name}}KeysList AS [_cdc]
+    END
+
+{{#each CdcJoins}}
+    -- Simulate changes on the related table: '[{{Schema}}].[{{Table}}]'.
+    IF @{{Name}}KeysList IS NOT NULL
+    BEGIN
+      SELECT * INTO #{{Name}}KeysList FROM OPENJSON(@{{Name}}KeysList) WITH ({{#each PrimaryKeyColumns}}[{{Name}}] {{upper DbColumn.Type}} '$.{{pascal NameAlias}}'{{#unless @last}}, {{/unless}}{{/each}})
+
+      SELECT
+          @lsn AS [_Lsn],
+          4 AS [_Op],
+  {{#each Parent.PrimaryKeyColumns}}
+          [{{Parent.Alias}}].[{{Name}}] AS [{{Name}}]{{#unless @last}},{{/unless}}
+  {{/each}}
+        INTO #{{Alias}}
+        FROM #{{Name}}KeysList AS [_cdc]
+  {{#each JoinHierarchy}}
+        INNER JOIN [{{JoinToSchema}}].[{{JoinToTable}}] AS [{{JoinToAlias}}] WITH (NOLOCK) ON ({{#each On}}{{#unless @first}} AND {{/unless}}{{#if Parent.IsFirstInJoinHierarchy}}[_cdc]{{else}}[{{Parent.Alias}}]{{/if}}.[{{Name}}] = {{#ifval ToStatement}}{{ToStatement}}{{else}}[{{Parent.JoinToAlias}}].[{{ToColumn}}]{{/ifval}}{{/each}})
+  {{/each}}
+
+      IF (@@ROWCOUNT <> 0)
+      BEGIN
+        INSERT INTO #_changes
+          SELECT * 
+            FROM #{{Alias}} AS [_{{Alias}}]
+            WHERE NOT EXISTS (SELECT * FROM #_changes AS [_chg] WHERE {{#each Parent.PrimaryKeyColumns}}{{#unless @first}} AND {{/unless}}[_chg].[{{Name}}] = [_{{../Alias}}].[{{Name}}]{{/each}})
+      END
+    END
+
+{{/each}}
+    -- Root table: '[{{Schema}}].[{{Table}}]' - uses LEFT OUTER JOIN's to get the deleted records.
+    SELECT
+        [_chg].[_Op] AS [_OperationType],
+        [_chg].[_Lsn] AS [_Lsn],
+{{#each PrimaryKeyColumns}}
+        [_chg].[{{Name}}] AS [{{NameAlias}}],
+{{/each}}
+{{#each PrimaryKeyColumns}}
+        [{{Parent.Alias}}].[{{Name}}] AS [TableKey_{{NameAlias}}],
+{{/each}}
+{{#each SelectedColumnsExcludingPrimaryKey}}
+  {{#ifnull IdentifierMappingTable}}
+        [{{Parent.Alias}}].[{{Name}}] AS [{{NameAlias}}],
+  {{/ifnull}}
+{{/each}}
+{{#each JoinNonCdcChildren}}
+  {{#each Columns}}
+        [{{Parent.Alias}}].[{{Name}}] AS [{{NameAlias}}],
+  {{/each}}
+{{/each}}
+        CASE WHEN EXISTS (SELECT 1 FROM [{{Schema}}].[{{Table}}] AS [__{{Alias}}] WHERE ({{#each PrimaryKeyColumns}}{{#unless @first}} AND {{/unless}}[__{{Parent.Alias}}].[{{Name}}] = [_chg].[{{Name}}]{{/each}})) THEN CAST (0 AS BIT) ELSE CAST (1 AS BIT) END AS [_IsPhysicallyDeleted]
+      FROM #_changes AS [_chg]
+      LEFT OUTER JOIN [{{Schema}}].[{{Table}}] AS [{{Alias}}] ON ({{#each PrimaryKeyColumns}}{{#unless @first}} AND {{/unless}}[{{Parent.Alias}}].[{{Name}}] = [_chg].[{{Name}}]{{/each}})
+{{#each JoinNonCdcChildren}}
+      {{JoinTypeSql}} [{{Schema}}].[{{Table}}] AS [{{Alias}}] ON ({{#each On}}{{#unless @first}} AND {{/unless}}[{{Parent.Alias}}].[{{Name}}] = {{#ifval ToStatement}}{{ToStatement}}{{else}}[{{Parent.JoinToAlias}}].[{{ToColumn}}]{{/ifval}}{{/each}})
+{{/each}}
+
+{{#each CdcJoins}}
+    -- Related table: '[{{Schema}}].[{{Table}}]' - unique name '{{Name}}' - only use INNER JOINS to get what is actually there right now (where applicable).
+    SELECT DISTINCT
+  {{#each JoinHierarchyReverse}}
+    {{#unless @last}}
+      {{#each OnSelectColumns}}
+        [{{Parent.JoinToAlias}}].[{{ToColumn}}] AS [{{pascal Parent.JoinTo}}_{{Name}}],  -- Additional joining column (informational).
+      {{/each}}
+    {{/unless}}
+  {{/each}}
+  {{#each ColumnsExcludeMapping}}
+        [{{Parent.Alias}}].[{{Name}}] AS [{{NameAlias}}]{{#unless @last}},{{else}}{{#ifne Parent.JoinNonCdcChildren.Count 0}},{{/ifne}}{{/unless}}
+  {{/each}}
+  {{#each JoinNonCdcChildren}}
+    {{#each Columns}}
+        [{{Parent.Alias}}].[{{Name}}] AS [{{NameAlias}}]{{#unless @last}},{{else}}{{#unless @../last}},{{/unless}}{{/unless}}
+    {{/each}}
+  {{/each}}
+      FROM #_changes AS [_chg]
+      INNER JOIN [{{Parent.Schema}}].[{{Parent.Table}}] AS [{{Parent.Alias}}] ON ({{#each Parent.PrimaryKeyColumns}}{{#unless @first}} AND {{/unless}}[{{Parent.Alias}}].[{{Name}}] = [_chg].[{{Name}}]{{/each}})
+  {{#each JoinHierarchyReverse}}
+      INNER JOIN [{{Schema}}].[{{Table}}] AS [{{Alias}}] ON ({{#each On}}{{#unless @first}} AND {{/unless}}[{{Parent.Alias}}].[{{Name}}] = {{#ifval ToStatement}}{{ToStatement}}{{else}}[{{Parent.JoinToAlias}}].[{{ToColumn}}]{{/ifval}}{{/each}})
+  {{/each}}
+  {{#each JoinNonCdcChildren}}
+      {{JoinTypeSql}} [{{Schema}}].[{{Table}}] AS [{{Alias}}] ON ({{#each On}}{{#unless @first}} AND {{/unless}}[{{Parent.Alias}}].[{{Name}}] = {{#ifval ToStatement}}{{ToStatement}}{{else}}[{{Parent.JoinToAlias}}].[{{ToColumn}}]{{/ifval}}{{/each}})
+  {{/each}}
+
+{{/each}}
+    RETURN
+  END TRY
+  BEGIN CATCH
+    -- Rollback transaction and rethrow error.
+    IF @@TRANCOUNT > 0
+      ROLLBACK TRANSACTION;
+
+    THROW;
+  END CATCH
+END

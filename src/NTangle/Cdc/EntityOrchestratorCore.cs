@@ -118,16 +118,6 @@ namespace NTangle.Cdc
         public Guid ExecutionId { get; internal protected set; }
 
         /// <summary>
-        /// Gets the root database schema name.
-        /// </summary>
-        protected abstract string Schema { get; }
-
-        /// <summary>
-        /// Gets the root database table name.
-        /// </summary>
-        protected abstract string Table { get; }
-
-        /// <summary>
         /// Gets the service name (used for logging).
         /// </summary>
         protected virtual string ServiceName => _name ??= GetType().Name;
@@ -210,7 +200,7 @@ namespace NTangle.Cdc
         /// <param name="versionTracking">The <see cref="VersionTracker"/> list.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-        protected async Task<EntityOrchestratorResult> CompleteAsync(IDatabase database, string completeStoredProcedureName, long batchTrackerId, List<VersionTracker> versionTracking, CancellationToken cancellationToken = default)
+        protected async Task<EntityOrchestratorResult> CompleteAsync(IDatabase database, string completeStoredProcedureName, long? batchTrackerId, List<VersionTracker> versionTracking, CancellationToken cancellationToken = default)
         {
             var resetExecutionId = false;
             if (ExecutionId == Guid.Empty)
@@ -223,15 +213,17 @@ namespace NTangle.Cdc
             { 
                 var stopwatch = Stopwatch.StartNew();
                 var result = new EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> { ExecutionId = ExecutionId };
-                var msa = new MultiSetSingleArgs<BatchTracker>(BatchTrackerMapper, r => result.Batch = r, isMandatory: false, stopOnNull: true);
 
                 try
                 {
-                    await database.ThrowIfNull(nameof(database)).StoredProcedure(completeStoredProcedureName.ThrowIfNullOrEmpty(nameof(completeStoredProcedureName))).Params(p =>
-                    {
-                        p.AddParameter(BatchTrackingIdParamName, batchTrackerId);
-                        p.AddJsonParameter(VersionTrackingListParamName, versionTracking);
-                    }).SelectMultiSetAsync(MultiSetArgs.Create(msa), ct).ConfigureAwait(false);
+                    var cmd = database.ThrowIfNull(nameof(database)).StoredProcedure(completeStoredProcedureName.ThrowIfNullOrEmpty(nameof(completeStoredProcedureName)))
+                        .Param(BatchTrackingIdParamName, batchTrackerId)
+                        .JsonParam(VersionTrackingListParamName, versionTracking);
+
+                    if (batchTrackerId is null)
+                        await cmd.NonQueryAsync(ct).ConfigureAwait(false);
+                    else
+                        await cmd.SelectMultiSetAsync(MultiSetArgs.Create(new MultiSetSingleArgs<BatchTracker>(BatchTrackerMapper, r => result.BatchTracker = r, isMandatory: false, stopOnNull: true)), ct).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -245,7 +237,7 @@ namespace NTangle.Cdc
                 stopwatch.Stop();
                 if (result.IsSuccessful)
                     Logger.LogInformation("{Service}: Batch '{BatchId}': Marked as Completed. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                        ServiceName, result.Batch!.Id, result.Batch.CorrelationId, ExecutionId, stopwatch.Elapsed.TotalMilliseconds);
+                        ServiceName, result.BatchTracker?.Id.ToString() ?? "n/a", result.BatchTracker?.CorrelationId ?? ExecutionId.ToString(), ExecutionId, stopwatch.Elapsed.TotalMilliseconds);
 
                 return result;
             }, cancellationToken).ConfigureAwait(false);
@@ -293,11 +285,11 @@ namespace NTangle.Cdc
         /// <param name="stopwatch">The <see cref="Stopwatch"/>.</param>
         protected internal void LogQueryComplete(EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result, Stopwatch stopwatch)
         {
-            if (result.Batch == null)
+            if (result.BatchTracker == null)
                 Logger.LogDebug("{Service}: Batch 'none': No new Change Data Capture data was found. [ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]", ServiceName, ExecutionId, stopwatch.Elapsed.TotalMilliseconds);
             else
                 Logger.LogInformation("{Service}: Batch '{BatchId}': {OperationsCount} entity operations(s) were found. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                    ServiceName, result.Batch.Id, result.Result.Count, MaxQuerySize, ContinueWithDataLoss, result.Batch.CorrelationId, ExecutionId, stopwatch.Elapsed.TotalMilliseconds);
+                    ServiceName, result.BatchTracker.Id, result.Result.Count, MaxQuerySize, ContinueWithDataLoss, result.BatchTracker.CorrelationId, ExecutionId, stopwatch.Elapsed.TotalMilliseconds);
         }
 
         /// <summary>
@@ -382,7 +374,7 @@ namespace NTangle.Cdc
         /// <param name="result">The <see cref="EntityOrchestratorResult{TEntityEnvelopeColl, TEntityEnvelope}"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The corresponding <see cref="VersionTracker"/> list.</returns>
-        protected internal Task<List<VersionTracker>> VersionAsync(EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result, CancellationToken cancellationToken)
+        protected internal async Task<List<VersionTracker>> VersionAsync(EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result, CancellationToken cancellationToken)
         {
             var tracking = EntityOrchestratorInvoker.Current.Invoke(this, _ =>
             {
@@ -419,7 +411,8 @@ namespace NTangle.Cdc
             });
 
             // Complete and exit.
-            return Task.FromResult(tracking);
+            await Task.Delay(0, cancellationToken).ConfigureAwait(false);
+            return tracking;
         }
 
         /// <summary>
@@ -432,20 +425,21 @@ namespace NTangle.Cdc
             return EntityOrchestratorInvoker.Current.InvokeAsync(this, async (_, ct) =>
             {
                 result.ExecuteStatus!.PublishCount = result.Result.Count;
+                var correlationId = result.BatchTracker?.CorrelationId ?? result.ExecutionId.ToString();
 
                 if (result.Result.Count == 0)
                     Logger.LogInformation("{Service}: Batch '{BatchId}': No event(s) were published; non-unique version tracking hash and/or underlying data is physically deleted. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]",
-                        ServiceName, result.Batch!.Id, result.Batch.CorrelationId, ExecutionId);
+                        ServiceName, result.BatchTracker!.Id, result.BatchTracker.CorrelationId, ExecutionId);
                 else
                 {
-                    await CreateEventsAsync(EventPublisher, result.Result, result.Batch!.CorrelationId, cancellationToken).ConfigureAwait(false);
+                    await CreateEventsAsync(EventPublisher, result.Result, correlationId, cancellationToken).ConfigureAwait(false);
 
                     var sw = Stopwatch.StartNew();
                     await EventPublisher.SendAsync(cancellationToken).ConfigureAwait(false);
                     sw.Stop();
 
                     Logger.LogInformation("{Service}: Batch '{BatchId}': {EventCount} event(s) were published successfully. [Publisher={Publisher}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
-                        ServiceName, result.Batch.Id, result.ExecuteStatus.PublishCount, EventPublisher.GetType().Name, result.Batch.CorrelationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
+                        ServiceName, result.BatchTracker?.Id.ToString() ?? "n/a", result.ExecuteStatus.PublishCount, EventPublisher.GetType().Name, correlationId, ExecutionId, sw.Elapsed.TotalMilliseconds);
                 }
             }, cancellationToken);
         }

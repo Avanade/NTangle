@@ -62,12 +62,6 @@ public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, Contac
     }
 
     /// <inheritdoc/>
-    protected override string Schema => "Legacy";
-
-    /// <inheritdoc/>
-    protected override string Table => "Contact";
-
-    /// <inheritdoc/>
     protected override string EventSubject => "Legacy.Contact";
 
     /// <inheritdoc/>
@@ -115,8 +109,11 @@ public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, Contac
     /// <summary>
     /// Represents a <see cref="ContactCdc"/> database mapper.
     /// </summary>
-    public class ContactCdcMapper : IDatabaseMapper<ContactCdcEnvelope>
+    public class ContactCdcMapper : IDatabaseMapper<ContactCdcEnvelope>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Contact", ["CID"]);
+
         /// <inheritdoc/>
         public ContactCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
@@ -144,8 +141,11 @@ public partial class ContactOrchestrator : EntityOrchestrator<ContactCdc, Contac
     /// <summary>
     /// Represents a <see cref="AddressCdc"/> database mapper.
     /// </summary>
-    public class AddressCdcMapper : IDatabaseMapper<ContactCdc.AddressCdc>
+    public class AddressCdcMapper : IDatabaseMapper<ContactCdc.AddressCdc>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Address", ["AID"]);
+
         /// <inheritdoc/>
         public ContactCdc.AddressCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {

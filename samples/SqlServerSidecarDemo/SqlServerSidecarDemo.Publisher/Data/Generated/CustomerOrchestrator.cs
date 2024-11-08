@@ -15,7 +15,6 @@ public partial interface ICustomerOrchestrator : IEntityOrchestrator<CustomerCdc
 public partial class CustomerOrchestrator : EntitySidecarOrchestrator<CustomerCdc, CustomerOrchestrator.CustomerCdcEnvelopeCollection, CustomerOrchestrator.CustomerCdcEnvelope, CustomerOrchestrator.CustomerBatchTracker, CustomerOrchestrator.CustomerBatchTrackerMapper>, ICustomerOrchestrator
 {
     private static readonly CustomerCdcMapper _customerCdcMapper = new();
-    private static readonly CustomerBatchTrackerMapper _batchTrackerMapper = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CustomerOrchestrator"/> class.
@@ -44,7 +43,7 @@ public partial class CustomerOrchestrator : EntitySidecarOrchestrator<CustomerCd
     protected override string TrackingStoredProcedureName => "[NTangle].[spCustomerBatchTracking]";
 
     /// <inheritdoc/>
-    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope> result, CancellationToken cancellationToken = default)
+    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope> result, DatabaseCommand? databaseCommand = null, CancellationToken cancellationToken = default)
     {
         static void lsnSynchronizer(DatabaseRecord dr, CustomerBatchTracker bt)
         {
@@ -54,18 +53,12 @@ public partial class CustomerOrchestrator : EntitySidecarOrchestrator<CustomerCd
 
         var cColl = new CustomerCdcEnvelopeCollection();
 
-        await SelectQueryMultiSetAsync(result, MultiSetArgs.Create(
+        await SelectQueryMultiSetAsync(result, databaseCommand, MultiSetArgs.Create(
             // Root table: '[Legacy].[Cust]'
             new MultiSetCollArgs<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>(_customerCdcMapper, __result => cColl = __result, stopOnNull: true)), lsnSynchronizer, cancellationToken).ConfigureAwait(false);
 
         result.Result.AddRange(cColl);
     }
-
-    /// <inheritdoc/>
-    protected override string Schema => "Legacy";
-
-    /// <inheritdoc/>
-    protected override string Table => "Cust";
 
     /// <inheritdoc/>
     protected override string EventSubject => "Legacy.Customer";
@@ -87,6 +80,22 @@ public partial class CustomerOrchestrator : EntitySidecarOrchestrator<CustomerCd
 
     /// <inheritdoc/>
     protected override string[]? ExcludePropertiesFromETag => ["RowVersion"];
+
+    /// <summary>
+    /// Executes explicit orchestation for the specified keys bypassing CDC (Change Data Capture) and <see cref="BatchTracker"/>.
+    /// </summary>
+    /// <param name="customerKeys">The 'Customer' database primary keys (as defined by <see cref="CustomerCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
+    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? customerKeys, CancellationToken cancellationToken = default) 
+    {
+        CheckAtLeastASingleKey(customerKeys);
+
+        var cmd = Database.SqlFromResource("Resources.Generated.CustomerExecuteExplicit.sql")
+            .Param("CustomerKeysList", CreateJsonForKeys(CustomerCdcMapper.DatabaseInfo, customerKeys));
+
+        return ExecuteExplicitAsync(cmd, cancellationToken);
+    }
 
     /// <summary>
     /// Represents a <see cref="CustomerCdc"/> envelope to append the required (additional) database properties.
@@ -118,8 +127,11 @@ public partial class CustomerOrchestrator : EntitySidecarOrchestrator<CustomerCd
     /// <summary>
     /// Represents a <see cref="CustomerCdc"/> database mapper.
     /// </summary>
-    public class CustomerCdcMapper : IDatabaseMapper<CustomerCdcEnvelope>
+    public class CustomerCdcMapper : IDatabaseMapper<CustomerCdcEnvelope>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Cust", ["Id"]);
+
         /// <inheritdoc/>
         public CustomerCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {

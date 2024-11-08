@@ -18,7 +18,6 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
     private static readonly CommentCdcMapper _commentCdcMapper = new();
     private static readonly CommentsTagsCdcMapper _commentsTagsCdcMapper = new();
     private static readonly PostsTagsCdcMapper _postsTagsCdcMapper = new();
-    private static readonly PostBatchTrackerMapper _batchTrackerMapper = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostOrchestrator"/> class.
@@ -47,7 +46,7 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
     protected override string TrackingStoredProcedureName => "[NTangle].[spPostsBatchTracking]";
 
     /// <inheritdoc/>
-    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<PostCdcEnvelopeCollection, PostCdcEnvelope> result, CancellationToken cancellationToken = default)
+    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<PostCdcEnvelopeCollection, PostCdcEnvelope> result, DatabaseCommand? databaseCommand = null, CancellationToken cancellationToken = default)
     {
         static void lsnSynchronizer(DatabaseRecord dr, PostBatchTracker bt)
         {
@@ -63,7 +62,7 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
 
         var pColl = new PostCdcEnvelopeCollection();
 
-        await SelectQueryMultiSetAsync(result, MultiSetArgs.Create(
+        await SelectQueryMultiSetAsync(result, databaseCommand, MultiSetArgs.Create(
             // Root table: '[Legacy].[Posts]'
             new MultiSetCollArgs<PostCdcEnvelopeCollection, PostCdcEnvelope>(_postCdcMapper, __result => pColl = __result, stopOnNull: true),
 
@@ -102,12 +101,6 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
     }
 
     /// <inheritdoc/>
-    protected override string Schema => "Legacy";
-
-    /// <inheritdoc/>
-    protected override string Table => "Posts";
-
-    /// <inheritdoc/>
     protected override string EventSubject => "Legacy.Post";
 
     /// <inheritdoc/>
@@ -124,6 +117,28 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
 
     /// <inheritdoc/>
     protected override EventSourceFormat EventSourceFormat { get; } = EventSourceFormat.NameOnly;
+
+    /// <summary>
+    /// Executes explicit orchestation for the specified keys bypassing CDC (Change Data Capture) and <see cref="BatchTracker"/>.
+    /// </summary>
+    /// <param name="postsKeys">The 'Posts' database primary keys (as defined by <see cref="PostCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="commentsKeys">The 'Comments' database primary keys (as defined by <see cref="CommentCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="commentsTagsKeys">The 'CommentsTags' database primary keys (as defined by <see cref="CommentsTagsCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="postsTagsKeys">The 'PostsTags' database primary keys (as defined by <see cref="PostsTagsCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
+    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? postsKeys, IEnumerable<CompositeKey>? commentsKeys = default, IEnumerable<CompositeKey>? commentsTagsKeys = default, IEnumerable<CompositeKey>? postsTagsKeys = default, CancellationToken cancellationToken = default) 
+    {
+        CheckAtLeastASingleKey(postsKeys, commentsKeys, commentsTagsKeys, postsTagsKeys);
+
+        var cmd = Database.SqlFromResource("Resources.Generated.PostExecuteExplicit.sql")
+            .Param("PostsKeysList", CreateJsonForKeys(PostCdcMapper.DatabaseInfo, postsKeys))
+            .Param("CommentsKeysList", CreateJsonForKeys(CommentCdcMapper.DatabaseInfo, commentsKeys))
+            .Param("CommentsTagsKeysList", CreateJsonForKeys(CommentsTagsCdcMapper.DatabaseInfo, commentsTagsKeys))
+            .Param("PostsTagsKeysList", CreateJsonForKeys(PostsTagsCdcMapper.DatabaseInfo, postsTagsKeys));
+
+        return ExecuteExplicitAsync(cmd, cancellationToken);
+    }
 
     /// <summary>
     /// Represents a <see cref="PostCdc"/> envelope to append the required (additional) database properties.
@@ -155,8 +170,11 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
     /// <summary>
     /// Represents a <see cref="PostCdc"/> database mapper.
     /// </summary>
-    public class PostCdcMapper : IDatabaseMapper<PostCdcEnvelope>
+    public class PostCdcMapper : IDatabaseMapper<PostCdcEnvelope>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Posts", ["PostsId"]);
+
         /// <inheritdoc/>
         public PostCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
@@ -175,8 +193,11 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
     /// <summary>
     /// Represents a <see cref="CommentCdc"/> database mapper.
     /// </summary>
-    public class CommentCdcMapper : IDatabaseMapper<PostCdc.CommentCdc>
+    public class CommentCdcMapper : IDatabaseMapper<PostCdc.CommentCdc>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Comments", ["CommentsId"]);
+
         /// <inheritdoc/>
         public PostCdc.CommentCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
@@ -193,8 +214,11 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
     /// <summary>
     /// Represents a <see cref="CommentsTagsCdc"/> database mapper.
     /// </summary>
-    public class CommentsTagsCdcMapper : IDatabaseMapper<PostCdc.CommentsTagsCdc>
+    public class CommentsTagsCdcMapper : IDatabaseMapper<PostCdc.CommentsTagsCdc>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Tags", ["TagsId"]);
+
         /// <inheritdoc/>
         public PostCdc.CommentsTagsCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
@@ -212,8 +236,11 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
     /// <summary>
     /// Represents a <see cref="PostsTagsCdc"/> database mapper.
     /// </summary>
-    public class PostsTagsCdcMapper : IDatabaseMapper<PostCdc.PostsTagsCdc>
+    public class PostsTagsCdcMapper : IDatabaseMapper<PostCdc.PostsTagsCdc>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Tags", ["TagsId"]);
+
         /// <inheritdoc/>
         public PostCdc.PostsTagsCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {

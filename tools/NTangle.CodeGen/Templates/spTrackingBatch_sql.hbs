@@ -1,18 +1,17 @@
 {{! Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle }}
 CREATE OR ALTER PROCEDURE [{{CdcSchema}}].[{{TrackingStoredProcedure}}]
-  @BatchTrackingId BIGINT,
-  @{{pascal Name}}MinLsn BINARY(10),
-  @{{pascal Name}}MaxLsn BINARY(10),
+  @BatchTrackingId BIGINT NULL = NULL,
+  @{{pascal Name}}MinLsn BINARY(10) NULL = NULL,
+  @{{pascal Name}}MaxLsn BINARY(10) NULL = NULL,
 {{#each CdcJoins}}
-  @{{pascal Name}}MinLsn BINARY(10),
-  @{{pascal Name}}MaxLsn BINARY(10),
+  @{{pascal Name}}MinLsn BINARY(10) NULL = NULL,
+  @{{pascal Name}}MaxLsn BINARY(10) NULL = NULL,
 {{/each}}
   @VersionTrackingList AS NVARCHAR(MAX),
 {{#if UsesGlobalIdentifier}}
   @IdentifierList AS NVARCHAR(MAX),
 {{/if}}
-  @HasDataLoss BIT
---  @IsComplete BIT
+  @HasDataLoss BIT = 0
 AS
 BEGIN
   /*
@@ -25,53 +24,56 @@ BEGIN
     -- Wrap in a transaction.
     BEGIN TRANSACTION
 
-    -- Create or updates the batch tracking accordingly.
-    IF @BatchTrackingId = 0
+    -- Create or update the batch tracking accordingly (where applicable).
+    IF @BatchTrackingId IS NOT NULL
     BEGIN
-      DECLARE @InsertedBatchTrackingId TABLE([BatchTrackingId] INT)
-
-      INSERT INTO [{{CdcSchema}}].[{{BatchTrackingTable}}] (
-          [{{pascal Name}}MinLsn],
-          [{{pascal Name}}MaxLsn],
-{{#each CdcJoins}}
-          [{{pascal Name}}MinLsn],
-          [{{pascal Name}}MaxLsn],
-{{/each}}
-          [CreatedDate],
-          [IsComplete],
-          [CorrelationId],
-          [HasDataLoss]
-        )
-        OUTPUT inserted.BatchTrackingId INTO @InsertedBatchTrackingId
-        VALUES (
-          @{{pascal Name}}MinLsn,
-          @{{pascal Name}}MaxLsn,
-{{#each CdcJoins}}
-          @{{pascal Name}}MinLsn,
-          @{{pascal Name}}MaxLsn,
-{{/each}}
-          GETUTCDATE(),
-          0,
-          LOWER(CONVERT(NVARCHAR(64), NEWID())),
-          @hasDataLoss
-        )
-
-        SELECT @BatchTrackingId = [BatchTrackingId] FROM @InsertedBatchTrackingId
-    END
-    ELSE
-    BEGIN
-      IF (@hasDataLoss = 1)
+      IF @BatchTrackingId = 0
       BEGIN
-        UPDATE [{{CdcSchema}}].[{{BatchTrackingTable}}]
-          SET [HasDataLoss] = @hasDataLoss
-          WHERE [BatchTrackingId] = @BatchTrackingId
+        DECLARE @InsertedBatchTrackingId TABLE([BatchTrackingId] INT)
+  
+        INSERT INTO [{{CdcSchema}}].[{{BatchTrackingTable}}] (
+            [{{pascal Name}}MinLsn],
+            [{{pascal Name}}MaxLsn],
+{{#each CdcJoins}}
+            [{{pascal Name}}MinLsn],
+            [{{pascal Name}}MaxLsn],
+{{/each}}
+            [CreatedDate],
+            [IsComplete],
+            [CorrelationId],
+            [HasDataLoss]
+          )
+          OUTPUT inserted.BatchTrackingId INTO @InsertedBatchTrackingId
+          VALUES (
+            @{{pascal Name}}MinLsn,
+            @{{pascal Name}}MaxLsn,
+{{#each CdcJoins}}
+            @{{pascal Name}}MinLsn,
+            @{{pascal Name}}MaxLsn,
+{{/each}}
+            GETUTCDATE(),
+            0,
+            LOWER(CONVERT(NVARCHAR(64), NEWID())),
+            @hasDataLoss
+          )
+  
+          SELECT @BatchTrackingId = [BatchTrackingId] FROM @InsertedBatchTrackingId
       END
+      ELSE
+      BEGIN
+        IF (@hasDataLoss = 1)
+        BEGIN
+          UPDATE [{{CdcSchema}}].[{{BatchTrackingTable}}]
+            SET [HasDataLoss] = @hasDataLoss
+            WHERE [BatchTrackingId] = @BatchTrackingId
+        END
+      END
+  
+      -- Return the *latest* batch tracking data.
+      SELECT [_batch].[BatchTrackingId], [_batch].[CreatedDate], [_batch].[IsComplete], [_batch].[CompletedDate], [_batch].[CorrelationId], [_batch].[HasDataLoss]
+        FROM [{{CdcSchema}}].[{{BatchTrackingTable}}] AS [_batch]
+        WHERE [_batch].BatchTrackingId = @BatchTrackingId 
     END
-
-    -- Return the *latest* batch tracking data.
-    SELECT [_batch].[BatchTrackingId], [_batch].[CreatedDate], [_batch].[IsComplete], [_batch].[CompletedDate], [_batch].[CorrelationId], [_batch].[HasDataLoss]
-      FROM [{{CdcSchema}}].[{{BatchTrackingTable}}] AS [_batch]
-      WHERE [_batch].BatchTrackingId = @BatchTrackingId 
 
     -- Get the existing version tracking hashes.
     SELECT

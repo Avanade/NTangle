@@ -65,11 +65,11 @@ namespace SqlServerDemo.Test
             // Assert/verify the results.
             Assert.NotNull(cdcr);
             Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNotNull(cdcr.BatchTracker);
+            Assert.IsTrue(cdcr.BatchTracker.IsComplete);
+            Assert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            Assert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            Assert.IsFalse(cdcr.BatchTracker.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
 
             var events = imp.GetEvents();
@@ -97,11 +97,11 @@ namespace SqlServerDemo.Test
             // Assert/verify the results.
             Assert.NotNull(cdcr);
             Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNotNull(cdcr.BatchTracker);
+            Assert.IsTrue(cdcr.BatchTracker.IsComplete);
+            Assert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            Assert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            Assert.IsFalse(cdcr.BatchTracker.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
@@ -142,11 +142,11 @@ namespace SqlServerDemo.Test
             // Assert/verify the results.
             Assert.NotNull(cdcr);
             Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
+            Assert.IsNotNull(cdcr.BatchTracker);
+            Assert.IsTrue(cdcr.BatchTracker.IsComplete);
+            Assert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            Assert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            Assert.IsFalse(cdcr.BatchTracker.HasDataLoss);
             Assert.IsNull(cdcr.Exception);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
             Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);

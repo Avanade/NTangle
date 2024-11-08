@@ -18,6 +18,7 @@
     <None Remove="Scripts\SqlServerDbExSidecar.yaml" />
     <None Remove="Scripts\SqlServerSidecarDatabase.yaml" />
     <None Remove="templates\ExecuteBatch_sql.hbs" />
+    <None Remove="Templates\ExecuteExplicit_sql.hbs" />
     <None Remove="Templates\SpExecuteBatch_Sidecar_sql.hbs" />
     <None Remove="templates\spTrackingBatch_sql.hbs" />
   </ItemGroup>

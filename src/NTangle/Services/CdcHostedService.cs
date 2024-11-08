@@ -62,7 +62,7 @@ namespace NTangle.Services
                     return;
 
                 // Where successful and a batch was processed, then the next batch should be attempted immediately; otherwise, retry later.
-                if (!result.IsSuccessful || result.Batch == null)
+                if (!result.IsSuccessful || result.BatchTracker == null)
                     return;
             }
         }

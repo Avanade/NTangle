@@ -67,18 +67,18 @@ namespace NTangle.Test
             if (result.Exception != null)
                 Con.Out.WriteLine($"Exception: {result.Exception.Message}");
 
-            if (result.Batch == null)
+            if (result.BatchTracker == null)
                 Con.Out.WriteLine("Batch = null");
             else
             {
                 Con.Out.WriteLine(string.Empty);
                 Con.Out.WriteLine("Batch:");
-                Con.Out.WriteLine($" Id={result.Batch.Id}");
-                Con.Out.WriteLine($" IsComplete = {result.Batch.IsComplete}");
-                Con.Out.WriteLine($" CreatedDate = {result.Batch.CreatedDate}");
-                Con.Out.WriteLine($" CompletedDate = {result.Batch.CompletedDate?.ToString() ?? "null"}");
-                Con.Out.WriteLine($" HasDataLoss = {result.Batch.HasDataLoss}");
-                Con.Out.WriteLine($" CorrelationId = {result.Batch.CorrelationId}");
+                Con.Out.WriteLine($" Id={result.BatchTracker.Id}");
+                Con.Out.WriteLine($" IsComplete = {result.BatchTracker.IsComplete}");
+                Con.Out.WriteLine($" CreatedDate = {result.BatchTracker.CreatedDate}");
+                Con.Out.WriteLine($" CompletedDate = {result.BatchTracker.CompletedDate?.ToString() ?? "null"}");
+                Con.Out.WriteLine($" HasDataLoss = {result.BatchTracker.HasDataLoss}");
+                Con.Out.WriteLine($" CorrelationId = {result.BatchTracker.CorrelationId}");
             }
 
             if (imp == null)
@@ -152,7 +152,7 @@ namespace NTangle.Test
 
             Assert.NotNull(cdcr);
             Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNull(cdcr.Batch);
+            Assert.IsNull(cdcr.BatchTracker);
             Assert.IsNull(cdcr.Exception);
             Assert.AreEqual(0, imp.GetEvents().Length);
 

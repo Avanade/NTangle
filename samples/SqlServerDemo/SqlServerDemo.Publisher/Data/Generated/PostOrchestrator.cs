@@ -82,12 +82,6 @@ public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestr
     }
 
     /// <inheritdoc/>
-    protected override string Schema => "Legacy";
-
-    /// <inheritdoc/>
-    protected override string Table => "Posts";
-
-    /// <inheritdoc/>
     protected override string EventSubject => "Legacy.Post";
 
     /// <inheritdoc/>
@@ -135,8 +129,11 @@ public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestr
     /// <summary>
     /// Represents a <see cref="PostCdc"/> database mapper.
     /// </summary>
-    public class PostCdcMapper : IDatabaseMapper<PostCdcEnvelope>
+    public class PostCdcMapper : IDatabaseMapper<PostCdcEnvelope>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Posts", ["PostsId"]);
+
         /// <inheritdoc/>
         public PostCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
@@ -156,8 +153,11 @@ public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestr
     /// <summary>
     /// Represents a <see cref="CommentCdc"/> database mapper.
     /// </summary>
-    public class CommentCdcMapper : IDatabaseMapper<PostCdc.CommentCdc>
+    public class CommentCdcMapper : IDatabaseMapper<PostCdc.CommentCdc>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Comments", ["CommentsId"]);
+
         /// <inheritdoc/>
         public PostCdc.CommentCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
@@ -174,8 +174,11 @@ public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestr
     /// <summary>
     /// Represents a <see cref="CommentsTagsCdc"/> database mapper.
     /// </summary>
-    public class CommentsTagsCdcMapper : IDatabaseMapper<PostCdc.CommentsTagsCdc>
+    public class CommentsTagsCdcMapper : IDatabaseMapper<PostCdc.CommentsTagsCdc>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Tags", ["TagsId"]);
+
         /// <inheritdoc/>
         public PostCdc.CommentsTagsCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
@@ -193,8 +196,11 @@ public partial class PostOrchestrator : EntityOrchestrator<PostCdc, PostOrchestr
     /// <summary>
     /// Represents a <see cref="PostsTagsCdc"/> database mapper.
     /// </summary>
-    public class PostsTagsCdcMapper : IDatabaseMapper<PostCdc.PostsTagsCdc>
+    public class PostsTagsCdcMapper : IDatabaseMapper<PostCdc.PostsTagsCdc>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Tags", ["TagsId"]);
+
         /// <inheritdoc/>
         public PostCdc.PostsTagsCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {

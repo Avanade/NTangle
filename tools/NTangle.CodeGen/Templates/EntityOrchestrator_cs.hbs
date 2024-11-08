@@ -19,9 +19,6 @@ public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sideca
 {{#each DistinctModels}}
     private static readonly {{Model}}CdcMapper _{{camel Model}}CdcMapper = new();
 {{/each}}
-{{#if Root.UseSidecar}}
-    private static readonly {{Model}}BatchTrackerMapper _batchTrackerMapper = new();
-{{/if}}
 {{#each OrchestratorCtorParameters}}
   {{#if @first}}
 
@@ -78,7 +75,7 @@ public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sideca
     protected override string TrackingStoredProcedureName => "[{{CdcSchema}}].[{{TrackingStoredProcedure}}]";
 
     /// <inheritdoc/>
-    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope> result, CancellationToken cancellationToken = default)
+    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope> result, DatabaseCommand? databaseCommand = null, CancellationToken cancellationToken = default)
     {
         static void lsnSynchronizer(DatabaseRecord dr, {{Model}}BatchTracker bt)
         {
@@ -92,7 +89,7 @@ public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sideca
 
         var {{Alias}}Coll = new {{Model}}CdcEnvelopeCollection();
 
-        await SelectQueryMultiSetAsync(result, MultiSetArgs.Create(
+        await SelectQueryMultiSetAsync(result, databaseCommand, MultiSetArgs.Create(
             // Root table: '[{{Schema}}].[{{Table}}]'
             new MultiSetCollArgs<{{Model}}CdcEnvelopeCollection, {{Model}}CdcEnvelope>(_{{camel Model}}CdcMapper, __result => {{Alias}}Coll = __result, stopOnNull: true){{#ifne CdcJoins.Count 0}},{{else}}), lsnSynchronizer, cancellationToken).ConfigureAwait(false);{{/ifne}}
 {{#each CdcJoins}}
@@ -152,12 +149,6 @@ public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sideca
 
 {{/if}}
     /// <inheritdoc/>
-    protected override string Schema => "{{Schema}}";
-
-    /// <inheritdoc/>
-    protected override string Table => "{{Table}}";
-
-    /// <inheritdoc/>
     protected override string EventSubject => "{{#ifval Root.EventSubjectRoot}}{{Root.EventSubjectRoot}}.{{/ifval}}{{EventSubject}}";
 
     /// <inheritdoc/>
@@ -182,6 +173,30 @@ public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sideca
     protected override string[]? ExcludePropertiesFromETag => [{{#each ExcludePropertiesFromETag}}"{{.}}"{{#unless @last}}, {{/unless}}{{/each}}];
 
 {{/ifne}}
+{{#if Root.UseSidecar}}
+    /// <summary>
+    /// Executes explicit orchestation for the specified keys bypassing CDC (Change Data Capture) and <see cref="BatchTracker"/>.
+    /// </summary>
+    /// <param name="{{camel Name}}Keys">The '{{pascal Name}}' database primary keys (as defined by <see cref="{{Model}}CdcMapper.DatabaseInfo"/>).</param>
+  {{#each CdcJoins}}
+    /// <param name="{{camel Name}}Keys">The '{{pascal Name}}' database primary keys (as defined by <see cref="{{Model}}CdcMapper.DatabaseInfo"/>).</param>
+  {{/each}}
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
+    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? {{camel Name}}Keys, {{#each CdcJoins}}IEnumerable<CompositeKey>? {{camel Name}}Keys = default, {{/each}}CancellationToken cancellationToken = default) 
+    {
+        CheckAtLeastASingleKey({{camel Name}}Keys{{#each CdcJoins}}, {{camel Name}}Keys{{/each}});
+
+        var cmd = Database.SqlFromResource("Resources.Generated.{{Model}}ExecuteExplicit.sql")
+            .Param("{{Name}}KeysList", CreateJsonForKeys({{Model}}CdcMapper.DatabaseInfo, {{camel Name}}Keys)){{#ifeq CdcJoins.Count 0}};{{/ifeq}}
+  {{#each CdcJoins}}
+            .Param("{{Name}}KeysList", CreateJsonForKeys({{Model}}CdcMapper.DatabaseInfo, {{camel Name}}Keys)){{#if @last}};{{/if}}
+  {{/each}}
+
+        return ExecuteExplicitAsync(cmd, cancellationToken);
+    }
+
+{{/if}}
     /// <summary>
     /// Represents a <see cref="{{Model}}Cdc"/> envelope to append the required (additional) database properties.
     /// </summary>
@@ -212,8 +227,11 @@ public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sideca
     /// <summary>
     /// Represents a <see cref="{{Model}}Cdc"/> database mapper.
     /// </summary>
-    public class {{Model}}CdcMapper : IDatabaseMapper<{{Model}}CdcEnvelope>
+    public class {{Model}}CdcMapper : IDatabaseMapper<{{Model}}CdcEnvelope>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("{{Schema}}", "{{Table}}", [{{#each PrimaryKeyColumns}}"{{pascal NameAlias}}"{{#unless @last}}, {{/unless}}{{/each}}]);
+
         /// <inheritdoc/>
         public {{Model}}CdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
@@ -250,8 +268,11 @@ public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sideca
     /// <summary>
     /// Represents a <see cref="{{Model}}Cdc"/> database mapper.
     /// </summary>
-    public class {{Model}}CdcMapper : IDatabaseMapper<{{Parent.Model}}Cdc.{{Model}}Cdc>
+    public class {{Model}}CdcMapper : IDatabaseMapper<{{Parent.Model}}Cdc.{{Model}}Cdc>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("{{Schema}}", "{{Table}}", [{{#each PrimaryKeyColumns}}"{{pascal NameAlias}}"{{#unless @last}}, {{/unless}}{{/each}}]);
+
         /// <inheritdoc/>
         public {{Parent.Model}}Cdc.{{Model}}Cdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {

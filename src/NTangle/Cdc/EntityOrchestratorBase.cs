@@ -85,7 +85,7 @@ namespace NTangle.Cdc
 
                 stopwatch.Stop();
                 LogQueryComplete(result, stopwatch);
-                if (result.Batch == null)
+                if (result.BatchTracker == null)
                     return result;
 
                 // Consolidate the results.
@@ -104,7 +104,7 @@ namespace NTangle.Cdc
                 await PublishAndSendEventsAsync(result, cancellationToken).ConfigureAwait(false);
 
                 // Complete the batch.
-                var cresult = await CompleteAsync(result.Batch.Id, tracking, cancellationToken).ConfigureAwait(false);
+                var cresult = await CompleteAsync(result.BatchTracker.Id, tracking, cancellationToken).ConfigureAwait(false);
                 cresult.ExecuteStatus = result.ExecuteStatus;
                 return cresult;
             }
@@ -138,7 +138,7 @@ namespace NTangle.Cdc
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         protected async Task SelectQueryMultiSetAsync(EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result, IEnumerable<IMultiSetArgs> multiSetArgs, CancellationToken cancellationToken = default)
         {
-            var msa = new List<IMultiSetArgs> { new MultiSetSingleArgs<BatchTracker>(BatchTrackerMapper, r => result.Batch = r, isMandatory: false, stopOnNull: true) };
+            var msa = new List<IMultiSetArgs> { new MultiSetSingleArgs<BatchTracker>(BatchTrackerMapper, r => result.BatchTracker = r, isMandatory: false, stopOnNull: true) };
             msa.AddRange(multiSetArgs);
 
             await Database.StoredProcedure(ExecuteStoredProcedureName).Params(p =>

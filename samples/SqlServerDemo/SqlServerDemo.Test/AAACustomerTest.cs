@@ -29,7 +29,7 @@ namespace SqlServerDemo.Test
             // Assert/verify the results.
             Assert.NotNull(cdcr);
             Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNull(cdcr.Batch);
+            Assert.IsNull(cdcr.BatchTracker);
             Assert.IsNull(cdcr.Exception);
             Assert.AreEqual(0, cdcr.ExecuteStatus.InitialCount);
             Assert.IsNull(cdcr.ExecuteStatus.ConsolidatedCount);

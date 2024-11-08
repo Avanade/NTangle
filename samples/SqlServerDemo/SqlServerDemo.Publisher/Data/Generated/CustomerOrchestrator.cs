@@ -48,12 +48,6 @@ public partial class CustomerOrchestrator : EntityOrchestrator<CustomerCdc, Cust
     }
 
     /// <inheritdoc/>
-    protected override string Schema => "Legacy";
-
-    /// <inheritdoc/>
-    protected override string Table => "Cust";
-
-    /// <inheritdoc/>
     protected override string EventSubject => "Legacy.Customer";
 
     /// <inheritdoc/>
@@ -104,8 +98,11 @@ public partial class CustomerOrchestrator : EntityOrchestrator<CustomerCdc, Cust
     /// <summary>
     /// Represents a <see cref="CustomerCdc"/> database mapper.
     /// </summary>
-    public class CustomerCdcMapper : IDatabaseMapper<CustomerCdcEnvelope>
+    public class CustomerCdcMapper : IDatabaseMapper<CustomerCdcEnvelope>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Cust", ["Id"]);
+
         /// <inheritdoc/>
         public CustomerCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {

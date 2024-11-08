@@ -16,7 +16,6 @@ public partial class ContactOrchestrator : EntitySidecarOrchestrator<ContactCdc,
 {
     private static readonly ContactCdcMapper _contactCdcMapper = new();
     private static readonly AddressCdcMapper _addressCdcMapper = new();
-    private static readonly ContactBatchTrackerMapper _batchTrackerMapper = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ContactOrchestrator"/> class.
@@ -49,7 +48,7 @@ public partial class ContactOrchestrator : EntitySidecarOrchestrator<ContactCdc,
     protected override string TrackingStoredProcedureName => "[NTangle].[spContactBatchTracking]";
 
     /// <inheritdoc/>
-    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<ContactCdcEnvelopeCollection, ContactCdcEnvelope> result, CancellationToken cancellationToken = default)
+    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<ContactCdcEnvelopeCollection, ContactCdcEnvelope> result, DatabaseCommand? databaseCommand = null, CancellationToken cancellationToken = default)
     {
         static void lsnSynchronizer(DatabaseRecord dr, ContactBatchTracker bt)
         {
@@ -61,7 +60,7 @@ public partial class ContactOrchestrator : EntitySidecarOrchestrator<ContactCdc,
 
         var cColl = new ContactCdcEnvelopeCollection();
 
-        await SelectQueryMultiSetAsync(result, MultiSetArgs.Create(
+        await SelectQueryMultiSetAsync(result, databaseCommand, MultiSetArgs.Create(
             // Root table: '[Legacy].[Contact]'
             new MultiSetCollArgs<ContactCdcEnvelopeCollection, ContactCdcEnvelope>(_contactCdcMapper, __result => cColl = __result, stopOnNull: true),
 
@@ -76,12 +75,6 @@ public partial class ContactOrchestrator : EntitySidecarOrchestrator<ContactCdc,
 
         result.Result.AddRange(cColl);
     }
-
-    /// <inheritdoc/>
-    protected override string Schema => "Legacy";
-
-    /// <inheritdoc/>
-    protected override string Table => "Contact";
 
     /// <inheritdoc/>
     protected override string EventSubject => "Legacy.Contact";
@@ -100,6 +93,24 @@ public partial class ContactOrchestrator : EntitySidecarOrchestrator<ContactCdc,
 
     /// <inheritdoc/>
     protected override EventSourceFormat EventSourceFormat { get; } = EventSourceFormat.NameAndTableKey;
+
+    /// <summary>
+    /// Executes explicit orchestation for the specified keys bypassing CDC (Change Data Capture) and <see cref="BatchTracker"/>.
+    /// </summary>
+    /// <param name="contactKeys">The 'Contact' database primary keys (as defined by <see cref="ContactCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="addressKeys">The 'Address' database primary keys (as defined by <see cref="AddressCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+    /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
+    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? contactKeys, IEnumerable<CompositeKey>? addressKeys = default, CancellationToken cancellationToken = default) 
+    {
+        CheckAtLeastASingleKey(contactKeys, addressKeys);
+
+        var cmd = Database.SqlFromResource("Resources.Generated.ContactExecuteExplicit.sql")
+            .Param("ContactKeysList", CreateJsonForKeys(ContactCdcMapper.DatabaseInfo, contactKeys))
+            .Param("AddressKeysList", CreateJsonForKeys(AddressCdcMapper.DatabaseInfo, addressKeys));
+
+        return ExecuteExplicitAsync(cmd, cancellationToken);
+    }
 
     /// <summary>
     /// Represents a <see cref="ContactCdc"/> envelope to append the required (additional) database properties.
@@ -131,8 +142,11 @@ public partial class ContactOrchestrator : EntitySidecarOrchestrator<ContactCdc,
     /// <summary>
     /// Represents a <see cref="ContactCdc"/> database mapper.
     /// </summary>
-    public class ContactCdcMapper : IDatabaseMapper<ContactCdcEnvelope>
+    public class ContactCdcMapper : IDatabaseMapper<ContactCdcEnvelope>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Contact", ["CID"]);
+
         /// <inheritdoc/>
         public ContactCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {
@@ -157,8 +171,11 @@ public partial class ContactOrchestrator : EntitySidecarOrchestrator<ContactCdc,
     /// <summary>
     /// Represents a <see cref="AddressCdc"/> database mapper.
     /// </summary>
-    public class AddressCdcMapper : IDatabaseMapper<ContactCdc.AddressCdc>
+    public class AddressCdcMapper : IDatabaseMapper<ContactCdc.AddressCdc>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Address", ["AID"]);
+
         /// <inheritdoc/>
         public ContactCdc.AddressCdc? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {

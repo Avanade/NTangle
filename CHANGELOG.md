@@ -10,6 +10,7 @@ Represents the **NuGet** versions.
   - The new [`EntitySidecarOrchestratorBase`](./src/NTangle/Cdc/EntitySidecarOrchestratorBase.cs) will invoke a single statement to leverage the CDC capabilities and perform the resulting data selection; see the [`ContactExecuteBatch.sql`](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteBatch.sql).
   - The required `NTangle` (and optional `Outbox`) schema(s), table(s) and stored procedures will be generated within the sidecar database.
   - Note that there are _no_ cross database dependencies; as such, the sidecar database can be hosted separately as required. The .NET orchestrator logic will need access to both databases to function.
+  - Support now for `net8.0`+ only; older .NET versions will need to use the existing implementation or upgrade.
 
 ## v2.6.1
 - *Fixed:* As a result of the `v2.6.0` enhancements the generated `IdentifierMappingMapper.cs` and `VersionTrackingMapper.cs` are not required. This fix will ensure these files are no longer generated; as such these should be removed from any existing solution after a re-gen.
