@@ -3,15 +3,18 @@
 Represents the **NuGet** versions.
 
 ## v3.0.0
-- **Note:** This version contains a number of breaking changes and generated artefact changes; all existing generated artefacts should re-generated.
 - *Enhancement:* Major **"Sidecar"** feature added based on feedback from the community. 
-  - The existing implementation required all generated supporting database capabilities to be within the primary database itself; a new option to generate a separate "sidecar" database to manage minimizes the impact on the primary database.
-  - The primary database will still require the database CDC capabilities to be enabled.
+  - The existing implementation required all generated supporting database capabilities to be within the "main" database itself; a new option has been added to generate a separate "sidecar" database to manage. This minimizes the impact on the "main" database.
+  - The "main" database will still require the database CDC (change-data-capture) capabilities to be enabled.
   - The new [`EntitySidecarOrchestratorBase`](./src/NTangle/Cdc/EntitySidecarOrchestratorBase.cs) will invoke a single statement to leverage the CDC capabilities and perform the resulting data selection; see the [`ContactExecuteBatch.sql`](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteBatch.sql).
-  - The required `NTangle` (and optional `Outbox`) schema(s), table(s) and stored procedures will be generated within the sidecar database.
-  - Note that there are _no_ cross database dependencies; as such, the sidecar database can be hosted separately as required. The .NET orchestrator logic will need access to both databases to function.
-  - Additional `ExecuteExplicitAsync` method added to enable explicit primary keys to be passed bypassing CDC; useful for one-offs, or where triggering without CDC (i.e. Debezium, etc) to get the best of both worlds.
+  - The required `NTangle` (and optional `Outbox`) schema(s), table(s) and stored procedures will be generated within the "sidecar" database.
+  - Note that there are _no_ cross database dependencies; as such, the "sidecar" database can be hosted separately, be on a difference versions, etc. as required. The .NET orchestrator logic will _require_ access to both databases to function.
+  - An additional `ExecuteExplicitAsync` method has been added to enable explicit primary keys to be passed bypassing CDC; useful for one-offs, or where triggering without CDC (i.e. Debezium, etc) to get the best of both worlds.
   - Support now for `net8.0`+ only; older .NET versions will need to use the existing implementation or upgrade.
+- Notes:
+  - This version contains a number of _breaking_ and generated artefact changes; all existing generated artefacts should re-generated.
+  - It is recommended migrating to the new "sidecar" feature where possible; the existing implementation will be deprecated in the future.
+	- The `NTangle` solution template (`dotnet new ntangle`) has been updated to default to the new "sidecar" feature.
 
 ## v2.6.1
 - *Fixed:* As a result of the `v2.6.0` enhancements the generated `IdentifierMappingMapper.cs` and `VersionTrackingMapper.cs` are not required. This fix will ensure these files are no longer generated; as such these should be removed from any existing solution after a re-gen.

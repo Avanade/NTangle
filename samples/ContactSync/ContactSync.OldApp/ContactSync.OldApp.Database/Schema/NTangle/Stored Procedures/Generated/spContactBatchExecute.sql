@@ -32,7 +32,7 @@ BEGIN
     -- There should never be more than one incomplete batch.
     IF @@ROWCOUNT > 1
     BEGIN
-      ;THROW 56002, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
+      ;THROW 56010, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
     END
 
     -- Get the latest 'base' minimum.
@@ -75,8 +75,8 @@ BEGIN
     -- The minimum should _not_ be less than the base otherwise we have lost data; either continue with this data loss, or error and stop.
     DECLARE @hasDataLoss BIT = 0
 
-    IF (@ContactMinLsn < @ContactBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @ContactMinLsn = @ContactBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''old.contact''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
-    IF (@AddressMinLsn < @AddressBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @AddressMinLsn = @AddressBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''old.contact_address''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@ContactMinLsn < @ContactBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @ContactMinLsn = @ContactBaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''old.contact''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@AddressMinLsn < @AddressBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @AddressMinLsn = @AddressBaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''old.contact_address''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
 
     -- Find changes on the root table: '[old].[contact]' - this determines overall operation type: 'create', 'update' or 'delete'.
     CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, [contact_id] INT)
@@ -190,7 +190,7 @@ BEGIN
         CASE WHEN EXISTS (SELECT 1 FROM [old].[contact] AS [__c] WHERE ([__c].[contact_id] = [_chg].[contact_id])) THEN CAST (0 AS BIT) ELSE CAST (1 AS BIT) END AS [_IsPhysicallyDeleted]
       FROM #_changes AS [_chg]
       LEFT OUTER JOIN [old].[contact] AS [c] ON ([c].[contact_id] = [_chg].[contact_id])
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Schema] = N'old' AND [_vt].[Table] = N'Contact' AND [_vt].[Key] = CAST([_chg].[contact_id] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Schema] = N'old' AND [_vt].[Table] = N'contact' AND [_vt].[Key] = CAST([_chg].[contact_id] AS NVARCHAR(128)))
       ORDER BY [_Lsn] ASC
 
     -- Related table: '[old].[contact_address]' - unique name 'Address' - only use INNER JOINS to get what is actually there right now (where applicable).
