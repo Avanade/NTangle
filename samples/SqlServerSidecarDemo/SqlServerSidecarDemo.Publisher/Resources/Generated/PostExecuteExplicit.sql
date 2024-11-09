@@ -35,7 +35,8 @@ BEGIN
           [p].[PostsId] AS [PostsId]
         INTO #c
         FROM #CommentsKeysList AS [_cdc]
-        INNER JOIN [Legacy].[Posts] AS [p] WITH (NOLOCK) ON ([_cdc].[PostsId] = [p].[PostsId])
+        INNER JOIN [Legacy].[Comments] AS [c] WITH (NOLOCK) ON ([c].[CommentsId] = [_cdc].[CommentsId])
+        INNER JOIN [Legacy].[Posts] AS [p] WITH (NOLOCK) ON ([c].[PostsId] = [p].[PostsId])
 
       IF (@@ROWCOUNT <> 0)
       BEGIN
@@ -57,7 +58,8 @@ BEGIN
           [p].[PostsId] AS [PostsId]
         INTO #ct
         FROM #CommentsTagsKeysList AS [_cdc]
-        INNER JOIN [Legacy].[Comments] AS [c] WITH (NOLOCK) ON ([c].[ParentType] = 'C' AND [_cdc].[ParentId] = [c].[CommentsId])
+        INNER JOIN [Legacy].[Tags] AS [ct] WITH (NOLOCK) ON ([ct].[TagsId] = [_cdc].[TagsId] AND [ct].[ParentType] = 'C')
+        INNER JOIN [Legacy].[Comments] AS [c] WITH (NOLOCK) ON ([ct].[ParentId] = [c].[CommentsId])
         INNER JOIN [Legacy].[Posts] AS [p] WITH (NOLOCK) ON ([c].[PostsId] = [p].[PostsId])
 
       IF (@@ROWCOUNT <> 0)
@@ -80,7 +82,8 @@ BEGIN
           [p].[PostsId] AS [PostsId]
         INTO #pt
         FROM #PostsTagsKeysList AS [_cdc]
-        INNER JOIN [Legacy].[Posts] AS [p] WITH (NOLOCK) ON ([_cdc].[ParentType] = 'P' AND [_cdc].[ParentId] = [p].[PostsId])
+        INNER JOIN [Legacy].[Tags] AS [pt] WITH (NOLOCK) ON ([pt].[TagsId] = [_cdc].[TagsId] AND [pt].[ParentType] = 'P')
+        INNER JOIN [Legacy].[Posts] AS [p] WITH (NOLOCK) ON ([pt].[ParentId] = [p].[PostsId])
 
       IF (@@ROWCOUNT <> 0)
       BEGIN

@@ -222,9 +222,14 @@ namespace NTangle.CodeGen.Config
         #region Non-Config
 
         /// <summary>
-        /// Gets or sets the <see cref="On"/> select columns; i.e. those without a specific statement.
+        /// Gets the <see cref="On"/> select columns; i.e. those without a specific statement.
         /// </summary>
         public List<JoinOnConfig> OnSelectColumns => On!.Where(x => x.ToStatement == null).ToList();
+
+        /// <summary>
+        /// Gets the <see cref="On"/> statement columns; i.e. those with a specific statement.
+        /// </summary>
+        public List<JoinOnConfig> OnStatementColumns => On!.Where(x => x.ToStatement != null).ToList();
 
         /// <summary>
         /// Gets the selected column configurations.

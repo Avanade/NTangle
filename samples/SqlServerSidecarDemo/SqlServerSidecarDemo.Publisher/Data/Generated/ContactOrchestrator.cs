@@ -99,9 +99,12 @@ public partial class ContactOrchestrator : EntitySidecarOrchestrator<ContactCdc,
     /// </summary>
     /// <param name="contactKeys">The 'Contact' database primary keys (as defined by <see cref="ContactCdcMapper.DatabaseInfo"/>).</param>
     /// <param name="addressKeys">The 'Address' database primary keys (as defined by <see cref="AddressCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="options">The <see cref="ExplicitOptions"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? contactKeys, IEnumerable<CompositeKey>? addressKeys = default, CancellationToken cancellationToken = default) 
+    /// <remarks><b>Note:</b> Explicit orchestrations bypass CDC (Change Data Capture) therefore access to <i>physically deleted</i> data is unreliable especially with respect to any child tables as there is no means to walk back up the join hierarchy.
+    /// Only a delete from the root table can be inferred by its current non-existence. Provide <paramref name="options"/> to control the underlying behavior.</remarks>
+    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? contactKeys, IEnumerable<CompositeKey>? addressKeys = default, ExplicitOptions? options = null, CancellationToken cancellationToken = default) 
     {
         CheckAtLeastASingleKey(contactKeys, addressKeys);
 
@@ -109,7 +112,7 @@ public partial class ContactOrchestrator : EntitySidecarOrchestrator<ContactCdc,
             .Param("ContactKeysList", CreateJsonForKeys(ContactCdcMapper.DatabaseInfo, contactKeys))
             .Param("AddressKeysList", CreateJsonForKeys(AddressCdcMapper.DatabaseInfo, addressKeys));
 
-        return ExecuteExplicitAsync(cmd, cancellationToken);
+        return ExecuteExplicitAsync(cmd, options, cancellationToken);
     }
 
     /// <summary>

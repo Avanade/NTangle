@@ -343,14 +343,14 @@ namespace NTangle.Cdc
         /// Executes explicit orchestation using the result of the specified <paramref name="databaseCommand"/> bypassing CDC (Change Data Capture) and <see cref="BatchTracker"/>.
         /// </summary>
         /// <param name="databaseCommand">The <see cref="DatabaseCommand"/> to perform the data selection query.</param>
+        /// <param name="options">The <see cref="ExplicitOptions"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-        protected async Task<EntityOrchestratorResult> ExecuteExplicitAsync(DatabaseCommand databaseCommand, CancellationToken cancellationToken)
+        protected async Task<EntityOrchestratorResult> ExecuteExplicitAsync(DatabaseCommand databaseCommand, ExplicitOptions? options, CancellationToken cancellationToken)
         {
             try
             {
-                
-                var result = new EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> { ExecutionId = ExecutionId = Guid.NewGuid(), IsExplicitExecution = true };
+                var result = new EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> { ExecutionId = ExecutionId = Guid.NewGuid(), IsExplicitExecution = true, ExplicitOptions = options ?? new ExplicitOptions() };
                 return await EntityOrchestratorInvoker.Current.InvokeAsync(this, result, async (_, result, ct) => await ExecuteExplicitInternalAsync(result, databaseCommand, ct).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -359,6 +359,9 @@ namespace NTangle.Cdc
             }
         }
 
+        /// <summary>
+        /// Performs the actual explicit execution.
+        /// </summary>
         private async Task<EntityOrchestratorResult> ExecuteExplicitInternalAsync(EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result, DatabaseCommand databaseCommand, CancellationToken cancellationToken)
         {
             try
@@ -381,6 +384,10 @@ namespace NTangle.Cdc
 
                 // Post-consolidation processing.
                 await PostConsolidationAsync(result, cancellationToken).ConfigureAwait(false);
+
+                // Where explicit and the item has no current version tracking check whether to assume a create.
+                if (result.IsExplicitExecution && result.ExplicitOptions!.AssumeCreateWhereNoVersion)
+                    result.Result.Where(e => e.DatabaseTrackingHash is null).ForEach(e => e.DatabaseOperationType = CdcOperationType.Create);
 
                 // Additional processing.
                 await AdditionalAsync(result, cancellationToken).ConfigureAwait(false);

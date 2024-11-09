@@ -39,5 +39,10 @@ namespace NTangle.Cdc
         /// Indicates that an explicit execution was requested bypassing CDC (Change Data Capture) and <see cref="Cdc.BatchTracker"/>.
         /// </summary>
         public bool IsExplicitExecution { get; internal set; }
+
+        /// <summary>
+        /// Gets the <see cref="ExplicitOptions"/> where <see cref="IsExplicitExecution"/>.
+        /// </summary>
+        public ExplicitOptions? ExplicitOptions { get; internal set; }
     }
 }

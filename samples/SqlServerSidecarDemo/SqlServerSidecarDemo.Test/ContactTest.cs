@@ -173,5 +173,49 @@ namespace SqlServerSidecarDemo.Test
             Assert.NotNull(c.Address?.GlobalId);
             Assert.AreEqual("C88", c.Address?.GlobalAlternateAddressId);
         }
+
+        [Test]
+        public async Task Explicit_Root()
+        {
+            using var db = SqlServerSidecarUnitTest.GetDatabase();
+            using var sdb = SqlServerSidecarUnitTest.GetSidecarDatabase();
+            var logger = UnitTest.GetLogger<ContactOrchestrator>();
+
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new ContactOrchestrator(db, sdb, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger, new IdentifierGenerator());
+            var cdcr = await cdc.ExecuteExplicitAsync([1]).ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, imp);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+        }
+
+        [Test]
+        public async Task Explicit_Child()
+        {
+            using var db = SqlServerSidecarUnitTest.GetDatabase();
+            using var sdb = SqlServerSidecarUnitTest.GetSidecarDatabase();
+            var logger = UnitTest.GetLogger<ContactOrchestrator>();
+
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new ContactOrchestrator(db, sdb, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger, new IdentifierGenerator());
+            var cdcr = await cdc.ExecuteExplicitAsync(null, [11]).ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, imp);
+
+            // Assert/verify the results.
+            Assert.NotNull(cdcr);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+        }
     }
 }

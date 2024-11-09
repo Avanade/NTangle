@@ -125,9 +125,12 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
     /// <param name="commentsKeys">The 'Comments' database primary keys (as defined by <see cref="CommentCdcMapper.DatabaseInfo"/>).</param>
     /// <param name="commentsTagsKeys">The 'CommentsTags' database primary keys (as defined by <see cref="CommentsTagsCdcMapper.DatabaseInfo"/>).</param>
     /// <param name="postsTagsKeys">The 'PostsTags' database primary keys (as defined by <see cref="PostsTagsCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="options">The <see cref="ExplicitOptions"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? postsKeys, IEnumerable<CompositeKey>? commentsKeys = default, IEnumerable<CompositeKey>? commentsTagsKeys = default, IEnumerable<CompositeKey>? postsTagsKeys = default, CancellationToken cancellationToken = default) 
+    /// <remarks><b>Note:</b> Explicit orchestrations bypass CDC (Change Data Capture) therefore access to <i>physically deleted</i> data is unreliable especially with respect to any child tables as there is no means to walk back up the join hierarchy.
+    /// Only a delete from the root table can be inferred by its current non-existence. Provide <paramref name="options"/> to control the underlying behavior.</remarks>
+    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? postsKeys, IEnumerable<CompositeKey>? commentsKeys = default, IEnumerable<CompositeKey>? commentsTagsKeys = default, IEnumerable<CompositeKey>? postsTagsKeys = default, ExplicitOptions? options = null, CancellationToken cancellationToken = default) 
     {
         CheckAtLeastASingleKey(postsKeys, commentsKeys, commentsTagsKeys, postsTagsKeys);
 
@@ -137,7 +140,7 @@ public partial class PostOrchestrator : EntitySidecarOrchestrator<PostCdc, PostO
             .Param("CommentsTagsKeysList", CreateJsonForKeys(CommentsTagsCdcMapper.DatabaseInfo, commentsTagsKeys))
             .Param("PostsTagsKeysList", CreateJsonForKeys(PostsTagsCdcMapper.DatabaseInfo, postsTagsKeys));
 
-        return ExecuteExplicitAsync(cmd, cancellationToken);
+        return ExecuteExplicitAsync(cmd, options, cancellationToken);
     }
 
     /// <summary>

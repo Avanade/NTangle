@@ -525,7 +525,7 @@ namespace SqlServerSidecarDemo.Test
 
             var imp = new InMemoryPublisher(logger);
             var cdc = new PostOrchestrator(db, sdb, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
-            var cdcr = await cdc.ExecuteExplicitAsync(null, [101], [2002], [3301]).ConfigureAwait(false);
+            var cdcr = await cdc.ExecuteExplicitAsync(null, [102], [3301], [2002]).ConfigureAwait(false);
 
             UnitTest.WriteResult(cdcr, imp);
 
@@ -538,6 +538,138 @@ namespace SqlServerSidecarDemo.Test
             Assert.AreEqual(3, cdcr.ExecuteStatus?.ConsolidatedCount);
             Assert.AreEqual(3, cdcr.ExecuteStatus?.PublishCount);
             Assert.AreEqual(3, imp.GetEvents().Length);
+        }
+
+        [Test]
+        public async Task Explicit_AssumeDeleted()
+        {
+            using var db = SqlServerSidecarUnitTest.GetDatabase();
+            using var sdb = SqlServerSidecarUnitTest.GetSidecarDatabase();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
+
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostOrchestrator(db, sdb, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
+            var cdcr = await cdc.ExecuteExplicitAsync([404]).ConfigureAwait(false);
+
+            UnitTest.WriteResult(cdcr, imp);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(1, imp.GetEvents().Length);
+
+            // Now ignore where not found.
+            imp.Reset();
+            cdcr = await cdc.ExecuteExplicitAsync([404], options: new NTangle.Cdc.ExplicitOptions { AssumeDeleteWhereNotFound = false }).ConfigureAwait(false);
+
+            UnitTest.WriteResult(cdcr, imp);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(0, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(0, imp.GetEvents().Length);
+        }
+
+        [Test]
+        public async Task Explicit_AssumeCreate()
+        {
+            using var db = SqlServerSidecarUnitTest.GetDatabase();
+            using var sdb = SqlServerSidecarUnitTest.GetSidecarDatabase();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
+
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostOrchestrator(db, sdb, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
+            var cdcr = await cdc.ExecuteExplicitAsync([1]).ConfigureAwait(false);
+
+            UnitTest.WriteResult(cdcr, imp);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(1, imp.GetEvents().Length);
+            Assert.AreEqual("created", imp.GetEvents()[0].Action);
+
+            // Should present as updated as versioned earlier.
+            await db.SqlStatement("UPDATE [Legacy].[Posts] SET [Text] = 'Bananas' WHERE [PostsId] = 1").NonQueryAsync().ConfigureAwait(false);
+            imp.Reset();
+            cdcr = await cdc.ExecuteExplicitAsync([1]).ConfigureAwait(false);
+
+            UnitTest.WriteResult(cdcr, imp);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(1, imp.GetEvents().Length);
+            Assert.AreEqual("updated", imp.GetEvents()[0].Action);
+
+            // Remove version and should present as updated as no assuming.
+            await sdb.SqlStatement("DELETE FROM [NTangle].[VersionTracking]").NonQueryAsync().ConfigureAwait(false);
+            imp.Reset();
+            cdcr = await cdc.ExecuteExplicitAsync([1], options: new NTangle.Cdc.ExplicitOptions { AssumeCreateWhereNoVersion = false }).ConfigureAwait(false);
+
+            UnitTest.WriteResult(cdcr, imp);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(1, imp.GetEvents().Length);
+            Assert.AreEqual("updated", imp.GetEvents()[0].Action);
+        }
+
+        [Test]
+        public async Task Explicit_AlwaysPublish()
+        {
+            using var db = SqlServerSidecarUnitTest.GetDatabase();
+            using var sdb = SqlServerSidecarUnitTest.GetSidecarDatabase();
+            var logger = UnitTest.GetLogger<PostOrchestrator>();
+
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new PostOrchestrator(db, sdb, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
+            var cdcr = await cdc.ExecuteExplicitAsync([1]).ConfigureAwait(false);
+
+            UnitTest.WriteResult(cdcr, imp);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(1, imp.GetEvents().Length);
+
+            // No publish as checked.
+            imp.Reset();
+            cdcr = await cdc.ExecuteExplicitAsync([1]).ConfigureAwait(false);
+
+            UnitTest.WriteResult(cdcr, imp);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(0, imp.GetEvents().Length);
+
+            // Always publish will now publish (ignores check).
+            cdcr = await cdc.ExecuteExplicitAsync([1], options: new NTangle.Cdc.ExplicitOptions { AlwaysPublishEvents = true }).ConfigureAwait(false);
+
+            UnitTest.WriteResult(cdcr, imp);
+            Assert.IsTrue(cdcr.IsSuccessful);
+            Assert.IsNull(cdcr.BatchTracker);
+            Assert.IsNull(cdcr.Exception);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            Assert.AreEqual(1, imp.GetEvents().Length);
         }
     }
 }

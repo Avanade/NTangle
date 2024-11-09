@@ -41,8 +41,9 @@ BEGIN
   {{/each}}
         INTO #{{Alias}}
         FROM #{{Name}}KeysList AS [_cdc]
+        INNER JOIN [{{Schema}}].[{{Table}}] AS [{{Alias}}] WITH (NOLOCK) ON ({{#each PrimaryKeyColumns}}{{#unless @first}} AND {{/unless}}[{{Parent.Alias}}].[{{Name}}] = [_cdc].[{{Name}}]{{/each}}{{#each OnStatementColumns}} AND [{{Parent.Alias}}].[{{Name}}] = {{ToStatement}}{{/each}})
   {{#each JoinHierarchy}}
-        INNER JOIN [{{JoinToSchema}}].[{{JoinToTable}}] AS [{{JoinToAlias}}] WITH (NOLOCK) ON ({{#each On}}{{#unless @first}} AND {{/unless}}{{#if Parent.IsFirstInJoinHierarchy}}[_cdc]{{else}}[{{Parent.Alias}}]{{/if}}.[{{Name}}] = {{#ifval ToStatement}}{{ToStatement}}{{else}}[{{Parent.JoinToAlias}}].[{{ToColumn}}]{{/ifval}}{{/each}})
+        INNER JOIN [{{JoinToSchema}}].[{{JoinToTable}}] AS [{{JoinToAlias}}] WITH (NOLOCK) ON ({{#each OnSelectColumns}}{{#unless @first}} AND {{/unless}}[{{Parent.Alias}}].[{{Name}}] = [{{Parent.JoinToAlias}}].[{{ToColumn}}]{{/each}})
   {{/each}}
 
       IF (@@ROWCOUNT <> 0)

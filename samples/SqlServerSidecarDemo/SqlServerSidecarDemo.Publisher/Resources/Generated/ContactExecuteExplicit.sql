@@ -35,7 +35,8 @@ BEGIN
           [c].[ContactId] AS [ContactId]
         INTO #a
         FROM #AddressKeysList AS [_cdc]
-        INNER JOIN [Legacy].[Contact] AS [c] WITH (NOLOCK) ON ([_cdc].[AddressId] = [c].[AddressId])
+        INNER JOIN [Legacy].[Address] AS [a] WITH (NOLOCK) ON ([a].[AddressId] = [_cdc].[AddressId])
+        INNER JOIN [Legacy].[Contact] AS [c] WITH (NOLOCK) ON ([a].[AddressId] = [c].[AddressId])
 
       IF (@@ROWCOUNT <> 0)
       BEGIN

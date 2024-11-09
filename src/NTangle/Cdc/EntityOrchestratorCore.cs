@@ -286,7 +286,7 @@ namespace NTangle.Cdc
         protected internal void LogQueryComplete(EntityOrchestratorResult<TEntityEnvelopeColl, TEntityEnvelope> result, Stopwatch stopwatch)
         {
             if (result.BatchTracker == null)
-                Logger.LogDebug("{Service}: Batch 'none': No new Change Data Capture data was found. [ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]", ServiceName, ExecutionId, stopwatch.Elapsed.TotalMilliseconds);
+                Logger.LogDebug("{Service}: Batch 'n/a': No new Change Data Capture data was found. [ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]", ServiceName, ExecutionId, stopwatch.Elapsed.TotalMilliseconds);
             else
                 Logger.LogInformation("{Service}: Batch '{BatchId}': {OperationsCount} entity operations(s) were found. [MaxQuerySize={MaxQuerySize}, ContinueWithDataLoss={ContinueWithDataLoss}, CorrelationId={CorrelationId}, ExecutionId={ExecutionId}, Elapsed={Elapsed}ms]",
                     ServiceName, result.BatchTracker.Id, result.Result.Count, MaxQuerySize, ContinueWithDataLoss, result.BatchTracker.CorrelationId, ExecutionId, stopwatch.Elapsed.TotalMilliseconds);
@@ -301,6 +301,11 @@ namespace NTangle.Cdc
         {
             EntityOrchestratorInvoker.Current.Invoke(this, _ =>
             {
+                // Correct the explicit wonky operations not marked as deleted where actually physically deleted.
+                if (result.IsExplicitExecution)
+                    result.Result.Where(x => x.IsDatabasePhysicallyDeleted && x.DatabaseOperationType != CdcOperationType.Delete).ForEach(x => x.DatabaseOperationType = CdcOperationType.Delete);
+
+                // Consolidate the results.
                 var coll = new TEntityEnvelopeColl();
                 foreach (var grp in result.Result.GroupBy(x => new { x.EntityKey }))
                 {
@@ -323,6 +328,10 @@ namespace NTangle.Cdc
                         item.DatabaseOperationType = CdcOperationType.Delete;
                         ld.ClearWhereDeleted();
                     }
+
+                    // Where explicit and the item is being deleted check whether to assume delete where not found or ignore.
+                    if (result.IsExplicitExecution && item.DatabaseOperationType == CdcOperationType.Delete && !result.ExplicitOptions!.AssumeDeleteWhereNotFound)
+                        continue;
 
                     coll.Add(item);
                 }
@@ -395,7 +404,7 @@ namespace NTangle.Cdc
                     }
 
                     // Where the ETag and TrackingHash match then skip (has already been published).
-                    if (item.DatabaseTrackingHash == null || item.DatabaseTrackingHash != entity.ETag)
+                    if ((result.IsExplicitExecution && result.ExplicitOptions!.AlwaysPublishEvents) || item.DatabaseTrackingHash == null || item.DatabaseTrackingHash != entity.ETag)
                     {
                         coll.Add(item);
                         tracking.Add(new VersionTracker { Key = entity.EntityKey.ToString(), Hash = entity.ETag });
@@ -429,7 +438,7 @@ namespace NTangle.Cdc
 
                 if (result.Result.Count == 0)
                     Logger.LogInformation("{Service}: Batch '{BatchId}': No event(s) were published; non-unique version tracking hash and/or underlying data is physically deleted. [CorrelationId={CorrelationId}, ExecutionId={ExecutionId}]",
-                        ServiceName, result.BatchTracker!.Id, result.BatchTracker.CorrelationId, ExecutionId);
+                        ServiceName, result.BatchTracker?.Id.ToString() ?? "n/a", result.BatchTracker?.CorrelationId ?? ExecutionId.ToString(), ExecutionId);
                 else
                 {
                     await CreateEventsAsync(EventPublisher, result.Result, correlationId, cancellationToken).ConfigureAwait(false);

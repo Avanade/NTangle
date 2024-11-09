@@ -85,16 +85,19 @@ public partial class CustomerOrchestrator : EntitySidecarOrchestrator<CustomerCd
     /// Executes explicit orchestation for the specified keys bypassing CDC (Change Data Capture) and <see cref="BatchTracker"/>.
     /// </summary>
     /// <param name="customerKeys">The 'Customer' database primary keys (as defined by <see cref="CustomerCdcMapper.DatabaseInfo"/>).</param>
+    /// <param name="options">The <see cref="ExplicitOptions"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? customerKeys, CancellationToken cancellationToken = default) 
+    /// <remarks><b>Note:</b> Explicit orchestrations bypass CDC (Change Data Capture) therefore access to <i>physically deleted</i> data is unreliable especially with respect to any child tables as there is no means to walk back up the join hierarchy.
+    /// Only a delete from the root table can be inferred by its current non-existence. Provide <paramref name="options"/> to control the underlying behavior.</remarks>
+    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? customerKeys, ExplicitOptions? options = null, CancellationToken cancellationToken = default) 
     {
         CheckAtLeastASingleKey(customerKeys);
 
         var cmd = Database.SqlFromResource("Resources.Generated.CustomerExecuteExplicit.sql")
             .Param("CustomerKeysList", CreateJsonForKeys(CustomerCdcMapper.DatabaseInfo, customerKeys));
 
-        return ExecuteExplicitAsync(cmd, cancellationToken);
+        return ExecuteExplicitAsync(cmd, options, cancellationToken);
     }
 
     /// <summary>

@@ -181,9 +181,12 @@ public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sideca
   {{#each CdcJoins}}
     /// <param name="{{camel Name}}Keys">The '{{pascal Name}}' database primary keys (as defined by <see cref="{{Model}}CdcMapper.DatabaseInfo"/>).</param>
   {{/each}}
+    /// <param name="options">The <see cref="ExplicitOptions"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns>The <see cref="EntityOrchestratorResult"/>.</returns>
-    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? {{camel Name}}Keys, {{#each CdcJoins}}IEnumerable<CompositeKey>? {{camel Name}}Keys = default, {{/each}}CancellationToken cancellationToken = default) 
+    /// <remarks><b>Note:</b> Explicit orchestrations bypass CDC (Change Data Capture) therefore access to <i>physically deleted</i> data is unreliable especially with respect to any child tables as there is no means to walk back up the join hierarchy.
+    /// Only a delete from the root table can be inferred by its current non-existence. Provide <paramref name="options"/> to control the underlying behavior.</remarks>
+    public Task<EntityOrchestratorResult> ExecuteExplicitAsync(IEnumerable<CompositeKey>? {{camel Name}}Keys, {{#each CdcJoins}}IEnumerable<CompositeKey>? {{camel Name}}Keys = default, {{/each}}ExplicitOptions? options = null, CancellationToken cancellationToken = default) 
     {
         CheckAtLeastASingleKey({{camel Name}}Keys{{#each CdcJoins}}, {{camel Name}}Keys{{/each}});
 
@@ -193,7 +196,7 @@ public partial class {{Model}}Orchestrator : Entity{{#if Root.UseSidecar}}Sideca
             .Param("{{Name}}KeysList", CreateJsonForKeys({{Model}}CdcMapper.DatabaseInfo, {{camel Name}}Keys)){{#if @last}};{{/if}}
   {{/each}}
 
-        return ExecuteExplicitAsync(cmd, cancellationToken);
+        return ExecuteExplicitAsync(cmd, options, cancellationToken);
     }
 
 {{/if}}

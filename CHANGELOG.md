@@ -10,6 +10,7 @@ Represents the **NuGet** versions.
   - The new [`EntitySidecarOrchestratorBase`](./src/NTangle/Cdc/EntitySidecarOrchestratorBase.cs) will invoke a single statement to leverage the CDC capabilities and perform the resulting data selection; see the [`ContactExecuteBatch.sql`](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteBatch.sql).
   - The required `NTangle` (and optional `Outbox`) schema(s), table(s) and stored procedures will be generated within the sidecar database.
   - Note that there are _no_ cross database dependencies; as such, the sidecar database can be hosted separately as required. The .NET orchestrator logic will need access to both databases to function.
+  - Additional `ExecuteExplicitAsync` method added to enable explicit primary keys to be passed bypassing CDC; useful for one-offs, or where triggering without CDC (i.e. Debezium, etc) to get the best of both worlds.
   - Support now for `net8.0`+ only; older .NET versions will need to use the existing implementation or upgrade.
 
 ## v2.6.1
