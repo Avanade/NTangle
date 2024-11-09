@@ -44,7 +44,10 @@ jobs:
       run: sleep 10
 
     - name: Set EnvVar for Test
-      run: echo "SqlServerDemo_ConnectionStrings__SqlDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo;User id=sa;Password=yourStrong(!)Password;TrustServerCertificate=true" >> $GITHUB_ENV
+      run: |
+          echo "SqlServerDemo_ConnectionStrings__SqlDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo;User id=sa;Password=yourStrong(!)Password;TrustServerCertificate=true" >> $GITHUB_ENV
+          echo "SqlServerSidecarDemo_ConnectionStrings__SqlDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo_Main;User id=sa;Password=yourStrong(!)Password;TrustServerCertificate=true" >> $GITHUB_ENV
+          echo "SqlServerSidecarDemo_ConnectionStrings__SidecarDb=Data Source=localhost, 1433;Initial Catalog=NTangleDemo_Sidecar;User id=sa;Password=yourStrong(!)Password;TrustServerCertificate=true" >> $GITHUB_ENV
 
     - name: Test
       run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./coverage/lcov.info --no-build --verbosity normal
