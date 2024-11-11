@@ -120,7 +120,7 @@ namespace NTangle.Test
         }
 
         [Test]
-        public async Task DbProject_DbEx()
+        public async Task DbProject_Console()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 Assert.Inconclusive("This test is *only* supported on the Windows platform; otherwise, the Process.Start results in the following error: A fatal error was encountered. The library 'libhostpolicy.so' required to execute the application was not found in '/home/runner/.dotnet'.");
@@ -132,7 +132,7 @@ namespace NTangle.Test
             // Make directory and create solution from/using template. 
             var dir = Path.Combine(_unitTestsDir.FullName, appName);
             Directory.CreateDirectory(dir);
-            Assert.Zero(ExecuteCommand("dotnet", $"new ntangle --dbproject dbex", dir).exitCode, "dotnet new ntangle");
+            Assert.Zero(ExecuteCommand("dotnet", $"new ntangle", dir).exitCode, "dotnet new ntangle");
 
             // Restore nuget packages from our repository.
             Assert.Zero(ExecuteCommand("dotnet", $"restore -s {_nugetDir.FullName}", dir).exitCode, "dotnet restore");
@@ -175,7 +175,8 @@ namespace NTangle.Test
             Assert.Zero(ExecuteCommand("dotnet", "run", Path.Combine(dir, $"{appName}.CodeGen")).exitCode, "dotnet run all [codegen]");
 
             // Database: Execute database deploy.
-            Assert.Zero(ExecuteCommand("dotnet", "run deploy", Path.Combine(dir, $"{appName}.Database")).exitCode, "dotnet run deploy [database]");
+            Assert.Zero(ExecuteCommand("dotnet", "run database --accept-prompts", Path.Combine(dir, $"{appName}.Database")).exitCode, "dotnet run database [source]");
+            Assert.Zero(ExecuteCommand("dotnet", "run dropanddatabase --accept-prompts", Path.Combine(dir, $"{appName}.SidecarDb")).exitCode, "dotnet run database [sidecar]");
 
             // Publisher : Execute publisher and check event sent.
             await ChangeSomeData(appName).ConfigureAwait(false);
@@ -191,44 +192,6 @@ namespace NTangle.Test
         }
 
         [Test]
-        public void DbProject_Dacpac()
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                Assert.Inconclusive("This test is *only* supported on the Windows platform; otherwise, the Process.Start results in the following error: A fatal error was encountered. The library 'libhostpolicy.so' required to execute the application was not found in '/home/runner/.dotnet'.");
-
-            OneTimeSetUp();
-
-            var appName = "TestDacpac";
-
-            // Make directory and create solution from/using template. 
-            var dir = Path.Combine(_unitTestsDir.FullName, appName);
-            Directory.CreateDirectory(dir);
-            Assert.Zero(ExecuteCommand("dotnet", $"new ntangle --dbproject dacpac", dir).exitCode, "dotnet new ntangle");
-
-            // Restore nuget packages from our repository.
-            Assert.Zero(ExecuteCommand("dotnet", $"restore -s {_nugetDir.FullName}", dir).exitCode, "dotnet restore");
-
-            // Get the database script.
-            var cfn = Path.Combine(_rootDir.FullName, "tools", "NTangle.Template", "create-database.sql");
-            if (!File.Exists(cfn))
-                Assert.Fail($"Unable to find database create script: {cfn}");
-
-            var nfn = Path.Combine(dir, "create-database.sql");
-            File.WriteAllText(nfn, File.ReadAllText(cfn).Replace("FooBar", appName));
-
-            Assert.Zero(ExecuteCommand("sqlcmd", $"/i\"{nfn}\"").exitCode, "sqlcmd create-database.sql");
-
-            // CodeGen: Execute code-generation.
-            Assert.Zero(ExecuteCommand("dotnet", "run", Path.Combine(dir, $"{appName}.CodeGen")).exitCode, "dotnet run all [codegen]");
-
-            // Publisher : Build successfully.
-            Assert.Zero(ExecuteCommand("dotnet", "build", Path.Combine(dir, $"{appName}.Publisher")).exitCode, "dotnet build [publisher]");
-
-            // Inconclusive from here on in I am afraid :-(
-            Assert.Inconclusive("Stopped after code-gen. The test does not build or publish the Database project. It also does not run the Publisher; only validates the build.");
-        }
-
-        [Test]
         public void DbProject_Function()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -241,7 +204,7 @@ namespace NTangle.Test
             // Make directory and create solution from/using template. 
             var dir = Path.Combine(_unitTestsDir.FullName, appName);
             Directory.CreateDirectory(dir);
-            Assert.Zero(ExecuteCommand("dotnet", $"new ntangle --dbproject dbex --publisher Function", dir).exitCode, "dotnet new ntangle");
+            Assert.Zero(ExecuteCommand("dotnet", $"new ntangle --publisher Function", dir).exitCode, "dotnet new ntangle");
 
             // Restore nuget packages from our repository.
             Assert.Zero(ExecuteCommand("dotnet", $"restore -s {_nugetDir.FullName}", dir).exitCode, "dotnet restore");

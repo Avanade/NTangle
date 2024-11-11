@@ -6,12 +6,12 @@ This documents the _nTangle_ [architecture](#Architecture) and corresponding [co
 
 ## Overview
 
-At its core _nTangle_ is a database-driven code-generation solution, in that it leverages an existing database to infer its underlying schema (tables and columns). A YAML (or JSON) configuration file is required to define the CDC requirements, being the root and child tables, and their relationships, representing the entity (aggregate root). The _nTangle_ code-gen tool connects to the database, and using the YAML configuration generates the required database (main and sidecar), and .NET publishing runtime artefacts. This publishing runtime then uses the database's CDC capabilities to detect changes to the underlying tables and trigger the creation of the related entity events that are then published.
+At its core _nTangle_ is a database-driven code-generation solution, in that it leverages an existing source database to infer its underlying schema (tables and columns). A YAML (or JSON) configuration file is required to define the CDC requirements, being the root and child tables, and their relationships, representing the entity (aggregate root). The _nTangle_ code-gen tool connects to the database, and using the YAML configuration generates the required database (source and sidecar), and .NET publishing runtime artefacts. This publishing runtime then uses the database's CDC capabilities to detect changes to the underlying tables and trigger the creation of the related entity events that are then published.
 
 ![Overview](../images/Overview.png "Overview")
 
 The core components are:
-- **Database** - the existing tables (main database), plus generated _nTangle_ runtime artefacts (including outbox) in separate sidecar database;
+- **Database** - the existing tables (source database), plus generated _nTangle_ runtime artefacts (including outbox) in separate sidecar database;
 - **Config** - the _nTangle_ code-gen configuration;
 - **Tooling** - the _nTangle_ code generator and resulting generated publisher .NET runtime;
 - **Events** - the resulting published entity event (depicted as a [CloudEvent](https://cloudevents.io/)).
@@ -44,9 +44,9 @@ Microsoft SQL Server provides two change tracking capabilities, namely CDC and [
 
 ## Sidecar database
 
-As of version `3.0.0` the preferred (recommended and default) approach is to use a sidecar database to manage the _nTangle_ runtime artefacts. This is to ensure that the main database is not polluted with the _nTangle_ specific artefacts, and to ensure that the _nTangle_ runtime can be easily removed without impacting the main database as required.
+As of version `3.0.0` the preferred (recommended and default) approach is to use a sidecar database to manage the _nTangle_ runtime artefacts. This is to ensure that the source database is not polluted with the _nTangle_ specific artefacts, and to ensure that the _nTangle_ runtime can be easily removed without impacting the source database as required.
 
-Primarily, usage of a sidecar database will also limit impact (load and data) on the main database by minimizing access to the CDC and related entity data selection only. Otherwise, the required orchestration will occur against the sidecar database.
+Primarily, usage of a sidecar database will also limit impact (load and data) on the source database by minimizing access to the CDC and related entity data selection only. Otherwise, the required orchestration will occur against the sidecar database.
 
 Note that there are _no_ cross database dependencies; as such, the sidecar database can be hosted separately, be on a different version, etc. as required. The .NET orchestrator logic _will_ however require access to both databases to function.
 
@@ -61,7 +61,7 @@ The following represents the high-level conceptual run-time architecture for a s
 </br>
 
 The SQL Server databases are as follows:
-- **Main** - the existing database schema (tables and columns) that is being monitored for changes (CDC).
+- **Source** - the existing database schema (tables and columns) that is being monitored for changes (CDC).
 - **Sidecar** - the generated _nTangle_ runtime artefacts (tables and stored procedures) that are used to orchestrate the CDC and event publishing.
 
 The key .NET components are as follows.
@@ -94,7 +94,7 @@ An orchestrator is generated per [entity](../src/NTangle/IEntity.cs) (the aggreg
 
 A batch check is performed against the sidecar database using the [`spXxxBatchExecute`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Schema/NTangle/Stored%20Procedures/Generated/spContactBatchExecute.sql) stored procedure to determine if there is already an incomplete Batch and attempt to reprocess; otherwise, determine current CDC position from last complete Batch to continue. The batch tracking is persisted in the [`XxxBatchTracking`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Migrations/20241024-233018-03-create-ntangle-contactbatchtracking-table.sql) table.
 
-The orchestrator will the select (detect) the changes as enabled by the SQL Server CDC capabilities in the main database. This is achieved by invoking the [`XxxExecuteBatch`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteBatch.sql) SQL statement and updating the corresponding result sets into the .NET entity equivalents. The following steps are performed.
+The orchestrator will the select (detect) the changes as enabled by the SQL Server CDC capabilities in the source database. This is achieved by invoking the [`XxxExecuteBatch`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteBatch.sql) SQL statement and updating the corresponding result sets into the .NET entity equivalents. The following steps are performed.
 
 Step | Description
 -|-
@@ -215,7 +215,7 @@ The hosting of the `XxxOrchestrator` to enable explicit execution is the respons
 
 ## Code-generation
 
-The [code-generator](../tools/NTangle.Template/content/AppName.CodeGen/Program.cs) will leverage the [ntangle.yaml](../tools/NTangle.Template/content/AppName.CodeGen/ntangle.yaml) configuration to generate the [Main database](#Main-database), [Sidecar database](#Sidecar-database), and [.NET](#net) artefacts.
+The [code-generator](../tools/NTangle.Template/content/AppName.CodeGen/Program.cs) will leverage the [ntangle.yaml](../tools/NTangle.Template/content/AppName.CodeGen/ntangle.yaml) configuration to generate the [source database](#Source-database), [Sidecar database](#Sidecar-database), and [.NET](#net) artefacts.
 
 Where `Xxx` is referenced in the artefact name this is replaced with the name of the entity (root aggregate). Also, the artefact name represents the default, there are opportunities within the `ntangle.yaml` to change the behavior of these where applicable.
 
@@ -223,7 +223,7 @@ Finally, features such as _event outbox_ and _identity mapping_ are configurable
 
 <br/>
 
-### Main database
+### Source database
 
 The `AppName.Database` project generated artefacts are as follows.
 
@@ -267,6 +267,6 @@ Data | [`XxxOrchestrator`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.
 Data | [`EventOutboxDequeue`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Data/Generated/EventOutboxDequeue.cs) | Event outbox dequeue.
 Data | [`EventOutboxEnqueue`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Data/Generated/EventOutboxEnqueue.cs) | Event outbox enqueue.
 Entities | [`XxxCdc`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Entities/Generated/ContactCdc.cs) | Entity (aggregate root) representation of database table(s) and relationships (per entity).
-Resources | [`XxxExecuteBatch.sql`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteBatch.sql) | TSQL statement (main database) to execute the batch using CDC (per entity).
-Resources | [`XxxExecuteExplicit.sql`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteExplicit.sql) | TSQL statement (main database) to execute explicitly without Batch and CDC (per entity).
+Resources | [`XxxExecuteBatch.sql`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteBatch.sql) | TSQL statement (source database) to execute the batch using CDC (per entity).
+Resources | [`XxxExecuteExplicit.sql`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteExplicit.sql) | TSQL statement (source database) to execute explicitly without Batch and CDC (per entity).
 Services | [`XxxHostedService`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Services/Generated/ContactHostedService.cs) | Timer-based host for the `XxxCdcOrchestrator`.

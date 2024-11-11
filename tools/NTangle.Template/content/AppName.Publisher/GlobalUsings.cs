@@ -2,6 +2,7 @@
 global using CoreEx.Azure.ServiceBus;
 global using CoreEx.Configuration;
 global using CoreEx.Database;
+global using CoreEx.Database.Mapping;
 global using CoreEx.Database.SqlServer;
 global using CoreEx.Database.SqlServer.Outbox;
 global using CoreEx.Entities;
@@ -20,6 +21,7 @@ global using Microsoft.Extensions.Logging;
 global using NTangle;
 global using NTangle.Cdc;
 global using NTangle.Data;
+global using NTangle.Data.SqlServer;
 global using NTangle.Events;
 global using NTangle.Services;
 global using System;

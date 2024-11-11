@@ -19,7 +19,7 @@ internal class Program
             services.AddSettings<SqlServerSidecarDemoSettings>()
                     .AddLogging(b => b.AddSimpleConsole())
                     .AddDatabase(sp => new SqlServerDatabase(() => new SqlConnection(sp.GetRequiredService<SqlServerSidecarDemoSettings>().DatabaseConnectionString)))
-                    .AddScoped<ISidecarDatabase>(sp => new SqlServerSidecarDatabase(() => new SqlConnection(sp.GetRequiredService<SqlServerSidecarDemoSettings>().SidecarDatabaseConnectionString)))
+                    .AddSidecarDatabase(sp => new SqlServerSidecarDatabase(() => new SqlConnection(sp.GetRequiredService<SqlServerSidecarDemoSettings>().SidecarDatabaseConnectionString)))
                     .AddStringIdentifierGenerator()
                     .AddExecutionContext()
                     .AddJsonSerializer();

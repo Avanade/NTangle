@@ -4,8 +4,8 @@ Represents the **NuGet** versions.
 
 ## v3.0.0
 - *Enhancement:* Major **"Sidecar"** feature added based on feedback from the community. 
-  - The existing implementation required all generated supporting database capabilities to be within the "main" database itself; a new option has been added to generate a separate "sidecar" database to manage. This minimizes the impact on the "main" database.
-  - The "main" database will still require the database CDC (change-data-capture) capabilities to be enabled.
+  - The existing implementation required all generated supporting database capabilities to be within the "source" database itself; a new option has been added to generate a separate "sidecar" database to manage. This minimizes the impact on the "source" database.
+  - The "source" database will still require the database CDC (change-data-capture) capabilities to be enabled.
   - The new [`EntitySidecarOrchestratorBase`](./src/NTangle/Cdc/EntitySidecarOrchestratorBase.cs) will invoke a single statement to leverage the CDC capabilities and perform the resulting data selection; see the [`ContactExecuteBatch.sql`](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Resources/Generated/ContactExecuteBatch.sql).
   - The required `NTangle` (and optional `Outbox`) schema(s), table(s) and stored procedures will be generated within the "sidecar" database.
   - Note that there are _no_ cross database dependencies; as such, the "sidecar" database can be hosted separately, be on a difference versions, etc. as required. The .NET orchestrator logic will _require_ access to both databases to function.
