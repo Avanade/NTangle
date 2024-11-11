@@ -102,10 +102,13 @@ Provides the _Path (Directory)_ configuration for the generated artefacts.
 Property | Description
 -|-
 `pathBase` | The base path (directory) prefix for the Database-related artefacts; other `Path*` properties append to this value when they are not specifically overridden.<br/>&dagger; Defaults to `AppName` (runtime parameter). For example `Avanade.Application`.
-`pathDatabase` | The path (directory) for the Schema Database-related artefacts.<br/>&dagger; Defaults to `PathBase` + `.Database` (literal). For example `Avanade.Application.Database`.
+`pathDatabase` | The root path (directory) for the Database-related artefacts.<br/>&dagger; Defaults to `PathBase` + `.Database` (literal). For example `Avanade.Application.Database`.
 `pathDatabaseSchema` | The path (directory) for the Schema Database-related artefacts.<br/>&dagger; Defaults to `PathDatabase` + `/Schema` (literal). For example `Avanade.Application.Database/Schema`.
 `pathDatabaseMigrations` | The path (directory) for the Schema Database-related artefacts.<br/>&dagger; Defaults to `PathDatabase` + `/Migrations` (literal). For example `Avanade.Application.Database/Migrations`.
 `pathDotNetPublisher` | The path (directory) for the CDC-related (.NET) artefacts.<br/>&dagger; Defaults to `PathBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.
+`pathSidecarDatabase` | The path (directory) for the Schema Database-related artefacts.<br/>&dagger; Defaults to `PathBase` + `.SidecarDb` (literal). For example `Avanade.Application.SidecarDb`.
+`pathSidecarDatabaseSchema` | The path (directory) for the Schema Database-related artefacts.<br/>&dagger; Defaults to `PathSidecarDatabase` + `/Schema` (literal). For example `Avanade.Application.SidecarDb/Schema`.
+`pathSidecarDatabaseMigrations` | The path (directory) for the Schema Database-related artefacts.<br/>&dagger; Defaults to `PathSidecarDatabase` + `/Migrations` (literal). For example `Avanade.Application.SidecarDb/Migrations`.
 
 <br/>
 
