@@ -65,10 +65,10 @@ The SQL Server databases are as follows:
 - **Sidecar** - the generated _nTangle_ runtime artefacts (tables and stored procedures) that are used to orchestrate the CDC and event publishing.
 
 The key .NET components are as follows.
-- [**Orchestrator**](#Orchestrator) - one per entity (aggregate root) change tracking and event publisher orchestrator (execution phases depicted).
-- [**Hosted service**](#Hosted-service) - one per entity (aggregate root) timer-based hosted service responsible for executing the orchestrator (optional).
-- [**Outbox dequeue publisher**](#Outbox-dequeue-publisher) - event outbox dequeue and publishing (execution phases depicted).
-- [**Outbox dequeue hosted service**](#Outbox-dequeue-hosted-service) - timer-based hosted service responsible for executing the outbox dequeue publisher.
+- [Orchestrator](#Orchestrator) - one per entity (aggregate root) change tracking and event publisher orchestrator (execution phases depicted).
+- [Hosted service](#Hosted-service) - one per entity (aggregate root) timer-based hosted service responsible for executing the orchestrator (optional).
+- [Outbox dequeue publisher](#Outbox-dequeue-publisher) - event outbox dequeue and publishing (execution phases depicted).
+- [Outbox dequeue hosted service](#Outbox-dequeue-hosted-service) - timer-based hosted service responsible for executing the outbox dequeue publisher.
 
 <br/>
 
@@ -205,9 +205,9 @@ The [`EventOutboxHostedService`](https://github.com/Avanade/CoreEx/blob/main/src
 In addition to the primary sidecar behavior, the [`XxxOrchestrator`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Data/Generated/ContactOrchestrator.cs) can be explicitly executed (`ExecuteExplicitAsync`) for a specified set of primary keys bypassing CDC and batch tracking. 
 
 This is useful for scenarios:
-a) Where a specific set of records need to be reprocessed or where the CDC data has been lost;
-b) As a one-off operation to perform an initial load of data to be published;
-c) Alternate triggering where _nTangle_ CDC is not permissable (i.e. using Debezium, etc) to get the best of both worlds, being an external trigger and leveraging the entity-based publishing.
+- Where a specific set of records need to be reprocessed or where the CDC data has been lost;
+- As a one-off operation to perform an initial load of data to be published;
+- Alternate triggering where _nTangle_ CDC is not permissable (i.e. using Debezium, etc) to get the best of both worlds, being an external trigger and leveraging the entity-based publishing.
 
 The hosting of the `XxxOrchestrator` to enable explicit execution is the responsibility of the developer; i.e. nothing is generated to support. 
 
