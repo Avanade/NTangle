@@ -7,4 +7,5 @@ CREATE TABLE [NTangle].[CustomerBatchTracking] (
   [HasDataLoss] BIT NOT NULL,
   [CustomerMinLsn] BINARY(10) NULL,  -- Primary table: '[Legacy].[Cust]'
   [CustomerMaxLsn] BINARY(10) NULL,
+  INDEX [IX_NTangle_CustomerBatchTracking] ([IsComplete], [BatchTrackingId] DESC)
 );

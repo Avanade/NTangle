@@ -8,5 +8,6 @@ CREATE TABLE [NTangle].[ContactBatchTracking] (
   [ContactMinLsn] BINARY(10) NULL,  -- Primary table: '[Legacy].[Contact]'
   [ContactMaxLsn] BINARY(10) NULL,
   [AddressMinLsn] BINARY(10) NULL,  -- Related table: '[Legacy].[Address]'
-  [AddressMaxLsn] BINARY(10) NULL
+  [AddressMaxLsn] BINARY(10) NULL,
+  INDEX [IX_NTangle_ContactBatchTracking] ([IsComplete], [BatchTrackingId] DESC)
 );

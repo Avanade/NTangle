@@ -16,6 +16,7 @@ CREATE TABLE [{{CdcSchema}}].[{{BatchTrackingTable}}] (
   [{{pascal Name}}MaxLsn] BINARY(10) NULL,
 {{#each CdcJoins}}
   [{{pascal Name}}MinLsn] BINARY(10) NULL,  -- Related table: '[{{Schema}}].[{{Table}}]'
-  [{{pascal Name}}MaxLsn] BINARY(10) NULL{{#unless @last}},{{/unless}}
+  [{{pascal Name}}MaxLsn] BINARY(10) NULL,
 {{/each}}
+  INDEX [IX_{{CdcSchema}}_{{BatchTrackingTable}}] ([IsComplete], [BatchTrackingId] DESC)
 );

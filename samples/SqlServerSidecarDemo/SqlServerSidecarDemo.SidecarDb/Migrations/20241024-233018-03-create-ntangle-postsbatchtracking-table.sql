@@ -12,5 +12,6 @@ CREATE TABLE [NTangle].[PostsBatchTracking] (
   [CommentsTagsMinLsn] BINARY(10) NULL,  -- Related table: '[Legacy].[Tags]'
   [CommentsTagsMaxLsn] BINARY(10) NULL,
   [PostsTagsMinLsn] BINARY(10) NULL,  -- Related table: '[Legacy].[Tags]'
-  [PostsTagsMaxLsn] BINARY(10) NULL
+  [PostsTagsMaxLsn] BINARY(10) NULL,
+  INDEX [IX_NTangle_PostsBatchTracking] ([IsComplete], [BatchTrackingId] DESC)
 );
