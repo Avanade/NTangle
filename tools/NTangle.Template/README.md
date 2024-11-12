@@ -139,19 +139,11 @@ Contact             // Root (aggregate)
   └── AddressType   // Child 1:1 - One-to-one address type (reference data)
 ```
 
-_Tip:_ Where attempting for a subsequent time and the database already exists use the following to drop prior to recreating a fresh version.
-
-```
-USE master
-ALTER DATABASE [FooBar] SET SINGLE_USER WITH ROLLBACK IMMEDIATE
-DROP DATABASE [FooBar]
-```
-
 <br/>
 
 ### Create solution
 
-To start, create a new `FooBar` directory, change to that directory, and then create the solution using the _NTangle_ template. For the purposes of this demo that database artefacts will be managed by _DbEx_. Once created, open the solution in Visual Studio.
+To start, create a new `FooBar` directory, change to that directory, and then create the solution using the _NTangle_ template. For the purposes of this demo the default console-based publisher will be used. Once created, open the solution in Visual Studio.
 
 ```
 mkdir FooBar
@@ -332,7 +324,6 @@ As _DbEx_ is being used, the generated artefacts are included in the project aut
   └── yyyymmdd-hhmmss-04-create-outbox-eventoutbox-schema.sql
   └── yyyymmdd-hhmmss-05-create-outbox-eventoutbox-table.sql
   └── yyyymmdd-hhmmss-06-create-outbox-eventoutboxdata-table.sql
-  └── CdcEnable.post.deploy.sql
 └── Schema
   └── NTangle
     └── Stored Procedures
@@ -438,7 +429,7 @@ The `Program.cs` is pre-configured, and the `appsettings.json` has the default c
 
 For the purposes of demonstration the `EventOutboxHostedService` has been configured to use the `LoggerEventSender`; this would need to be changed to use an appropriate `IEventSender` to send the events to an actual messaging system, e.g. Azure [`ServiceBusSender`](https://github.com/Avanade/CoreEx/blob/main/src/CoreEx.Messaging.Azure/ServiceBus/ServiceBusSender.cs).
 
-Within your favorite database tool make a change to `[Legacy].[Contact]` table, updating the `Name` column in the first row. Within the next 5-10 seconds similar console output to the following should be displayed.
+Within your favorite database tool make a change to `[Legacy].[Contact]` table, updating the `Name` column in the first row. Within the next 5-10 seconds a similar console output to the following should be displayed.
 
 ```
 info: FooBar.Publisher.Data.ContactOrchestrator[0]
