@@ -2,6 +2,11 @@
 
 This is the .NET template used to accelerate the creation of an _nTangle_ solution and all projects using `dotnet new`. This leverages the .NET Core [templating](https://docs.microsoft.com/en-au/dotnet/core/tools/custom-templates) functionality.
 
+This article covers the following:
+- [Installation](#Installation) - how to install the template.
+- [Create solution](#Create-solution) - how to create the solution.
+- [Demonstration](#Demonstration) - demonstates (walks-through) end-to-end creation and execution.
+
 <br/>
 
 ## Installation
@@ -48,10 +53,10 @@ The following solution and projects will be created within the root `AppName` fo
 
 ```
 └── AppName
-  └── AppName.CodeGen     # Database and code generation console
-  └── AppName.Database    # Source database project
+  └── AppName.CodeGen     # Code generation console (tooling)
+  └── AppName.Database    # Source database console (tooling)
   └── AppName.Publisher   # Runtime orchestration and event publishing console
-  └── AppName.SidecarDb   # Sidecar database project
+  └── AppName.SidecarDb   # Sidecar database console (tooling)
   └── AppName.sln         # Solution file that references all above projects
 ```
 
@@ -61,10 +66,10 @@ The solution and projects created contain all the requisite .NET Classes and NuG
 
 The templated structure represents the bare minimum needed to start. Generally, the following projects are maintained in the sequence as follows.
 
-- [`AppName.Database`](#AppName.Database)
-- [`AppName.CodeGen`](#AppName.CodeGen)
-- [`AppName.SidecarDb`](#AppName.SidecarDb)
-- [`AppName.Publisher`](#AppName.Publisher)
+- [`AppName.Database`](#AppNameDatabase)
+- [`AppName.CodeGen`](#AppNameCodeGen)
+- [`AppName.SidecarDb`](#AppNameSidecarDb)
+- [`AppName.Publisher`](#AppNamePublisher)
 
 <br/>
 
@@ -102,7 +107,7 @@ A console application is generated with a reference to _DbEx_ (please review thi
 
 The _sidecar_ connection string defaulted within the [`Program.cs`](./content/AppName.CodeGen/Program.cs) needs to be validated and adjusted to that required for development purposes. 
 
-The required artefacts are generally added to this project using the earlier code-generator (see [`AppName.CodeGen`](#AppName.CodeGen)).
+The required artefacts are generally added to this project using the earlier code-generator (see [`AppName.CodeGen`](#AppNameCodeGen)).
 
 To execute the database migration use `dotnet run all`, or execute the `AppName.Database.exe all` directly.
 
