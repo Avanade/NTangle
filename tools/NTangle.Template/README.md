@@ -7,6 +7,8 @@ This article covers the following:
 - [Create solution](#Create-solution) - how to create the solution.
 - [Demonstration](#Demonstration) - demonstates (walks-through) end-to-end creation and execution.
 
+_Note:_ the [SQL Server Agent service](https://learn.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service) must be running for CDC to function correctly.
+
 <br/>
 
 ## Installation

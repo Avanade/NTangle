@@ -22,7 +22,9 @@ The core components are:
 
 This official [documentation](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server) describes the Microsoft SQL Server CDC-capabilities.
 
-In addition, this [article](https://www.mssqltips.com/sqlservertip/5212/sql-server-temporal-tables-vs-change-data-capture-vs-change-tracking--part-2/) provides an excellent overview of the Microsoft SQL Server CDC-capabilities and walks through the process of setting up and using to aid in the fundamental understanding of this _key_ dependent capability.
+In addition, this [article](https://www.mssqltips.com/sqlservertip/5212/sql-server-temporal-tables-vs-change-data-capture-vs-change-tracking--part-2/) provides an excellent overview of the Microsoft SQL Server CDC-capabilities and walks through the process of setting up and using to aid in the fundamental understanding of this _key_ dependent capability. 
+
+_Note:_ the [SQL Server Agent service](https://learn.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service) must be running for CDC to function correctly.
 
 <br/>
 
