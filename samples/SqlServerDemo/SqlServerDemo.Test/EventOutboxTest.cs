@@ -3,6 +3,7 @@ using CoreEx.Events;
 using CoreEx.Json;
 using NTangle.Test;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SqlServerDemo.Publisher.Data;
 using System;
 using System.Threading;
@@ -46,31 +47,31 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, null);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.BatchTracker);
-            Assert.IsTrue(cdcr.BatchTracker.IsComplete);
-            Assert.IsNotNull(cdcr.BatchTracker.CompletedDate);
-            Assert.IsNotNull(cdcr.BatchTracker.CorrelationId);
-            Assert.IsFalse(cdcr.BatchTracker.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
 
             // Now execute OutboxDequeuePublisher to get the event using different partition key.
             var ims = new InMemorySender();
             var eod = new EventOutboxDequeue(db, ims, UnitTest.GetLogger<EventOutboxDequeue>());
             await eod.DequeueAndSendAsync(10, "Bananas", null, CancellationToken.None).ConfigureAwait(false);
 
-            Assert.AreEqual(0, ims.GetEvents().Length);
+            ClassicAssert.AreEqual(0, ims.GetEvents().Length);
 
             // Now execute OutboxDequeuePublisher to get the event using correct partition key.
             await eod.DequeueAndSendAsync(10, "Contact", null, CancellationToken.None).ConfigureAwait(false);
 
             var events = ims.GetEvents();
-            Assert.AreEqual(1, events.Length);
+            ClassicAssert.AreEqual(1, events.Length);
             UnitTest.AssertEvent("EventOutboxTest-OutboxDequeuePublisher.txt", events[0], "data.globalId", "data.globalAlternateContactId", "data.address.globalId", "data.address.globalAlternateAddressId");
 
             // Make sure there are no events left to dequeue.
-            Assert.AreEqual(0, await db.SqlStatement("SELECT COUNT(*) FROM [Outbox].[EventOutbox] WHERE [DequeuedDate] IS NULL").ScalarAsync<int>().ConfigureAwait(false));
+            ClassicAssert.AreEqual(0, await db.SqlStatement("SELECT COUNT(*) FROM [Outbox].[EventOutbox] WHERE [DequeuedDate] IS NULL").ScalarAsync<int>().ConfigureAwait(false));
         }
     }
 }

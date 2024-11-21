@@ -1,14 +1,11 @@
 ﻿using CoreEx.Entities;
 using CoreEx.Events;
 using CoreEx.Json;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using NTangle;
 using NTangle.Test;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SqlServerSidecarDemo.Publisher.Data;
 using SqlServerSidecarDemo.Publisher.Entities;
-using System;
-using System.Threading.Tasks;
 
 namespace SqlServerSidecarDemo.Test
 {
@@ -67,26 +64,26 @@ namespace SqlServerSidecarDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.BatchTracker);
-            Assert.IsTrue(cdcr.BatchTracker!.IsComplete);
-            Assert.IsNotNull(cdcr.BatchTracker.CompletedDate);
-            Assert.IsNotNull(cdcr.BatchTracker.CorrelationId);
-            Assert.IsFalse(cdcr.BatchTracker.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker!.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
 
             var events = imp.GetEvents();
-            Assert.AreEqual(1, events.Length);
+            ClassicAssert.AreEqual(1, events.Length);
 
             UnitTest.AssertEvent("ContactTest-GenerateAllIdentifiers.txt", events[0], "value.globalId", "value.globalAlternateContactId", "value.address.globalId", "value.address.globalAlternateAddressId");
 
             // Check the event identifiers.
             var c = UnitTest.GetEventData<ContactCdc>(events[0]);
-            Assert.NotNull(c.GlobalId);
-            Assert.NotNull(c.GlobalAlternateContactId);
-            Assert.NotNull(c.Address?.GlobalId);
-            Assert.NotNull(c.Address?.GlobalAlternateAddressId);
+            ClassicAssert.NotNull(c.GlobalId);
+            ClassicAssert.NotNull(c.GlobalAlternateContactId);
+            ClassicAssert.NotNull(c.Address?.GlobalId);
+            ClassicAssert.NotNull(c.Address?.GlobalAlternateAddressId);
 
             // Update contact 1 again.
             script = "UPDATE [Legacy].[Address] SET [Street1] = '1st' WHERE [AddressId] = 11" + Environment.NewLine;
@@ -99,26 +96,26 @@ namespace SqlServerSidecarDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.BatchTracker);
-            Assert.IsTrue(cdcr.BatchTracker!.IsComplete);
-            Assert.IsNotNull(cdcr.BatchTracker.CompletedDate);
-            Assert.IsNotNull(cdcr.BatchTracker.CorrelationId);
-            Assert.IsFalse(cdcr.BatchTracker.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker!.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
             events = imp.GetEvents();
-            Assert.AreEqual(1, events.Length);
+            ClassicAssert.AreEqual(1, events.Length);
 
             // Check the event identifiers.
             var c2 = UnitTest.GetEventData<ContactCdc>(events[0]);
-            Assert.AreEqual(c.GlobalId, c2.GlobalId);
-            Assert.AreEqual(c.GlobalAlternateContactId, c2.GlobalAlternateContactId);
-            Assert.AreEqual(c.Address?.GlobalId, c2.Address?.GlobalId);
-            Assert.AreEqual(c.Address?.GlobalAlternateAddressId, c2.Address?.GlobalAlternateAddressId);
+            ClassicAssert.AreEqual(c.GlobalId, c2.GlobalId);
+            ClassicAssert.AreEqual(c.GlobalAlternateContactId, c2.GlobalAlternateContactId);
+            ClassicAssert.AreEqual(c.Address?.GlobalId, c2.Address?.GlobalId);
+            ClassicAssert.AreEqual(c.Address?.GlobalAlternateAddressId, c2.Address?.GlobalAlternateAddressId);
         }
 
         [Test]
@@ -149,29 +146,29 @@ namespace SqlServerSidecarDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.BatchTracker);
-            Assert.IsTrue(cdcr.BatchTracker!.IsComplete);
-            Assert.IsNotNull(cdcr.BatchTracker.CompletedDate);
-            Assert.IsNotNull(cdcr.BatchTracker.CorrelationId);
-            Assert.IsFalse(cdcr.BatchTracker.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker!.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
 
             var events = imp.GetEvents();
-            Assert.AreEqual(1, events.Length);
+            ClassicAssert.AreEqual(1, events.Length);
 
             UnitTest.AssertEvent("ContactTest-UsePreassignedIdentifiers.txt", events[0], "value.globalId", "value.globalAlternateContactId", "value.address.globalId", "value.address.globalAlternateAddressId");
 
             // Check the event identifiers.
             var c = UnitTest.GetEventData<ContactCdc>(events[0]);
-            Assert.AreEqual("C1", c.GlobalId);
-            Assert.NotNull(c.GlobalAlternateContactId);
-            Assert.NotNull(c.Address?.GlobalId);
-            Assert.AreEqual("C88", c.Address?.GlobalAlternateAddressId);
+            ClassicAssert.AreEqual("C1", c.GlobalId);
+            ClassicAssert.NotNull(c.GlobalAlternateContactId);
+            ClassicAssert.NotNull(c.Address?.GlobalId);
+            ClassicAssert.AreEqual("C88", c.Address?.GlobalAlternateAddressId);
         }
 
         [Test]
@@ -187,13 +184,13 @@ namespace SqlServerSidecarDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNull(cdcr.BatchTracker);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNull(cdcr.BatchTracker);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
         }
 
         [Test]
@@ -209,13 +206,13 @@ namespace SqlServerSidecarDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNull(cdcr.BatchTracker);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNull(cdcr.BatchTracker);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
         }
     }
 }

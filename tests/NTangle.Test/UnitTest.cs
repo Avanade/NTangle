@@ -11,6 +11,7 @@ using Stj = System.Text.Json;
 using System.Threading.Tasks;
 using Con = System.Console;
 using CoreEx.Configuration;
+using NUnit.Framework.Legacy;
 
 namespace NTangle.Test
 {
@@ -113,7 +114,7 @@ namespace NTangle.Test
             JsonSerializer.Default.TryApplyFilter(actual, new string[] { "id", "timestamp", "correlationid", "etag", "key", "value.etag" }.Concat(exclude), out string json, JsonPropertyFilter.Exclude);
             var je = (Stj.JsonElement)JsonSerializer.Default.Deserialize(json);
             var exp = File.ReadAllText(Path.Combine("Expected", expected));
-            Assert.AreEqual(exp, JsonSerializer.Default.Serialize(je, JsonWriteFormat.Indented));
+            ClassicAssert.AreEqual(exp, JsonSerializer.Default.Serialize(je, JsonWriteFormat.Indented));
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace NTangle.Test
             var jn = Stj.Nodes.JsonNode.Parse(actual.Data);
             CoreEx.Text.Json.JsonFilterer.Apply(jn, new string[] { "id", "time", "correlationid", "etag", "key", "data.etag" }.Concat(exclude), JsonPropertyFilter.Exclude);
             var exp = File.ReadAllText(Path.Combine("Expected", expected));
-            Assert.AreEqual(exp, jn.ToJsonString(new Stj.JsonSerializerOptions { WriteIndented = true }));
+            ClassicAssert.AreEqual(exp, jn.ToJsonString(new Stj.JsonSerializerOptions { WriteIndented = true }));
         }
 
         /// <summary>
@@ -150,11 +151,11 @@ namespace NTangle.Test
             var cdcr = await eo.ExecuteAsync().ConfigureAwait(false);
             WriteResult(cdcr, imp);
 
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNull(cdcr.BatchTracker);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(0, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNull(cdcr.BatchTracker);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(0, imp.GetEvents().Length);
 
             return cdcr;
         }

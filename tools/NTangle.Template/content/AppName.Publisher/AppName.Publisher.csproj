@@ -8,9 +8,6 @@
     <!--#endif -->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NTangle" Version="3.0.0" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -30,7 +27,8 @@
     <EmbeddedResource Include="Resources\**\*" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CoreEx.Azure" Version="3.28.0" />
+    <PackageReference Include="NTangle" Version="3.0.0" />
+    <PackageReference Include="CoreEx.Azure" Version="3.30.0" />
     <!--#if (implement_publisher_console) -->
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <!--#endif -->
