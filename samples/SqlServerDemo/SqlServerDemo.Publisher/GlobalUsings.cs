@@ -2,6 +2,7 @@
 global using CoreEx.Azure.ServiceBus;
 global using CoreEx.Configuration;
 global using CoreEx.Database;
+global using CoreEx.Database.Mapping;
 global using CoreEx.Database.SqlServer;
 global using CoreEx.Database.SqlServer.Outbox;
 global using CoreEx.Entities;

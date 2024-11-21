@@ -16,6 +16,9 @@ namespace NTangle.CodeGen
     /// </summary>
     public class CodeGenConsole : OnRamp.Console.CodeGenConsole
     {
+        private DeploymentOption _deploymentOption = DeploymentOption.DbEx;
+        private bool _useSidecar = true;
+
         /// <summary>
         /// Gets the default configuration file name (see <see cref="ICodeGeneratorArgs.ConfigFileName"/>).
         /// </summary>
@@ -78,14 +81,38 @@ namespace NTangle.CodeGen
         }
 
         /// <summary>
-        /// Uses (overrides) the <see cref="UseScript(string)">script</see> according to the <paramref name="deploymentOption"/>.
+        /// Uses the specified <paramref name="deploymentOption"/>.
         /// </summary>
         /// <param name="deploymentOption">The <see cref="DeploymentOption"/> option.</param>
         /// <returns>The current instance to support fluent-style method-chaining.</returns>
-        /// <remarks>Defaults to <see cref="DeploymentOption.DbEx"/>.</remarks>
+        /// <remarks>Defaults to <see cref="DeploymentOption.DbEx"/>.
+        /// <para>This is only used where the <see cref="CodeGeneratorArgsBase.ScriptFileName"/> has not been specified.</para></remarks>
         public CodeGenConsole UseDeploymentOption(DeploymentOption deploymentOption)
         {
-            UseScript($"SqlServer{deploymentOption}.yaml");
+            _deploymentOption = deploymentOption;
+            return this;
+        }
+
+        /// <summary>
+        /// Uses a sidecar-database versus the primary (source) database.
+        /// </summary>
+        /// <returns>The current instance to support fluent-style method-chaining.</returns>
+        /// <remarks>This is the default.
+        /// <para>This is only used where the <see cref="CodeGeneratorArgsBase.ScriptFileName"/> has not been specified.</para></remarks>
+        public CodeGenConsole UseSidecarDatabase()
+        {
+            _useSidecar = true;
+            return this;
+        }
+
+        /// <summary>
+        /// Uses the primary (source) database versus a sidecar-database.
+        /// </summary>
+        /// <remarks>Defaults to <see cref="UseSidecarDatabase"/>.</remarks>
+        /// <returns>The current instance to support fluent-style method-chaining.</returns>
+        public CodeGenConsole UseSourceDatabase()
+        {
+            _useSidecar = false;
             return this;
         }
 
@@ -94,6 +121,12 @@ namespace NTangle.CodeGen
         {
             if (string.IsNullOrEmpty(Args.GetAppName()))
                 Args.SetAppName(Args.OutputDirectory?.Name ?? "APP-NAME-UNKNOWN");
+
+            if (string.IsNullOrEmpty(Args.ScriptFileName))
+                Args.ScriptFileName = $"SqlServer{_deploymentOption}{(_useSidecar ? "Sidecar" : "")}.yaml";
+
+            var args = (ICodeGeneratorArgs)Args;
+            args.AddParameter("UseSidecar", _useSidecar);
 
             return base.OnValidation(context);
         }

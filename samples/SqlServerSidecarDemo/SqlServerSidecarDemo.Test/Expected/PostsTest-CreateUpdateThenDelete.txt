@@ -1,0 +1,9 @@
+{
+  "value": {
+    "postsId": 404
+  },
+  "subject": "legacy.post.404",
+  "action": "deleted",
+  "type": "legacy.post",
+  "source": "/database/cdc/legacy/posts"
+}

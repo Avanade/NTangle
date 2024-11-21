@@ -7,9 +7,14 @@
 public class DomainNameSettings(IConfiguration configuration) : SettingsBase(configuration, "DomainName")
 {
     /// <summary>
-    /// Gets the SQL Server database connection string.
+    /// Gets the "source" SQL Server database connection string.
     /// </summary>
-    public string DatabaseConnectionString => GetRequiredValue<string>("ConnectionStrings__SqlDb");
+    public string SourceDbConnectionString => GetRequiredValue<string>("ConnectionStrings__SourceDb");
+
+    /// <summary>
+    /// Gets the "sidecar" SQL Server database connection string.
+    /// </summary>
+    public string SidecarDbConnectionString => GetRequiredValue<string>("ConnectionStrings__SidecarDb");
 
     /// <summary>
     /// Gets the Azure Service Bus connection string.

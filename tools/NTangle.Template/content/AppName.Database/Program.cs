@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace AppName.Database;
 
 /// <summary>
-/// <see href="https://github.com/Avanade/DbEx">DbEx</see>-based database deployment migration console program.
+/// <see href="https://github.com/Avanade/DbEx">DbEx</see>-based "source" database deployment migration console program.
 /// </summary>
 public class Program
 {

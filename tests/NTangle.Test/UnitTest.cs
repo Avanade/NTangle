@@ -11,6 +11,7 @@ using Stj = System.Text.Json;
 using System.Threading.Tasks;
 using Con = System.Console;
 using CoreEx.Configuration;
+using NUnit.Framework.Legacy;
 
 namespace NTangle.Test
 {
@@ -67,18 +68,18 @@ namespace NTangle.Test
             if (result.Exception != null)
                 Con.Out.WriteLine($"Exception: {result.Exception.Message}");
 
-            if (result.Batch == null)
+            if (result.BatchTracker == null)
                 Con.Out.WriteLine("Batch = null");
             else
             {
                 Con.Out.WriteLine(string.Empty);
                 Con.Out.WriteLine("Batch:");
-                Con.Out.WriteLine($" Id={result.Batch.Id}");
-                Con.Out.WriteLine($" IsComplete = {result.Batch.IsComplete}");
-                Con.Out.WriteLine($" CreatedDate = {result.Batch.CreatedDate}");
-                Con.Out.WriteLine($" CompletedDate = {result.Batch.CompletedDate?.ToString() ?? "null"}");
-                Con.Out.WriteLine($" HasDataLoss = {result.Batch.HasDataLoss}");
-                Con.Out.WriteLine($" CorrelationId = {result.Batch.CorrelationId}");
+                Con.Out.WriteLine($" Id={result.BatchTracker.Id}");
+                Con.Out.WriteLine($" IsComplete = {result.BatchTracker.IsComplete}");
+                Con.Out.WriteLine($" CreatedDate = {result.BatchTracker.CreatedDate}");
+                Con.Out.WriteLine($" CompletedDate = {result.BatchTracker.CompletedDate?.ToString() ?? "null"}");
+                Con.Out.WriteLine($" HasDataLoss = {result.BatchTracker.HasDataLoss}");
+                Con.Out.WriteLine($" CorrelationId = {result.BatchTracker.CorrelationId}");
             }
 
             if (imp == null)
@@ -113,7 +114,7 @@ namespace NTangle.Test
             JsonSerializer.Default.TryApplyFilter(actual, new string[] { "id", "timestamp", "correlationid", "etag", "key", "value.etag" }.Concat(exclude), out string json, JsonPropertyFilter.Exclude);
             var je = (Stj.JsonElement)JsonSerializer.Default.Deserialize(json);
             var exp = File.ReadAllText(Path.Combine("Expected", expected));
-            Assert.AreEqual(exp, JsonSerializer.Default.Serialize(je, JsonWriteFormat.Indented));
+            ClassicAssert.AreEqual(exp, JsonSerializer.Default.Serialize(je, JsonWriteFormat.Indented));
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace NTangle.Test
             var jn = Stj.Nodes.JsonNode.Parse(actual.Data);
             CoreEx.Text.Json.JsonFilterer.Apply(jn, new string[] { "id", "time", "correlationid", "etag", "key", "data.etag" }.Concat(exclude), JsonPropertyFilter.Exclude);
             var exp = File.ReadAllText(Path.Combine("Expected", expected));
-            Assert.AreEqual(exp, jn.ToJsonString(new Stj.JsonSerializerOptions { WriteIndented = true }));
+            ClassicAssert.AreEqual(exp, jn.ToJsonString(new Stj.JsonSerializerOptions { WriteIndented = true }));
         }
 
         /// <summary>
@@ -150,11 +151,11 @@ namespace NTangle.Test
             var cdcr = await eo.ExecuteAsync().ConfigureAwait(false);
             WriteResult(cdcr, imp);
 
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNull(cdcr.Batch);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(0, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNull(cdcr.BatchTracker);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(0, imp.GetEvents().Length);
 
             return cdcr;
         }

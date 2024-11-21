@@ -3,6 +3,7 @@ using CoreEx.Events;
 using CoreEx.Json;
 using NTangle.Test;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SqlServerDemo.Publisher.Data;
 using System;
 using System.Threading.Tasks;
@@ -67,13 +68,13 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsFalse(cdcr.IsSuccessful);
-            Assert.IsNull(cdcr.Batch);
-            Assert.NotNull(cdcr.Exception);
-            Assert.IsInstanceOf<BusinessException>(cdcr.Exception);
-            Assert.AreEqual("There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.", cdcr.Exception.Message);
-            Assert.IsNull(cdcr.ExecuteStatus);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsFalse(cdcr.IsSuccessful);
+            ClassicAssert.IsNull(cdcr.BatchTracker);
+            ClassicAssert.NotNull(cdcr.Exception);
+            ClassicAssert.IsInstanceOf<DataConsistencyException>(cdcr.Exception);
+            ClassicAssert.AreEqual("There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.", cdcr.Exception.Message);
+            ClassicAssert.IsNull(cdcr.ExecuteStatus);
         }
 
         [Test]
@@ -86,9 +87,9 @@ namespace SqlServerDemo.Test
             var cdc = new PostOrchestrator(db, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger);
             var cdcr = await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
 
-            Assert.AreEqual(0, cdcr.ExecuteStatus?.InitialCount);
-            Assert.IsNull(cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.IsNull(cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.AreEqual(0, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.IsNull(cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.IsNull(cdcr.ExecuteStatus?.PublishCount);
         }
 
         [Test]
@@ -115,20 +116,20 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(3, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(3, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(3, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(3, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(3, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(3, cdcr.ExecuteStatus?.PublishCount);
 
             var events = imp.GetEvents();
-            Assert.AreEqual(3, events.Length);
+            ClassicAssert.AreEqual(3, events.Length);
 
             UnitTest.AssertEvent("PostsTest-MultipleChanges-1.txt", events[0]);
             UnitTest.AssertEvent("PostsTest-MultipleChanges-2.txt", events[1]);
@@ -159,20 +160,20 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
 
             var events = imp.GetEvents();
-            Assert.AreEqual(1, events.Length);
+            ClassicAssert.AreEqual(1, events.Length);
 
             UnitTest.AssertEvent("PostsTest-UpdateThenDelete.txt", events[0]);
 
@@ -203,21 +204,21 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.AreEqual(1, imp.GetEvents().Length);
 
             var events = imp.GetEvents();
-            Assert.AreEqual(1, events.Length);
+            ClassicAssert.AreEqual(1, events.Length);
 
             UnitTest.AssertEvent("PostsTest-CreateUpdateThenDelete.txt", events[0]);
 
@@ -248,18 +249,18 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(0, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(0, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(0, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.AreEqual(0, imp.GetEvents().Length);
 
             // Now get the delete that we previously identified as an upcoming delete.
             imp = new InMemoryPublisher(logger);
@@ -268,21 +269,21 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.AreEqual(1, imp.GetEvents().Length);
 
             var events = imp.GetEvents();
-            Assert.AreEqual(1, events.Length);
+            ClassicAssert.AreEqual(1, events.Length);
 
             UnitTest.AssertEvent("PostsTest-CreateUpdateThenDelete.txt", events[0]);
 
@@ -310,18 +311,18 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.AreEqual(1, imp.GetEvents().Length);
 
             // Replay the database changes; i.e. change and then change back to original.
             script =
@@ -337,18 +338,18 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(0, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(2, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(0, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.AreEqual(0, imp.GetEvents().Length);
 
             // Ensure procesed correctly, execute again with no changes.
             await UnitTest.AssertNoFurtherChanges(cdc, imp).ConfigureAwait(false);
@@ -378,13 +379,13 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsFalse(cdcr.IsSuccessful);
-            Assert.IsNull(cdcr.Batch);
-            Assert.NotNull(cdcr.Exception);
-            Assert.IsInstanceOf<BusinessException>(cdcr.Exception);
-            Assert.AreEqual("Unexpected data loss error for 'Legacy.Posts'; this indicates that the CDC data has probably been cleaned up before being successfully processed.", cdcr.Exception.Message);
-            Assert.IsNull(cdcr.ExecuteStatus);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsFalse(cdcr.IsSuccessful);
+            ClassicAssert.IsNull(cdcr.BatchTracker);
+            ClassicAssert.NotNull(cdcr.Exception);
+            ClassicAssert.IsInstanceOf<DataConsistencyException>(cdcr.Exception);
+            ClassicAssert.AreEqual("Unexpected data loss error for 'Legacy.Posts'; this indicates that the CDC data has probably been cleaned up before being successfully processed.", cdcr.Exception.Message);
+            ClassicAssert.IsNull(cdcr.ExecuteStatus);
         }
 
         [Test]
@@ -411,14 +412,14 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsTrue(cdcr.Batch.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
         }
 
         [Test]
@@ -439,22 +440,22 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNotNull(cdcr.Batch);
-            Assert.IsTrue(cdcr.Batch.IsComplete);
-            Assert.IsNotNull(cdcr.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr.Batch.CorrelationId);
-            Assert.IsFalse(cdcr.Batch.HasDataLoss);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker);
+            ClassicAssert.IsTrue(cdcr.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.AreEqual(1, imp.GetEvents().Length);
 
             // Set the last batch to incomplete and delete version tracking so i will publish event again - simulate batch failure.
             script =
-                $"UPDATE [NTangle].[PostsBatchTracking] SET IsComplete = 0 WHERE CorrelationId = '{cdcr.Batch.CorrelationId}'" + Environment.NewLine +
+                $"UPDATE [NTangle].[PostsBatchTracking] SET IsComplete = 0 WHERE CorrelationId = '{cdcr.BatchTracker.CorrelationId}'" + Environment.NewLine +
                 "DELETE FROM [NTangle].[VersionTracking]";
 
             await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
@@ -465,21 +466,21 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr2, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr2);
-            Assert.IsTrue(cdcr2.IsSuccessful);
-            Assert.IsNotNull(cdcr2.Batch);
-            Assert.IsTrue(cdcr2.Batch.IsComplete);
-            Assert.IsNotNull(cdcr2.Batch.CompletedDate);
-            Assert.IsNotNull(cdcr2.Batch.CorrelationId);
-            Assert.IsFalse(cdcr2.Batch.HasDataLoss);
-            Assert.IsNull(cdcr2.Exception);
-            Assert.AreEqual(cdcr.Batch.Id, cdcr2.Batch.Id);
-            Assert.AreEqual(cdcr.Batch.CorrelationId, cdcr2.Batch.CorrelationId);
-            Assert.AreNotEqual(cdcr.ExecutionId, cdcr2.ExecutionId);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
-            Assert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
-            Assert.AreEqual(1, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr2);
+            ClassicAssert.IsTrue(cdcr2.IsSuccessful);
+            ClassicAssert.IsNotNull(cdcr2.BatchTracker);
+            ClassicAssert.IsTrue(cdcr2.BatchTracker.IsComplete);
+            ClassicAssert.IsNotNull(cdcr2.BatchTracker.CompletedDate);
+            ClassicAssert.IsNotNull(cdcr2.BatchTracker.CorrelationId);
+            ClassicAssert.IsFalse(cdcr2.BatchTracker.HasDataLoss);
+            ClassicAssert.IsNull(cdcr2.Exception);
+            ClassicAssert.AreEqual(cdcr.BatchTracker.Id, cdcr2.BatchTracker.Id);
+            ClassicAssert.AreEqual(cdcr.BatchTracker.CorrelationId, cdcr2.BatchTracker.CorrelationId);
+            ClassicAssert.AreNotEqual(cdcr.ExecutionId, cdcr2.ExecutionId);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.InitialCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.ConsolidatedCount);
+            ClassicAssert.AreEqual(1, cdcr.ExecuteStatus?.PublishCount);
+            ClassicAssert.AreEqual(1, imp.GetEvents().Length);
         }
     }
 }

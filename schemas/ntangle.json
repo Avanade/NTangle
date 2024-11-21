@@ -191,7 +191,7 @@
         },
         "pathDatabase": {
           "type": "string",
-          "title": "The path (directory) for the Schema Database-related artefacts.",
+          "title": "The root path (directory) for the Database-related artefacts.",
           "description": "Defaults to \u0060PathBase\u0060 \u002B \u0060.Database\u0060 (literal). For example \u0060Avanade.Application.Database\u0060."
         },
         "pathDatabaseSchema": {
@@ -208,6 +208,21 @@
           "type": "string",
           "title": "The path (directory) for the CDC-related (.NET) artefacts.",
           "description": "Defaults to \u0060PathBase\u0060 \u002B \u0060.Publisher\u0060 (literal). For example \u0060Avanade.Application.Publisher\u0060."
+        },
+        "pathSidecarDatabase": {
+          "type": "string",
+          "title": "The path (directory) for the Schema Database-related artefacts.",
+          "description": "Defaults to \u0060PathBase\u0060 \u002B \u0060.SidecarDb\u0060 (literal). For example \u0060Avanade.Application.SidecarDb\u0060."
+        },
+        "pathSidecarDatabaseSchema": {
+          "type": "string",
+          "title": "The path (directory) for the Schema Database-related artefacts.",
+          "description": "Defaults to \u0060PathSidecarDatabase\u0060 \u002B \u0060/Schema\u0060 (literal). For example \u0060Avanade.Application.SidecarDb/Schema\u0060."
+        },
+        "pathSidecarDatabaseMigrations": {
+          "type": "string",
+          "title": "The path (directory) for the Schema Database-related artefacts.",
+          "description": "Defaults to \u0060PathSidecarDatabase\u0060 \u002B \u0060/Migrations\u0060 (literal). For example \u0060Avanade.Application.SidecarDb/Migrations\u0060."
         },
         "namespaceBase": {
           "type": "string",
@@ -296,6 +311,11 @@
           "type": "string",
           "title": "The \u0060CDC\u0060 _reset_ batch stored procedure name.",
           "description": "Defaults to \u0060sp\u0060 (literal) \u002B \u0060Name\u0060 \u002B \u0060BatchReset\u0060 (literal); e.g. \u0060spNameBatchReset\u0060."
+        },
+        "trackingStoredProcedure": {
+          "type": "string",
+          "title": "The \u0060CDC\u0060 _tracking_ (Sidecar only) batch stored procedure name.",
+          "description": "Defaults to \u0060sp\u0060 (literal) \u002B \u0060Name\u0060 \u002B \u0060BatchTracking\u0060 (literal); e.g. \u0060spNameBatchTracking\u0060."
         },
         "cdcSchema": {
           "type": "string",

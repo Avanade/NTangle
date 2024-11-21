@@ -16,6 +16,16 @@ This has a key advantage of being an excellent candidate within event-streaming 
 
 <br/>
 
+## Sidecar database
+
+As of version `3.0.0` the preferred (recommended and default) approach is to use a sidecar database to manage the _nTangle_ runtime artefacts. This is to ensure that the main database is not polluted with the _nTangle_ specific artefacts, and to ensure that the _nTangle_ runtime can be easily removed without impacting the main database.
+
+Usage of a sidecar database will also limit impact (load and data) on the main database by minimizing access to required CDC and related data selection only. The required orchestration will occur against the sidecar database.
+
+Note that there are no cross database dependencies; as such, the sidecar database can be hosted separately, be on a different version, etc. as required. The .NET orchestrator logic _will_ require access to both databases to function.
+
+<br/>
+
 ## Demonstration
 
 The following video provides a high-level demonstration of _nTangle_ and its capabilities.
@@ -46,7 +56,7 @@ SalesOrder             // Parent
 ``` 
 
 The CDC capability is used specifically as a trigger for change (being `Create`, `Update` or `Delete`). The resulting data that is published is the latest, not a snapshot in time (CDC captured). The reason for this is two-fold:
-1. Given how the CDC data is batch retrieved there is no guarantee that the CDC captured data represents a final intended state suitable for publishing; and,
+1. Given how the CDC data is batch retrieved there is no guarantee that the CDC captured data represents a final intended state (transactionally consistent) suitable for publishing; and,
 2. This process is intended to be running near real-time so getting the latest version will produce the most current committed version as at that time.
 
 To further guarantee only a single event for a specific version is published the resulting _entity_ is JSON serialized and hashed; this value is checked (and saved) against the prior version to ensure a publish contains data that is actionable. This will minimize redundant publishing, whilst also making the underlying processing more efficient.
@@ -103,9 +113,9 @@ Documentation related to each of the above are as follows:
 - [`JoinMapping`](./docs/generated/joinmapping.md) - defines global identifier mappings for any of the join table columns.
 - [`TableMapping`](./docs/generated/tablemapping.md) - defines global identifier mappings for any of the primary table columns.
 
-An example [ntangle.yaml](./samples/SqlServerDemo/SqlServerDemo.CodeGen/ntangle.yaml) configuration file exists within the [`SqlServerDemo`](./samples/SqlServerDemo) sample. The [`SqlServerDemo.CodeGen`](./samples/SqlServerDemo/SqlServerDemo.CodeGen) sample also demonstrates how to invoke the code generator from the underlying [`Program`](./samples/SqlServerDemo/SqlServerDemo.CodeGen/Program.cs).
+An example [ntangle.yaml](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.CodeGen/ntangle.yaml) configuration file exists within the [`SqlServerSidecarDemo`](./samples/SqlServerSidecarDemo) sample. The [`SqlServerSidecarDemo.CodeGen`](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.CodeGen) sample also demonstrates how to invoke the code generator from the underlying [`Program`](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.CodeGen/Program.cs).
 
-The code-generator will output a number of generated artefacts; these will be either database-related (see [`SqlServerDemo.Database`](./samples/SqlServerDemo/SqlServerDemo.Database) sample) or corresponding .NET runtime components (see [`SqlServerDemo.Publisher`](./samples/SqlServerDemo/SqlServerDemo.Publisher) sample).
+The code-generator will output a number of generated artefacts; these will be either database-related (see [`SqlServerSidecarDemo.Database`](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb) sample) or corresponding .NET runtime components (see [`SqlServerSidecarDemo.Publisher`](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher) sample).
 
 The following [`NTangle`](./src/NTangle) namespaces provide the code-generation capabilties:
 
@@ -119,7 +129,7 @@ Namespace | Description
 
 ### Runtime
 
-Generally, a runtime publisher is required to orchestrate the CDC-triggered aggregated entity publishing process (see [`SqlServerDemo.Publisher`](./samples/SqlServerDemo/SqlServerDemo.Publisher) sample). This in turn takes a dependency on the _nTangle_ runtime to enable.
+Generally, a runtime publisher is required to orchestrate the CDC-triggered aggregated entity publishing process (see [`SqlServerSidecarDemo.Publisher`](./samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher) sample). This in turn takes a dependency on the _nTangle_ runtime to enable.
 
 The following [`NTangle`](./src/NTangle) namespaces provide the runtime capabilties:
 
@@ -146,7 +156,10 @@ The following samples are provided to guide usage:
 
 Sample | Description
 -|-
-[`SqlServerDemo`](./samples/SqlServerDemo) | A sample as an end-to-end solution to demonstrate the usage of _nTangle_ against a Microsoft SQL Server database. However, the best place to follow along and learn is to use the [`NTangle.Template`](./tools/NTangle.Template) tool - instructions are within to guide end-to-end setup and execution.
+[`SqlServerSidecarDemo`](./samples/SqlServerSidecarDemo) | A sample as an end-to-end solution to demonstrate the usage of _nTangle_ against a Microsoft SQL Server database leveraging a _sidecar_ database. This is the preferred and default approach to use _nTangle_.
+[`SqlServerDemo`](./samples/SqlServerDemo) | A sample as an end-to-end solution to demonstrate the usage of _nTangle_ against a single Microsoft SQL Server database. This is the legacy approach to use _nTangle_.
+
+However, the best place to follow along and learn is to use the [`NTangle.Template`](./tools/NTangle.Template) tool - instructions are within to guide end-to-end setup and execution.
 
 <br/>
 

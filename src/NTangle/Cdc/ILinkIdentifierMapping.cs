@@ -12,6 +12,12 @@ namespace NTangle.Cdc
     public interface ILinkIdentifierMapping<T>
     {
         /// <summary>
+        /// Gets the global identifiers configuration.
+        /// </summary>
+        /// <param name="coll">The <see cref="ValueIdentifierMappingCollection{T}"/>.</param>
+        void GetIdentifierMappingConfigurations(ValueIdentifierMappingCollection<T> coll);
+
+        /// <summary>
         /// Link any new global identifiers.
         /// </summary>
         /// <param name="coll">The <see cref="ValueIdentifierMappingCollection{T}"/>.</param>

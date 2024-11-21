@@ -46,7 +46,7 @@ namespace NTangle.Services
             var result = await eo.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
             // Where successful and a batch was processed, then the next batch should be attempted immediately; otherwise, retry later.
-            return result.IsSuccessful && result.Batch != null;
+            return result.IsSuccessful && result.BatchTracker != null;
         }
     }
 }

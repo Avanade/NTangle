@@ -150,6 +150,28 @@ public partial class {{Model}}Cdc : IEntity{{#ifval ColumnConfigIsDeleted}}, ILo
     public CompositeKey TableKey => new({{#each PrimaryKeyColumns}}{{#unless @first}}, {{/unless}}{{pascal NameAlias}}{{/each}});
 
     /// <inheritdoc/>
+    public void GetIdentifierMappingConfigurations(ValueIdentifierMappingCollection<{{Root.IdentifierMappingDotNetType}}> coll)
+    {
+  {{#if IdentifierMapping}}
+        coll.Add(new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof(GlobalId), Schema = "{{Schema}}", Table = "{{Table}}", Key = TableKey.ToString() });
+  {{/if}}
+  {{#each SelectedEntityColumns}}
+    {{#ifval IdentifierMappingParent}}
+        coll.Add(new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof({{NameAlias}}), Schema = "{{IdentifierMappingSchema}}", Table = "{{IdentifierMappingTable}}", Key = {{IdentifierMappingParent.NameAlias}}.ToString() });
+    {{/ifval}}
+  {{/each}}
+  {{#each JoinCdcChildren}}
+    {{#if IdentifierMapping}}
+      {{#ifeq JoinCardinality 'OneToMany'}}
+        {{Property}}?.ForEach(item => item.GetIdentifierMappingConfigurations(coll));
+      {{else}}
+        {{Property}}?.GetIdentifierMappingConfigurations(coll);
+      {{/ifeq}}
+    {{/if}}
+  {{/each}}
+    }
+
+    /// <inheritdoc/>
     public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<{{Root.IdentifierMappingDotNetType}}> coll, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen)
     {
   {{#if IdentifierMapping}}
@@ -302,6 +324,19 @@ public partial class {{Model}}Cdc : IEntity{{#ifval ColumnConfigIsDeleted}}, ILo
         /// <inheritdoc/>
         [JsonIgnore]
         public CompositeKey TableKey => new({{#each PrimaryKeyColumns}}{{#unless @first}}, {{/unless}}{{pascal NameAlias}}{{/each}});
+
+        /// <inheritdoc/>
+        public void GetIdentifierMappingConfigurations(ValueIdentifierMappingCollection<{{Root.IdentifierMappingDotNetType}}> coll)
+        {
+    {{#if IdentifierMapping}}
+            coll.Add(new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof(GlobalId), Schema = "{{Schema}}", Table = "{{Table}}", Key = TableKey.ToString() });
+    {{/if}}
+    {{#each Columns}}
+      {{#ifval IdentifierMappingParent}}
+            coll.Add(new ValueIdentifierMapping<{{Root.IdentifierMappingDotNetType}}> { Value = this, Property = nameof({{NameAlias}}), Schema = "{{IdentifierMappingSchema}}", Table = "{{IdentifierMappingTable}}", Key = {{IdentifierMappingParent.NameAlias}}.ToString() });
+      {{/ifval}}
+    {{/each}}
+        }
 
         /// <inheritdoc/>
         public async Task LinkIdentifierMappingsAsync(ValueIdentifierMappingCollection<{{Root.IdentifierMappingDotNetType}}> coll, IIdentifierGenerator<{{Root.IdentifierMappingDotNetType}}> idGen)

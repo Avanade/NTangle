@@ -292,7 +292,7 @@ namespace NTangle.CodeGen.Config
         /// Gets or sets the path (directory) for the root Database-related artefacts.
         /// </summary>
         [JsonPropertyName("pathDatabase")]
-        [CodeGenProperty("Path", Title = "The path (directory) for the Schema Database-related artefacts.",
+        [CodeGenProperty("Path", Title = "The root path (directory) for the Database-related artefacts.",
             Description = "Defaults to `PathBase` + `.Database` (literal). For example `Avanade.Application.Database`.")]
         public string? PathDatabase { get; set; }
 
@@ -319,6 +319,30 @@ namespace NTangle.CodeGen.Config
         [CodeGenProperty("Path", Title = "The path (directory) for the CDC-related (.NET) artefacts.",
             Description = "Defaults to `PathBase` + `.Publisher` (literal). For example `Avanade.Application.Publisher`.")]
         public string? PathDotNetPublisher { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path (directory) for the root Sidecar Database-related artefacts.
+        /// </summary>
+        [JsonPropertyName("pathSidecarDatabase")]
+        [CodeGenProperty("Path", Title = "The path (directory) for the Schema Database-related artefacts.",
+            Description = "Defaults to `PathBase` + `.SidecarDb` (literal). For example `Avanade.Application.SidecarDb`.")]
+        public string? PathSidecarDatabase { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path (directory) for the Schema Database-related artefacts.
+        /// </summary>
+        [JsonPropertyName("pathSidecarDatabaseSchema")]
+        [CodeGenProperty("Path", Title = "The path (directory) for the Schema Database-related artefacts.",
+            Description = "Defaults to `PathSidecarDatabase` + `/Schema` (literal). For example `Avanade.Application.SidecarDb/Schema`.")]
+        public string? PathSidecarDatabaseSchema { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path (directory) for the Schema Database-related artefacts.
+        /// </summary>
+        [JsonPropertyName("pathSidecarDatabaseMigrations")]
+        [CodeGenProperty("Path", Title = "The path (directory) for the Schema Database-related artefacts.",
+            Description = "Defaults to `PathSidecarDatabase` + `/Migrations` (literal). For example `Avanade.Application.SidecarDb/Migrations`.")]
+        public string? PathSidecarDatabaseMigrations { get; set; }
 
         #endregion
 
@@ -378,6 +402,11 @@ namespace NTangle.CodeGen.Config
         /// Indicates whether the scripted template is gen-once only.
         /// </summary>
         public bool? IsGenOnce => (bool?)RuntimeParameters.GetValueOrDefault(nameof(OnRamp.Scripts.CodeGenScriptItem.IsGenOnce));
+
+        /// <summary>
+        /// Indicates whether a sidecar-database is being used.
+        /// </summary>
+        public bool UseSidecar => CodeGenArgs!.GetParameter<bool>("UseSidecar");
 
         /// <summary>
         /// Gets the .NET <see cref="Type"/> that corresponds to the <see cref="IdentifierMappingType"/>.
@@ -453,6 +482,9 @@ namespace NTangle.CodeGen.Config
             PathDatabase = DefaultWhereNull(PathDatabase, () => $"{PathBase}.Database");
             PathDatabaseSchema = DefaultWhereNull(PathDatabaseSchema, () => $"{PathDatabase}/Schema");
             PathDatabaseMigrations = DefaultWhereNull(PathDatabaseMigrations, () => $"{PathDatabase}/Migrations");
+            PathSidecarDatabase = DefaultWhereNull(PathSidecarDatabase, () => $"{PathBase}.SidecarDb");
+            PathSidecarDatabaseSchema = DefaultWhereNull(PathSidecarDatabaseSchema, () => $"{PathSidecarDatabase}/Schema");
+            PathSidecarDatabaseMigrations = DefaultWhereNull(PathSidecarDatabaseMigrations, () => $"{PathSidecarDatabase}/Migrations");
             PathDotNetPublisher = DefaultWhereNull(PathDotNetPublisher, () => $"{PathBase}.Publisher");
             NamespaceBase = DefaultWhereNull(NamespaceBase, () => AppName);
             NamespacePublisher = DefaultWhereNull(NamespacePublisher, () => $"{NamespaceBase}.Publisher");

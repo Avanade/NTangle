@@ -32,7 +32,7 @@ BEGIN
     -- There should never be more than one incomplete batch.
     IF @@ROWCOUNT > 1
     BEGIN
-      ;THROW 56002, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
+      ;THROW 56010, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
     END
 
     -- Get the latest 'base' minimum.
@@ -75,8 +75,8 @@ BEGIN
     -- The minimum should _not_ be less than the base otherwise we have lost data; either continue with this data loss, or error and stop.
     DECLARE @hasDataLoss BIT = 0
 
-    IF (@ContactMinLsn < @ContactBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @ContactMinLsn = @ContactBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Contact''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
-    IF (@AddressMinLsn < @AddressBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @AddressMinLsn = @AddressBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Address''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@ContactMinLsn < @ContactBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @ContactMinLsn = @ContactBaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''Legacy.Contact''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@AddressMinLsn < @AddressBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @AddressMinLsn = @AddressBaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''Legacy.Address''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
 
     -- Find changes on the root table: '[Legacy].[Contact]' - this determines overall operation type: 'create', 'update' or 'delete'.
     CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, [ContactId] INT)

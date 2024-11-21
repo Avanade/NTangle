@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/NTangle
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,11 @@ namespace NTangle.Cdc
     /// </summary>
     public interface IEntityOrchestrator
     {
+        /// <summary>
+        /// Gets the unique identifier for the current execution.
+        /// </summary>
+        Guid ExecutionId { get; }
+
         /// <summary>
         /// Gets or sets the maximum query size to limit the number of CDC (Change Data Capture) rows that are batched in a <see cref="BatchTracker"/>.
         /// </summary>

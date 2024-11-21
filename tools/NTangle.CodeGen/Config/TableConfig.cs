@@ -125,6 +125,14 @@ namespace NTangle.CodeGen.Config
         public string? ResetStoredProcedure { get; set; }
 
         /// <summary>
+        /// Gets or sets the `Cdc` tracking (Sidecar) batch stored procedure name.
+        /// </summary>
+        [JsonPropertyName("trackingStoredProcedure")]
+        [CodeGenProperty("Database", Title = "The `CDC` _tracking_ (Sidecar only) batch stored procedure name.",
+            Description = "Defaults to `sp` (literal) + `Name` + `BatchTracking` (literal); e.g. `spNameBatchTracking`.")]
+        public string? TrackingStoredProcedure { get; set; }
+
+        /// <summary>
         /// Gets or sets the schema name for the `Cdc`-related database artefacts.
         /// </summary>
         [JsonPropertyName("cdcSchema")]
@@ -356,6 +364,11 @@ namespace NTangle.CodeGen.Config
         public List<ColumnConfig> Columns { get; } = [];
 
         /// <summary>
+        /// Gets the selected column configurations with the mapping-related excluded.
+        /// </summary>
+        public List<ColumnConfig> ColumnsExcludeMapping => SelectedColumns.Where(x => x.IdentifierMappingAlias is null).ToList();
+
+        /// <summary>
         /// Gets the <see cref="JoinConfig"/> collection for "all" those that are also CDC monitored.
         /// </summary>
         public List<JoinConfig> CdcJoins => Joins!.Where(x => CompareNullOrValue(x.Type, "Cdc")).ToList();
@@ -454,6 +467,7 @@ namespace NTangle.CodeGen.Config
             ExecuteStoredProcedure = DefaultWhereNull(ExecuteStoredProcedure, () => $"sp{StringConverter.ToPascalCase(Name)}BatchExecute");
             CompleteStoredProcedure = DefaultWhereNull(CompleteStoredProcedure, () => $"sp{StringConverter.ToPascalCase(Name)}BatchComplete");
             ResetStoredProcedure = DefaultWhereNull(ResetStoredProcedure, () => $"sp{StringConverter.ToPascalCase(Name)}BatchReset");
+            TrackingStoredProcedure = DefaultWhereNull(TrackingStoredProcedure, () => $"sp{StringConverter.ToPascalCase(Name)}BatchTracking");
             CdcSchema = DefaultWhereNull(CdcSchema, () => Root.CdcSchema);
             CdcEnable = DefaultWhereNull(CdcEnable, () => Root.CdcEnable);
             BatchTrackingTable = DefaultWhereNull(BatchTrackingTable, () => Name + "BatchTracking");

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>NTangle.Template</RootNamespace>
     <Product>NTangle Template</Product>
     <Title>NTangle Template.</Title>
@@ -24,7 +24,8 @@
     <None Remove="content\AppName.CodeGen\ntangle.yaml" />
     <None Remove="content\AppName.CodeGen\Program.cs" />
     <None Remove="content\AppName.Database\AppName.Database.csproj" />
-    <None Remove="content\AppName.Database\Post.Deploy.sql" />
+    <None Remove="content\AppName.SidecarDb\AppName.SidecarDb.csproj" />
+    <None Remove="content\AppName.SidecarDb\Program.cs" />
     <None Remove="content\AppName.Database\Program.cs" />
     <None Remove="content\AppName.Publisher\AppName.Publisher.csproj" />
     <None Remove="content\AppName.Publisher\appsettings.json" />

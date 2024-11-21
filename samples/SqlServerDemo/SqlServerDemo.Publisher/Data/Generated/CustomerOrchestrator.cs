@@ -19,27 +19,32 @@ public partial class CustomerOrchestrator : EntityOrchestrator<CustomerCdc, Cust
     /// <summary>
     /// Initializes a new instance of the <see cref="CustomerOrchestrator"/> class.
     /// </summary>
-    /// <param name="db">The <see cref="IDatabase"/>.</param>
+    /// <param name="database">The <see cref="IDatabase"/>.</param>
     /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
     /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
     /// <param name="settings">The <see cref="SettingsBase"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
-    public CustomerOrchestrator(IDatabase db, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<CustomerOrchestrator> logger) :
-        base(db, "[NTangle].[spCustomerBatchExecute]", "[NTangle].[spCustomerBatchComplete]", eventPublisher, jsonSerializer, settings, logger) => CustomerOrchestratorCtor();
+    public CustomerOrchestrator(IDatabase database, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger<CustomerOrchestrator> logger)
+        : base(database, eventPublisher, jsonSerializer, settings, logger) => CustomerOrchestratorCtor();
 
     partial void CustomerOrchestratorCtor(); // Enables additional functionality to be added to the constructor.
 
     /// <inheritdoc/>
-    protected override async Task<EntityOrchestratorResult<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>> GetBatchEntityDataAsync(CancellationToken cancellationToken = default)
+    protected override string ExecuteStoredProcedureName => "[NTangle].[spCustomerBatchExecute]";
+
+    /// <inheritdoc/>
+    protected override string CompleteStoredProcedureName => "[NTangle].[spCustomerBatchComplete]";
+
+    /// <inheritdoc/>
+    protected override async Task GetBatchEntityDataAsync(EntityOrchestratorResult<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope> result, CancellationToken cancellationToken = default)
     {
         var cColl = new CustomerCdcEnvelopeCollection();
 
-        var result = await SelectQueryMultiSetAsync(MultiSetArgs.Create(
+        await SelectQueryMultiSetAsync(result, MultiSetArgs.Create(
             // Root table: '[Legacy].[Cust]'
             new MultiSetCollArgs<CustomerCdcEnvelopeCollection, CustomerCdcEnvelope>(_customerCdcMapper, __result => cColl = __result, stopOnNull: true)), cancellationToken).ConfigureAwait(false);
 
         result.Result.AddRange(cColl);
-        return result;
     }
 
     /// <inheritdoc/>
@@ -61,7 +66,7 @@ public partial class CustomerOrchestrator : EntityOrchestrator<CustomerCdc, Cust
     protected override EventSourceFormat EventSourceFormat { get; } = EventSourceFormat.NameAndTableKey;
 
     /// <inheritdoc/>
-    protected override string[]? ExcludePropertiesFromETag => new string[] { "RowVersion" };
+    protected override string[]? ExcludePropertiesFromETag => ["RowVersion"];
 
     /// <summary>
     /// Represents a <see cref="CustomerCdc"/> envelope to append the required (additional) database properties.
@@ -93,8 +98,11 @@ public partial class CustomerOrchestrator : EntityOrchestrator<CustomerCdc, Cust
     /// <summary>
     /// Represents a <see cref="CustomerCdc"/> database mapper.
     /// </summary>
-    public class CustomerCdcMapper : IDatabaseMapper<CustomerCdcEnvelope>
+    public class CustomerCdcMapper : IDatabaseMapper<CustomerCdcEnvelope>, IDatabaseInfo
     {
+        /// <inheritdoc/>
+        public static DatabaseInfo DatabaseInfo => new("Legacy", "Cust", ["Id"]);
+
         /// <inheritdoc/>
         public CustomerCdcEnvelope? MapFromDb(DatabaseRecord record, OperationTypes operationType) => new()
         {

@@ -16,16 +16,14 @@ namespace NTangle.Cdc
     /// <typeparam name="TEntity">The root entity <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelopeColl">The <typeparamref name="TEntityEnvelope"/> collection <see cref="Type"/>.</typeparam>
     /// <typeparam name="TEntityEnvelope">The <typeparamref name="TEntity"/> envelope <see cref="Type"/>.</typeparam>
-    /// <param name="db">The <see cref="IDatabase"/>.</param>
-    /// <param name="executeStoredProcedureName">The name of the batch execute stored procedure.</param>
-    /// <param name="completeStoredProcedureName">The name of the batch complete stored procedure.</param>
+    /// <param name="database">The <see cref="IDatabase"/>.</param>
     /// <param name="eventPublisher">The <see cref="IEventPublisher"/>.</param>
     /// <param name="jsonSerializer">The <see cref="IJsonSerializer"/>.</param>
     /// <param name="settings">The <see cref="SettingsBase"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/>.</param>
-    public abstract class EntityOrchestrator<TEntity, TEntityEnvelopeColl, TEntityEnvelope>(IDatabase db, string executeStoredProcedureName, string completeStoredProcedureName, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger logger) : EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope>(db, executeStoredProcedureName, completeStoredProcedureName, eventPublisher, jsonSerializer, settings, logger), IEntityOrchestrator<TEntity>
+    public abstract class EntityOrchestrator<TEntity, TEntityEnvelopeColl, TEntityEnvelope>(IDatabase database, IEventPublisher eventPublisher, IJsonSerializer jsonSerializer, SettingsBase settings, ILogger logger) 
+        : EntityOrchestratorBase<TEntity, TEntityEnvelopeColl, TEntityEnvelope>(database, eventPublisher, jsonSerializer, settings, logger), IEntityOrchestrator<TEntity>
         where TEntity : class, IEntity, new()
         where TEntityEnvelopeColl : List<TEntityEnvelope>, new()
-        where TEntityEnvelope : class, TEntity, IEntityEnvelope, new()
-    { }
+        where TEntityEnvelope : class, TEntity, IEntityEnvelope, new() { }
 }

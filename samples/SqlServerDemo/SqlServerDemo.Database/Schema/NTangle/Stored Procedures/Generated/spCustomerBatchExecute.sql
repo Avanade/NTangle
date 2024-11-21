@@ -29,7 +29,7 @@ BEGIN
     -- There should never be more than one incomplete batch.
     IF @@ROWCOUNT > 1
     BEGIN
-      ;THROW 56002, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
+      ;THROW 56010, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
     END
 
     -- Get the latest 'base' minimum.
@@ -67,7 +67,7 @@ BEGIN
     -- The minimum should _not_ be less than the base otherwise we have lost data; either continue with this data loss, or error and stop.
     DECLARE @hasDataLoss BIT = 0
 
-    IF (@CustomerMinLsn < @CustomerBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @CustomerMinLsn = @CustomerBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Cust''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@CustomerMinLsn < @CustomerBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @CustomerMinLsn = @CustomerBaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''Legacy.Cust''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
 
     -- Find changes on the root table: '[Legacy].[Cust]' - this determines overall operation type: 'create', 'update' or 'delete'.
     CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, [CustId] INT)
@@ -152,7 +152,7 @@ BEGIN
         CASE WHEN EXISTS (SELECT 1 FROM [Legacy].[Cust] AS [__c] WHERE ([__c].[CustId] = [_chg].[CustId])) THEN CAST (0 AS BIT) ELSE CAST (1 AS BIT) END AS [_IsPhysicallyDeleted]
       FROM #_changes AS [_chg]
       LEFT OUTER JOIN [Legacy].[Cust] AS [c] ON ([c].[CustId] = [_chg].[CustId])
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Schema] = N'Legacy' AND [_vt].[Table] = N'Customer' AND [_vt].[Key] = CAST([_chg].[CustId] AS NVARCHAR(128)))
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Schema] = N'Legacy' AND [_vt].[Table] = N'Cust' AND [_vt].[Key] = CAST([_chg].[CustId] AS NVARCHAR(128)))
       ORDER BY [_Lsn] ASC
 
     -- Commit the transaction.

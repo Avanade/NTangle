@@ -3,6 +3,7 @@ using CoreEx.Events;
 using CoreEx.Json;
 using NTangle.Test;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SqlServerDemo.Publisher.Data;
 using System.Threading.Tasks;
 
@@ -27,14 +28,14 @@ namespace SqlServerDemo.Test
             UnitTest.WriteResult(cdcr, imp);
 
             // Assert/verify the results.
-            Assert.NotNull(cdcr);
-            Assert.IsTrue(cdcr.IsSuccessful);
-            Assert.IsNull(cdcr.Batch);
-            Assert.IsNull(cdcr.Exception);
-            Assert.AreEqual(0, cdcr.ExecuteStatus.InitialCount);
-            Assert.IsNull(cdcr.ExecuteStatus.ConsolidatedCount);
-            Assert.IsNull(cdcr.ExecuteStatus.PublishCount);
-            Assert.AreEqual(0, imp.GetEvents().Length);
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+            ClassicAssert.IsNull(cdcr.BatchTracker);
+            ClassicAssert.IsNull(cdcr.Exception);
+            ClassicAssert.AreEqual(0, cdcr.ExecuteStatus.InitialCount);
+            ClassicAssert.IsNull(cdcr.ExecuteStatus.ConsolidatedCount);
+            ClassicAssert.IsNull(cdcr.ExecuteStatus.PublishCount);
+            ClassicAssert.AreEqual(0, imp.GetEvents().Length);
         }
     }
 }

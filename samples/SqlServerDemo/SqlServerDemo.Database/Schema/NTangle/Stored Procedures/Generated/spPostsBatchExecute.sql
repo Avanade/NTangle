@@ -38,7 +38,7 @@ BEGIN
     -- There should never be more than one incomplete batch.
     IF @@ROWCOUNT > 1
     BEGIN
-      ;THROW 56002, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
+      ;THROW 56010, 'There are multiple incomplete batches; there should not be more than one incomplete batch at any one time.', 1
     END
 
     -- Get the latest 'base' minimum.
@@ -91,10 +91,10 @@ BEGIN
     -- The minimum should _not_ be less than the base otherwise we have lost data; either continue with this data loss, or error and stop.
     DECLARE @hasDataLoss BIT = 0
 
-    IF (@PostsMinLsn < @PostsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @PostsMinLsn = @PostsBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Posts''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
-    IF (@CommentsMinLsn < @CommentsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @CommentsMinLsn = @CommentsBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Comments''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
-    IF (@CommentsTagsMinLsn < @CommentsTagsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @CommentsTagsMinLsn = @CommentsTagsBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Tags''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
-    IF (@PostsTagsMinLsn < @PostsTagsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @PostsTagsMinLsn = @PostsTagsBaseMinLsn END ELSE BEGIN ;THROW 56002, 'Unexpected data loss error for ''Legacy.Tags''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@PostsMinLsn < @PostsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @PostsMinLsn = @PostsBaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''Legacy.Posts''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@CommentsMinLsn < @CommentsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @CommentsMinLsn = @CommentsBaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''Legacy.Comments''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@CommentsTagsMinLsn < @CommentsTagsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @CommentsTagsMinLsn = @CommentsTagsBaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''Legacy.Tags''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
+    IF (@PostsTagsMinLsn < @PostsTagsBaseMinLsn) BEGIN IF (@ContinueWithDataLoss = 1) BEGIN SET @hasDataLoss = 1; SET @PostsTagsMinLsn = @PostsTagsBaseMinLsn END ELSE BEGIN ;THROW 56010, 'Unexpected data loss error for ''Legacy.Tags''; this indicates that the CDC data has probably been cleaned up before being successfully processed.', 1; END END
 
     -- Find changes on the root table: '[Legacy].[Posts]' - this determines overall operation type: 'create', 'update' or 'delete'.
     CREATE TABLE #_changes ([_Lsn] BINARY(10), [_Op] INT, [PostsId] INT)

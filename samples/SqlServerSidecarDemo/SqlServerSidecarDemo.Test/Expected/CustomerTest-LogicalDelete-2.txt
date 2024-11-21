@@ -1,0 +1,11 @@
+﻿{
+  "value": {
+    "id": 1,
+    "name": "Bob",
+    "email": "bob@domain.com"
+  },
+  "subject": "legacy.customer",
+  "action": "updated",
+  "type": "legacy.customer",
+  "source": "/database/cdc/legacy/cust/1"
+}

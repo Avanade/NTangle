@@ -26,42 +26,9 @@
       "defaultValue": "SqlServer",
       "description": "The database provider option."
     },
-    "dbproject": {
-      "type": "parameter",
-      "datatype": "choice",
-      "replaces": "DbProject",
-      "choices": [
-        {
-          "choice": "DbEx",
-          "description": "Indicates to use DbEx-based deployment migration application."
-        },
-        {
-          "choice": "Dacpac",
-          "description": "Indicates to use SQL Server data-tier application (DACPAC)."
-        },
-        {
-          "choice": "None",
-          "description": "Indicates that a database project is not required."
-        }
-      ],
-      "defaultValue": "DbEx",
-      "description": "The database project option."
-    },
     "implement_dbprovider_sqlserver": {
       "type": "computed",
       "value": "(dbprovider == \"SqlServer\")"
-    },
-    "implement_dbproject": {
-      "type": "computed",
-      "value": "(dbproject != \"None\")"
-    },
-    "implement_dbproject_dbex": {
-      "type": "computed",
-      "value": "(dbproject == \"DbEx\")"
-    },
-    "implement_dbproject_dacpac": {
-      "type": "computed",
-      "value": "(dbproject == \"Dacpac\")"
     },
     "publisher": {
       "type": "parameter",
@@ -114,18 +81,6 @@
   "sources": [
     {
       "modifiers": [
-        {
-          "condition": "!(implement_dbproject)",
-          "exclude": [ "AppName.Database/**/*" ]
-        },
-        {
-          "condition": "!(implement_dbproject_dbex)",
-          "exclude": [ "AppName.Database/Program.cs", "AppName.Database/AppName.Database.csproj" ]
-        },
-        {
-          "condition": "!(implement_dbproject_dacpac)",
-          "exclude": [ "AppName.Database/AppName.Database.sqlproj", "AppName.Database/Post.Deploy.sql" ]
-        },
         {
           "condition": "!(implement_publisher)",
           "exclude": [ "AppName.Publisher/**/*" ]

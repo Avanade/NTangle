@@ -1,0 +1,9 @@
+﻿{
+  "value": {
+    "id": 2
+  },
+  "subject": "legacy.customer",
+  "action": "deleted",
+  "type": "legacy.customer",
+  "source": "/database/cdc/legacy/cust/2"
+}

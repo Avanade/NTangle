@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using NTangle.Test;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using SqlServerDemo.Database;
 using System.Threading.Tasks;
 
@@ -40,7 +41,7 @@ namespace SqlServerDemo.Test
                 .RunAsync(MigrationCommand.DropAndAll).ConfigureAwait(false);
 
             if (result != 0)
-                Assert.Fail("Database migration failed.");
+                ClassicAssert.Fail("Database migration failed.");
         }
     }
 }
