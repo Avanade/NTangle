@@ -18,9 +18,9 @@ This has a key advantage of being an excellent candidate within event-streaming 
 
 ## Sidecar database
 
-As of version `3.0.0` the preferred (recommended and default) approach is to use a sidecar database to manage the _nTangle_ runtime artefacts. This is to ensure that the main database is not polluted with the _nTangle_ specific artefacts, and to ensure that the _nTangle_ runtime can be easily removed without impacting the main database.
+As of version `3.0.0` the preferred (recommended and default) approach is to use a sidecar database to manage the _nTangle_ runtime artefacts. This is to limit changes to the source database beyond the requirement for CDC itself.
 
-Usage of a sidecar database will also limit impact (load and data) on the main database by minimizing access to required CDC and related data selection only. The required orchestration will occur against the sidecar database.
+Usage of a sidecar database will also limit impact (load and data) on the source database by minimizing access to the required CDC and related data selection only. Otherwise, the required runtime orchestration will leverage the sidecar database only.
 
 Note that there are no cross database dependencies; as such, the sidecar database can be hosted separately, be on a different version, etc. as required. The .NET orchestrator logic _will_ require access to both databases to function.
 
@@ -28,7 +28,7 @@ Note that there are no cross database dependencies; as such, the sidecar databas
 
 ## Demonstration
 
-The following video provides a high-level demonstration of _nTangle_ and its capabilities.
+The following video provides a high-level demonstration of _nTangle_ (`v2`-no sidecar) and its capabilities.
 
 https://github.com/Avanade/NTangle/assets/12836934/2894d753-d5b7-4e2a-bc6d-fbf41289027f
 
@@ -90,7 +90,7 @@ _nTangle_ has been created to provide a seamless means to create CDC-enabled agg
 
 The code-generation is managed via a console application using the [`CodeGenConsole`](./src/NTangle/Console/CodeGenConsole.cs) to manage. This internally leverages [OnRamp](https://github.com/Avanade/onramp) to enable the underlying code-generation capabilities. 
 
-Additionally, the code-generator inspects (queries) the database to infer the underlying table schema for all tables and their columns. This is used as a source in which the configuration references to validate, whilst also minimizes configuration where the inferred schema information can be used. The code-generation adopts a gen-many philosophy, therefore where schema changes are made, the code-generation can be executed again to update accordingly.
+Additionally, the code-generator inspects (queries) the database leveraging [DbEx](https://github.com/Avanade/dbex) to infer the underlying table schema for all tables and their columns. This is used as a source in which the configuration references to validate, whilst also minimizes configuration where the inferred schema information can be used. The code-generation adopts a gen-many philosophy, therefore where schema changes are made, the code-generation can be executed again to update accordingly.
 
 As stated, the code-generation is driven by a configuration file, typically named `ntangle.yaml`. Both YAML and JSON formats are supported; there is also a corresponding [JSON schema](./schemas/ntangle.json) to enable editor intellisense, etc.
 
@@ -135,10 +135,10 @@ The following [`NTangle`](./src/NTangle) namespaces provide the runtime capabilt
 
 Namespace | Description
 -|-
-[`Cdc`](./src/NTangle/Cdc) | CDC-orchestration capabilities, primarily [`EntityOrchestrator`](./src/NTangle/Cdc/EntityOrchestrator.cs).
+[`Cdc`](./src/NTangle/Cdc) | CDC-orchestration capabilities, primarily [`EntitySidecarOrchestrator`](./src/NTangle/Cdc/EntitySidecarOrchestrator.cs).
 [`Data`](./src/NTangle/Data) | Database access capabilities to support the likes of batch tracking, identifier mapping and versioning.
 [`Events`](./src/NTangle/Events) | Event capabilities, leveraging and extending the capabilities enabled by [`CoreEx`](https://github.com/Avanade/CoreEx/tree/main/src/CoreEx/Events).
-[`Services`](./src/NTangle/Services) | Service hosting capabilities, primarily the [`HostedService`](./src/NTangle/Services/CdcHostedService.cs).
+[`Services`](./src/NTangle/Services) | Service hosting capabilities, primarily the [`CdcHostedService`](./src/NTangle/Services/CdcHostedService.cs).
 
 <br/>
 

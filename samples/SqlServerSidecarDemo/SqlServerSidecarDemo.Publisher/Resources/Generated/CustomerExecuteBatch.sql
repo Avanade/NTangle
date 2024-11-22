@@ -16,7 +16,7 @@ BEGIN
     -- Determine the 'minimum' depending on whether reprocessing or next and set/increment accordingly.
     IF @CustomerMinLsn IS NULL
     BEGIN
-      SET @CustomerMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Cust');
+      SET @CustomerMinLsn = @CustomerBaseMinLsn;
     END
     ELSE
     BEGIN

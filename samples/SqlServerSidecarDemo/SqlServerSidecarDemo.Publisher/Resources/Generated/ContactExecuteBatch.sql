@@ -18,8 +18,8 @@ BEGIN
     -- Determine the 'minimum' depending on whether reprocessing or next and set/increment accordingly.
     IF @ContactMinLsn IS NULL
     BEGIN
-      SET @ContactMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Contact');
-      SET @AddressMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Address');
+      SET @ContactMinLsn = @ContactBaseMinLsn;
+      SET @AddressMinLsn = @AddressBaseMinLsn;
     END
     ELSE
     BEGIN
