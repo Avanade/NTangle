@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## V3.0.1
+- *Fixed:*  Generated `ExecuteBatch.sql` fixed to not invoke `sys.fn_cdc_get_min_lsn` twice but use returned result as intended.
+
 ## v3.0.0
 - *Enhancement:* Major **"Sidecar"** feature added based on feedback from the community. 
   - The existing implementation required all generated supporting database capabilities to be within the "source" database itself; a new option has been added to generate a separate "sidecar" database to manage. This minimizes the impact on the "source" database.

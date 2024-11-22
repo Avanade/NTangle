@@ -27,7 +27,7 @@
     <EmbeddedResource Include="Resources\**\*" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NTangle" Version="3.0.0" />
+    <PackageReference Include="NTangle" Version="3.0.1" />
     <PackageReference Include="CoreEx.Azure" Version="3.30.0" />
     <!--#if (implement_publisher_console) -->
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
