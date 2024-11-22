@@ -22,10 +22,10 @@ BEGIN
     -- Determine the 'minimum' depending on whether reprocessing or next and set/increment accordingly.
     IF @PostsMinLsn IS NULL
     BEGIN
-      SET @PostsMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Posts');
-      SET @CommentsMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Comments');
-      SET @CommentsTagsMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Tags');
-      SET @PostsTagsMinLsn = sys.fn_cdc_get_min_lsn('Legacy_Tags');
+      SET @PostsMinLsn = @PostsBaseMinLsn;
+      SET @CommentsMinLsn = @CommentsBaseMinLsn;
+      SET @CommentsTagsMinLsn = @CommentsTagsBaseMinLsn;
+      SET @PostsTagsMinLsn = @PostsTagsBaseMinLsn;
     END
     ELSE
     BEGIN

@@ -23,9 +23,9 @@ BEGIN
     -- Determine the 'minimum' depending on whether reprocessing or next and set/increment accordingly.
     IF @{{pascal Name}}MinLsn IS NULL
     BEGIN
-      SET @{{pascal Name}}MinLsn = sys.fn_cdc_get_min_lsn('{{Schema}}_{{Table}}');
+      SET @{{pascal Name}}MinLsn = @{{pascal Name}}BaseMinLsn;
 {{#each CdcJoins}}
-      SET @{{pascal Name}}MinLsn = sys.fn_cdc_get_min_lsn('{{Schema}}_{{Table}}');
+      SET @{{pascal Name}}MinLsn = @{{pascal Name}}BaseMinLsn;
 {{/each}}
     END
     ELSE

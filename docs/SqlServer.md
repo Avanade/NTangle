@@ -32,9 +32,11 @@ _Note:_ the [SQL Server Agent service](https://learn.microsoft.com/en-us/sql/ssm
 
 The introduction of CDC into a database may have an impact on the database performance, and as such it is important to consider this impact; see [performance considerations](https://learn.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver16#performance-considerations).
 
-Within the _nTangle_ configuration the `CdcEnable` property can be used to enable/disable the automatic generation of the CDC-related `sys.sp_cdc_enable_table` TSQL code. This allows the developer and/or database administrator to manually enable CDC on the required tables external to _nTangle_ code generation. By default, the `CdcEnable` property is set to `false`.
+Within the _nTangle_ configuration the `CdcEnable` property can be used to enable/disable the automatic generation of the CDC-related `sys.sp_cdc_enable_table` TSQL code. This allows the developer and/or database administrator to manually enable CDC on the required tables external to _nTangle_ code generation. By default, the auto `CdcEnable` property is set to `false`. 
 
-Given the above, it is generally _recommended_ that CDC enablement is explicity managed by the developer and/or database administrator. Additionally, as schema changes are made to the underlying tables the CDC configuration may need to be changed accordingly; this does not happen automatically within SQL Server; see this article for more [information](https://www.mssqltips.com/sqlservertip/4096/understanding-how-dml-and-ddl-changes-impact-change-data-capture-in-sql-server/).
+Given the above, it is generally _recommended_ that CDC enablement is explicity managed by the developer and/or database administrator. Additionally, as schema changes are made to the underlying tables the CDC configuration may need to be changed accordingly; this does not happen automatically within SQL Server. See this article for more [information](https://www.mssqltips.com/sqlservertip/4096/understanding-how-dml-and-ddl-changes-impact-change-data-capture-in-sql-server/).
+
+Note that _nTangle_ does not require CDC to capture changes to all columns to function, only the primary and joining columns are required. Capturing only this subset will aid in minimizing impact on performance and be more flexible to ongoing schema changes.
 
 <br/>
 
@@ -46,11 +48,11 @@ Microsoft SQL Server provides two change tracking capabilities, namely CDC and [
 
 ## Sidecar database
 
-As of version `3.0.0` the preferred (recommended and default) approach is to use a sidecar database to manage the _nTangle_ runtime artefacts. This is to ensure that the source database is not polluted with the _nTangle_ specific artefacts, and to ensure that the _nTangle_ runtime can be easily removed without impacting the source database as required.
+As of version `3.0.0` the preferred (recommended and default) approach is to use a sidecar database to manage the _nTangle_ runtime artefacts. This is to limit changes to the source database beyond the requirement for CDC itself.
 
-Primarily, usage of a sidecar database will also limit impact (load and data) on the source database by minimizing access to the CDC and related entity data selection only. Otherwise, the required orchestration will occur against the sidecar database.
+Usage of a sidecar database will also limit impact (load and data) on the source database by minimizing access to the required CDC and related data selection only. Otherwise, the required runtime orchestration will leverage the sidecar database only.
 
-Note that there are _no_ cross database dependencies; as such, the sidecar database can be hosted separately, be on a different version, etc. as required. The .NET orchestrator logic _will_ however require access to both databases to function.
+Note that there are no cross database dependencies; as such, the sidecar database can be hosted separately, be on a different version, etc. as required. The .NET orchestrator logic _will_ require access to both databases to function.
 
 <br/>
 
@@ -63,12 +65,12 @@ The following represents the high-level conceptual run-time architecture for a s
 </br>
 
 The SQL Server databases are as follows:
-- **Source** - the existing database schema (tables and columns) that is being monitored for changes (CDC).
-- **Sidecar** - the generated _nTangle_ runtime artefacts (tables and stored procedures) that are used to orchestrate the CDC and event publishing.
+- **Source** - the existing database (tables and columns) that are being captured on change (CDC).
+- **Sidecar** - the _nTangle_-required runtime artefacts (tables and stored procedures) that are used to orchestrate the CDC-based event publishing.
 
 The key .NET components are as follows.
-- [Orchestrator](#Orchestrator) - one per entity (aggregate root) change tracking and event publisher orchestrator (execution phases depicted).
-- [Hosted service](#Hosted-service) - one per entity (aggregate root) timer-based hosted service responsible for executing the orchestrator (optional).
+- [Orchestrator](#Orchestrator) - one per entity (aggregate root); change tracking and event publisher orchestrator (execution phases depicted).
+- [Hosted service](#Hosted-service) - one per entity (aggregate root); timer-based hosted service responsible for executing the orchestrator (optional).
 - [Outbox dequeue publisher](#Outbox-dequeue-publisher) - event outbox dequeue and publishing (execution phases depicted).
 - [Outbox dequeue hosted service](#Outbox-dequeue-hosted-service) - timer-based hosted service responsible for executing the outbox dequeue publisher.
 
@@ -78,8 +80,8 @@ The key .NET components are as follows.
 
 The [`XxxOrchestrator`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Data/Generated/ContactOrchestrator.cs) is responsible for the primary orchestration of the CDC-related change tracking and event publishing - this is essentially the "secret sauce" behind _nTangle_. This is achieved by executing (orchestrating) the following phases in the order specifed.
 
-- [Change detection](#Change-detection) - detects changes to the underlying tables and packages within a batch;
-- [Consolidation](#Consolidation) - consolidate changes to minimize redundant event publishing and upsert batch configuration;
+- [Change detection](#Change-detection) - detects changes to the underlying source tables and packages within a batch;
+- [Consolidation](#Consolidation) - consolidates changes to minimize redundant event publishing and upserted batch configuration;
 - [Identifier mapping](#Identifier-mapping) - assign global identifier mappings (where applicable);
 - [Versioning](#Versioning) - version events to minimize publishing with same content;
 - [Publishing](#Publishing) - publish / send unique events to selected destination;
@@ -103,7 +105,7 @@ Step | Description
 LSN check | Get minimum and maximum LSNs for each table. If the minimum is less than previous Batch minimum then there is a CDC data loss scenario and some changes will be lost as a result; this will error unless option to continue with data loss is selected.
 Root CDC | Gets all CDC changes (create, update and delete) for the table (see [`fn_cdc_get_all_changes_`](https://docs.microsoft.com/en-us/sql/relational-databases/system-functions/cdc-fn-cdc-get-all-changes-capture-instance-transact-sql)) up to the maximum query size, and stores the result into a temporary `#changes` table.
 Child CDC | Gets all CDC changes (create, update and delete) for each child table up to the maximum query size joining against the parent table(s) to ensure existence. Appends the result into the temporary `#changes` table where distinct (as per root table primary key).
-Batch select | Select the resulting batch LSN data so that can be persisted within the sidecar database by the orchestrator.
+Batch select | Select the resulting batch LSN values so that can be persisted within the sidecar database by the orchestrator.
 Root query | Select result set using the temporary `#changes` table to left outer join to the root table (latest).
 Child query | Select result set using the temporary `#changes` for each child table using inner joins to ensure data is selected for only what currently exists within the database (latest).
 
@@ -140,7 +142,7 @@ The orchestrator will version each record by JSON serializing the data (removing
 
 #### Publishing
 
-The orchestrator will instantiate an [`EventData`](https://github.com/Avanade/CoreEx/blob/main/src/CoreEx/Events/EventData.cs) per record, then invoke the [`IEventPublisher.Publish()`](https://github.com/Avanade/CoreEx/blob/main/src/CoreEx/Events/IEventPublisher.cs) passing all events to be published.
+The orchestrator will instantiate an [`EventData`](https://github.com/Avanade/CoreEx/blob/main/src/CoreEx/Events/EventData.cs) per entity item, then invoke the [`IEventPublisher.Publish`](https://github.com/Avanade/CoreEx/blob/main/src/CoreEx/Events/IEventPublisher.cs) passing all events to be published.
 
 The default is to use the generated [`EventOutboxEnqueue`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Publisher/Data/Generated/EventOutboxEnqueue.cs) which enqueues all events using stored procedure [`spEventOutboxEnqueue`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Schema/Outbox/Stored%20Procedures/Generated/spEventOutboxEnqueue.sql) into the [`EventOutbox`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Migrations/20241024-233018-05-create-outbox-eventoutbox-table.sql) and [`EventOutboxData`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Migrations/20241024-233018-06-create-outbox-eventoutboxdata-table.sql) tables. This can be configured to use an alternate `IEventPublisher` where required.
 
@@ -217,7 +219,7 @@ The hosting of the `XxxOrchestrator` to enable explicit execution is the respons
 
 ## Code-generation
 
-The [code-generator](../tools/NTangle.Template/content/AppName.CodeGen/Program.cs) will leverage the [ntangle.yaml](../tools/NTangle.Template/content/AppName.CodeGen/ntangle.yaml) configuration to generate the [source database](#Source-database), [Sidecar database](#Sidecar-database), and [.NET](#net) artefacts.
+The [code-generator](../tools/NTangle.Template/content/AppName.CodeGen/Program.cs) will leverage the [ntangle.yaml](../tools/NTangle.Template/content/AppName.CodeGen/ntangle.yaml) configuration to generate the requisite [source database](#Source-database), [sidecar database](#Sidecar-database), and [.NET](#net) artefacts.
 
 Where `Xxx` is referenced in the artefact name this is replaced with the name of the entity (root aggregate). Also, the artefact name represents the default, there are opportunities within the `ntangle.yaml` to change the behavior of these where applicable.
 
@@ -231,7 +233,7 @@ The `AppName.Database` project generated artefacts are as follows.
 
 Type | Artefact | Description
 -|-|-
-Script | [`CdcEnable`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Database/Migrations/CdcEnable.post.deploy.sql) | Turns CDC on for the selected tables (where configured).
+Script | [`CdcEnable.post.deploy`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.Database/Migrations/CdcEnable.post.deploy.sql) | Turns CDC on for the selected tables (where configured).
 
 <br/>
 
@@ -250,7 +252,7 @@ Stored procedure | [`spEventOutboxDequeue`](../samples/SqlServerSidecarDemo/SqlS
 Stored procedure | [`spEventOutboxEnqueue`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Schema/Outbox/Stored%20Procedures/Generated/spEventOutboxEnqueue.sql) | Performs the event outbox enqueue.
 Stored procedure | [`spIdentifierMappingCreate`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Schema/NTangle/Stored%20Procedures/Generated/spIdentifierMappingCreate.sql) | Performs the identifier mapping management.
 Table | [`XxxBatchTracking`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Migrations/20241024-233018-03-create-ntangle-contactbatchtracking-table.sql) | Batch tracking (per entity).
-Schema | [`EventOutbox`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Migrations/20241024-233018-04-create-outbox-eventoutbox-schema.sql) | Creates the event outbox database schema.
+Schema | [`Outbox`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Migrations/20241024-233018-04-create-outbox-eventoutbox-schema.sql) | Creates the event outbox database schema.
 Table | [`EventOutbox`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Migrations/20241024-233018-05-create-outbox-eventoutbox-table.sql) | Creates the event outbox table.
 Table | [`EventOutboxData`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Migrations/20241024-233018-06-create-outbox-eventoutboxdata-table.sql) | Creates the event outbox data table.
 Table | [`IdentifierMapping`](../samples/SqlServerSidecarDemo/SqlServerSidecarDemo.SidecarDb/Migrations/20241024-233018-07-create-ntangle-identifiermapping-table.sql) | Creates the identifier mapping table.
