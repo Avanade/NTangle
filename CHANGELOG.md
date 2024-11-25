@@ -2,8 +2,11 @@
 
 Represents the **NuGet** versions.
 
+## v3.0.2
+- *Fixed:* The completion stage was incorrectly using the `EntityKey` versus `TableKey` (where using global identifiers) for the version hashing resulting in re-publishing where not required; code-generation template corrected and is required for fix.
+
 ## V3.0.1
-- *Fixed:*  Generated `ExecuteBatch.sql` fixed to not invoke `sys.fn_cdc_get_min_lsn` twice but use returned result as intended.
+- *Fixed:* Generated `ExecuteBatch.sql` fixed to not invoke `sys.fn_cdc_get_min_lsn` twice but use returned result as intended.
 
 ## v3.0.0
 - *Enhancement:* Major **"Sidecar"** feature added based on feedback from the community. 

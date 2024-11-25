@@ -119,6 +119,47 @@ namespace SqlServerSidecarDemo.Test
         }
 
         [Test]
+        public async Task NoPublishSameHash()
+        {
+            using var db = SqlServerSidecarUnitTest.GetDatabase();
+            using var sdb = SqlServerSidecarUnitTest.GetSidecarDatabase();
+            var logger = UnitTest.GetLogger<ContactOrchestrator>();
+
+            // Update contact 1.
+            var script = "UPDATE [Legacy].[Contact] SET [Phone] = '8888' WHERE [ContactId] = 1";
+            await db.SqlStatement(script).NonQueryAsync().ConfigureAwait(false);
+            await UnitTest.Delay().ConfigureAwait(false);
+
+            var imp = new InMemoryPublisher(logger);
+            var cdc = new ContactOrchestrator(db, sdb, imp, JsonSerializer.Default, UnitTest.GetSettings(), logger, new IdentifierGenerator());
+            var cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, imp);
+
+            // Assert/verify the results.
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+
+            var events = imp.GetEvents();
+            ClassicAssert.AreEqual(1, events.Length);
+
+            // Update contact 1 again with same value.
+            await db.SqlStatement("UPDATE [Legacy].[Contact] SET [Phone] = '7777' WHERE [ContactId] = 1").NonQueryAsync().ConfigureAwait(false);
+            await db.SqlStatement("UPDATE [Legacy].[Contact] SET [Phone] = '8888' WHERE [ContactId] = 1").NonQueryAsync().ConfigureAwait(false);
+            await UnitTest.Delay().ConfigureAwait(false);
+
+            imp.Reset();
+            cdcr = await cdc.ExecuteAsync().ConfigureAwait(false);
+            UnitTest.WriteResult(cdcr, imp);
+
+            // Assert/verify the results.
+            ClassicAssert.NotNull(cdcr);
+            ClassicAssert.IsTrue(cdcr.IsSuccessful);
+
+            events = imp.GetEvents();
+            ClassicAssert.AreEqual(0, events.Length);
+        }
+
+        [Test]
         public async Task UsePreassignedIdentifiers()
         {
             using var db = SqlServerSidecarUnitTest.GetDatabase();

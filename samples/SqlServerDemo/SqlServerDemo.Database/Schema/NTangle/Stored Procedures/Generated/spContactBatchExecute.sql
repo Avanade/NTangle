@@ -198,7 +198,7 @@ BEGIN
       LEFT OUTER JOIN [Legacy].[ContactMapping] AS [cm] ON ([cm].[ContactId] = [c].[ContactId])
       LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im] ON ([_im].[Schema] = N'Legacy' AND [_im].[Table] = N'Contact' AND [_im].[Key] = CAST([_chg].[ContactId] AS NVARCHAR(128)))
       LEFT OUTER JOIN [NTangle].[IdentifierMapping] AS [_im1] ON ([_im1].[Schema] = 'Legacy' AND [_im1].[Table] = 'Contact' AND [_im1].[Key] = CAST([c].[AlternateContactId] AS NVARCHAR(128))) 
-      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Schema] = N'Legacy' AND [_vt].[Table] = N'Contact' AND [_vt].[Key] = _im.GlobalId)
+      LEFT OUTER JOIN [NTangle].[VersionTracking] AS [_vt] ON ([_vt].[Schema] = N'Legacy' AND [_vt].[Table] = N'Contact' AND [_vt].[Key] = CAST([_chg].[ContactId] AS NVARCHAR(128)))
       ORDER BY [_Lsn] ASC
 
     -- Related table: '[Legacy].[Address]' - unique name 'Address' - only use INNER JOINS to get what is actually there right now (where applicable).
