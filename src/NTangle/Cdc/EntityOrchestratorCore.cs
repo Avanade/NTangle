@@ -307,7 +307,7 @@ namespace NTangle.Cdc
 
                 // Consolidate the results.
                 var coll = new TEntityEnvelopeColl();
-                foreach (var grp in result.Result.GroupBy(x => new { x.EntityKey }))
+                foreach (var grp in result.Result.GroupBy(x => new { Key = x is IGlobalIdentifier gi ? gi.TableKey : x.EntityKey }))
                 {
                     // Find delete and use.
                     var item = grp.Where(x => x.DatabaseOperationType == CdcOperationType.Delete).FirstOrDefault();
@@ -407,7 +407,7 @@ namespace NTangle.Cdc
                     if ((result.IsExplicitExecution && result.ExplicitOptions!.AlwaysPublishEvents) || item.DatabaseTrackingHash == null || item.DatabaseTrackingHash != entity.ETag)
                     {
                         coll.Add(item);
-                        tracking.Add(new VersionTracker { Key = entity.EntityKey.ToString(), Hash = entity.ETag });
+                        tracking.Add(new VersionTracker { Key = entity is IGlobalIdentifier gi ? gi.TableKey.ToString() : entity.EntityKey.ToString(), Hash = entity.ETag });
                     }
 
                     // Clear ETag where delete; i.e. non sensical.
